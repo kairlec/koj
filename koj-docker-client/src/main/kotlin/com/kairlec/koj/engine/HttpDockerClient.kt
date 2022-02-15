@@ -9,49 +9,37 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.json.Json
 import java.io.File
 
 internal data class HttpDockerClientContext(
-    val json: Json,
-    val httpClient: HttpClient,
-)
-
-class HttpDockerClient internal constructor(
-    internal val context: HttpDockerClientContext = HttpDockerClientContext(Json {
+    val json: Json = Json {
         prettyPrint = true
         isLenient = true
         ignoreUnknownKeys = true
-    }, HttpClient(OkHttp) {
+    },
+    val httpClient: HttpClient = HttpClient(OkHttp) {
         engine {
             config {
                 socketFactory(UnixDomainSocketFactory(File("/var/run/docker.sock")))
             }
         }
         install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-                ignoreUnknownKeys = true
-            })
-        }
-    }),
-    internal val httpClient: HttpClient = HttpClient(OkHttp) {
-        engine {
-            config {
-                socketFactory(UnixDomainSocketFactory(File("/var/run/docker.sock")))
-            }
-        }
-        install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-                ignoreUnknownKeys = true
-            })
+            json(json)
         }
     },
+)
+
+class HttpDockerClient internal constructor(
+    internal val context: HttpDockerClientContext = HttpDockerClientContext(),
 ) : DockerClient {
+    private val httpClient get() = context.httpClient
+
+    suspend operator fun invoke(block: suspend HttpDockerClient.() -> Unit) {
+        block(this)
+    }
+
     suspend fun info(): DockerInfo {
         return httpClient.get("/info").body()
     }
@@ -68,6 +56,11 @@ class HttpDockerClient internal constructor(
         return block(containerScope)
     }
 
+    companion object {
+        suspend operator fun invoke(block: suspend HttpDockerClient.() -> Unit) {
+            block(HttpDockerClient())
+        }
+    }
 }
 
 

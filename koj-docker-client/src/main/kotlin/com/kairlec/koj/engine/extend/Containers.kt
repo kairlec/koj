@@ -6,14 +6,62 @@ import com.kairlec.koj.engine.HttpDockerClient
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.experimental.ExperimentalTypeInference
+
+@Serializable
+enum class Health {
+    @SerialName("starting")
+    STARTING,
+
+    @SerialName("healthy")
+    HEALTHY,
+
+    @SerialName("unhealthy")
+    UNHEALTHY,
+
+    @SerialName("none")
+    NONE
+}
+
+@Serializable
+enum class Isolation {
+    @SerialName("default")
+    DEFAULT,
+
+    @SerialName("process")
+    PROCESS,
+
+    @SerialName("hyperv")
+    HYPERV,
+}
+
+@Serializable
+enum class Status {
+    @SerialName("created")
+    CREATED,
+
+    @SerialName("restarting")
+    RESTARTING,
+
+    @SerialName("running")
+    RUNNING,
+
+    @SerialName("removing")
+    REMOVING,
+
+    @SerialName("paused")
+    PAUSED,
+
+    @SerialName("exited")
+    EXITED,
+
+    @SerialName("dead")
+    DEAD,
+}
 
 class ContainerScope(private val httpDockerClient: HttpDockerClient) {
     @Serializable
@@ -50,29 +98,6 @@ class ContainerScope(private val httpDockerClient: HttpDockerClient) {
         var volume: List<String>? = null,
     )
 
-    enum class Health(private val value: String) {
-        STARTING("starting"),
-        HEALTHY("healthy"),
-        UNHEALTHY("unhealthy"),
-        NONE("none")
-    }
-
-    enum class Isolation(private val value: String) {
-        DEFAULT("default"),
-        PROCESS("process"),
-        HYPERV("hyperv"),
-    }
-
-    enum class Status(private val value: String) {
-        CREATED("created"),
-        RESTARTING("restarting"),
-        RUNNING("running"),
-        REMOVING("removing"),
-        PAUSED("paused"),
-        EXITED("exited"),
-        DEAD("dead"),
-    }
-
     class ContainersListRequestBuilder(
         var all: Boolean? = null,
         var limit: Int? = null,
@@ -89,11 +114,11 @@ class ContainerScope(private val httpDockerClient: HttpDockerClient) {
         val filters = request.filters?.let(httpDockerClient.context.json::encodeToString)
         val url = buildQuery("/containers/json") {
             request.all?.let { "all" on it }
-            request.limit?.let { "all" on it }
-            request.size?.let { "all" on it }
+            request.limit?.let { "limit" on it }
+            request.size?.let { "size" on it }
             filters?.let { "filters" on it }
         }
-        return httpDockerClient.httpClient.get(url).body()
+        return httpDockerClient.context.httpClient.get(url).body()
     }
 }
 
@@ -122,15 +147,5 @@ fun buildQuery(base: String, @BuilderInference builderAction: BuildQueryScope.()
         base
     } else {
         "$base?$query"
-    }
-}
-
-suspend fun main() {
-    HttpDockerClient().Containers {
-        list {
-            all = true
-        }
-    }.apply {
-        println(this)
     }
 }
