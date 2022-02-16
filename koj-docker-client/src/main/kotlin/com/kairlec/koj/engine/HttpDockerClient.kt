@@ -1,24 +1,51 @@
 package com.kairlec.koj.engine
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapter
+import com.google.gson.TypeAdapterFactory
+import com.google.gson.reflect.TypeToken
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonWriter
 import com.kairlec.koj.engine.extend.ContainerScope
 import com.kairlec.koj.engine.model.DockerInfo
 import com.kairlec.koj.engine.model.DockerVersion
+import com.kairlec.koj.engine.serialzer.InstantTypeAdapter
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.serialization.json.Json
+import io.ktor.serialization.gson.*
 import java.io.File
+import java.time.Instant
 
-internal data class HttpDockerClientContext(
-    val json: Json = Json {
-        prettyPrint = true
-        isLenient = true
-        ignoreUnknownKeys = true
-    },
+val tp = object : TypeAdapterFactory {
+    override fun <T : Any> create(gson: Gson, type: TypeToken<T>): TypeAdapter<T>? {
+        val raw = type.rawType
+        if (!raw.isEnum) {
+            return null
+        }
+        return object : TypeAdapter<T>() {
+            val enumConstants = raw.enumConstants as Array<Enum<*>>
+            override fun write(out: JsonWriter, value: T) {
+                out.value((value as Enum<*>).name.lowercase())
+            }
+
+            override fun read(`in`: JsonReader): T {
+                return `in`.nextString().let { str ->
+                    enumConstants.first { it.name.equals(str, true) } as T
+                }
+            }
+        }
+    }
+}
+
+internal data class HttpDockerClientContext constructor(
+    val json: Gson = GsonBuilder()
+        .registerTypeAdapterFactory(tp)
+        .registerTypeAdapter(Instant::class.java, InstantTypeAdapter)
+        .create(),
     val httpClient: HttpClient = HttpClient(OkHttp) {
         engine {
             config {
@@ -26,20 +53,18 @@ internal data class HttpDockerClientContext(
             }
         }
         install(ContentNegotiation) {
-            json(json)
+            gson {
+                registerTypeAdapterFactory(tp)
+                registerTypeAdapter(Instant::class.java, InstantTypeAdapter)
+            }
         }
-    },
+    }
 )
 
 class HttpDockerClient internal constructor(
-    internal val context: HttpDockerClientContext = HttpDockerClientContext(),
+    internal val context: HttpDockerClientContext = HttpDockerClientContext()
 ) : DockerClient {
     private val httpClient get() = context.httpClient
-
-    suspend operator fun invoke(block: suspend HttpDockerClient.() -> Unit) {
-        block(this)
-    }
-
     suspend fun info(): DockerInfo {
         return httpClient.get("/info").body()
     }
@@ -47,8 +72,6 @@ class HttpDockerClient internal constructor(
     suspend fun version(): DockerVersion {
         return httpClient.get("/version").body()
     }
-
-    private val coroutineScope = CoroutineScope(httpClient.coroutineContext)
 
     private val containerScope = ContainerScope(this)
 
@@ -65,6 +88,13 @@ class HttpDockerClient internal constructor(
 
 
 suspend fun main() {
-    println(HttpDockerClient().version())
-    println(HttpDockerClient().info())
+    HttpDockerClient {
+        println(version())
+        println(info())
+        Containers {
+            println(list {
+                all = true
+            })
+        }
+    }
 }

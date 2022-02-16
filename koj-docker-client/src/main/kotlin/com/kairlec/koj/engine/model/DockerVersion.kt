@@ -1,55 +1,46 @@
 package com.kairlec.koj.engine.model
 
 
-import com.kairlec.koj.engine.serialzer.InstantSerializer
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.google.gson.annotations.SerializedName
 import java.time.Instant
 
-@Serializable
 data class DockerVersion(
-    @SerialName("ApiVersion")
+    @SerializedName("ApiVersion")
     val apiVersion: String, // 1.40
-    @SerialName("Arch")
+    @SerializedName("Arch")
     val arch: String, // amd64
-    @SerialName("BuildTime")
-    @Serializable(with = InstantSerializer::class)
+    @SerializedName("BuildTime")
     val buildTime: Instant, // 2020-06-22T15:49:27.000000000+00:00
-    @SerialName("Components")
+    @SerializedName("Components")
     val components: List<Component>,
-    @SerialName("Experimental")
+    @SerializedName("Experimental")
     val experimental: Boolean = false, // true
-    @SerialName("GitCommit")
+    @SerializedName("GitCommit")
     val gitCommit: String, // 48a66213fe
-    @SerialName("GoVersion")
+    @SerializedName("GoVersion")
     val goVersion: String, // go1.13.14
-    @SerialName("KernelVersion")
+    @SerializedName("KernelVersion")
     val kernelVersion: String, // 4.19.76-linuxkit
-    @SerialName("MinAPIVersion")
+    @SerializedName("MinAPIVersion")
     val minAPIVersion: String, // 1.12
-    @SerialName("Os")
+    @SerializedName("Os")
     val os: String, // linux
-    @SerialName("Platform")
+    @SerializedName("Platform")
     val platform: Platform,
-    @SerialName("Version")
+    @SerializedName("Version")
     val version: String // 19.03.12
 ) {
-    @Serializable
     data class Component(
-        @SerialName("Details")
-        val details: Details,
-        @SerialName("Name")
+        @SerializedName("Details")
+        val details: Map<String, String>,
+        @SerializedName("Name")
         val name: String, // Engine
-        @SerialName("Version")
+        @SerializedName("Version")
         val version: String // 19.03.12
-    ) {
-        @Serializable
-        class Details
-    }
+    )
 
-    @Serializable
     data class Platform(
-        @SerialName("Name")
+        @SerializedName("Name")
         val name: String // string
     )
 }

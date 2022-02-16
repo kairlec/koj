@@ -1,100 +1,54 @@
-@file:OptIn(ExperimentalSerializationApi::class)
-
 package com.kairlec.koj.engine.extend
 
+import com.google.gson.annotations.SerializedName
 import com.kairlec.koj.engine.HttpDockerClient
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import kotlinx.serialization.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.experimental.ExperimentalTypeInference
 
-@Serializable
 enum class Health {
-    @SerialName("starting")
     STARTING,
-
-    @SerialName("healthy")
     HEALTHY,
-
-    @SerialName("unhealthy")
     UNHEALTHY,
-
-    @SerialName("none")
     NONE
 }
 
-@Serializable
 enum class Isolation {
-    @SerialName("default")
     DEFAULT,
-
-    @SerialName("process")
     PROCESS,
-
-    @SerialName("hyperv")
     HYPERV,
 }
 
-@Serializable
 enum class Status {
-    @SerialName("created")
     CREATED,
-
-    @SerialName("restarting")
     RESTARTING,
-
-    @SerialName("running")
     RUNNING,
-
-    @SerialName("removing")
     REMOVING,
-
-    @SerialName("paused")
     PAUSED,
-
-    @SerialName("exited")
     EXITED,
-
-    @SerialName("dead")
     DEAD,
 }
 
 class ContainerScope(private val httpDockerClient: HttpDockerClient) {
-    @Serializable
     class ContainersListRequestFilterScope(
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var ancestor: List<String>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var before: List<String>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var expose: List<String>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var exited: List<Int>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var health: List<Health>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var id: List<String>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var isolation: List<Isolation>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var isTask: List<Boolean>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var label: List<String>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var name: List<String>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var network: List<String>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var publish: List<String>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var since: List<String>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var status: List<Status>? = null,
-        @EncodeDefault(EncodeDefault.Mode.NEVER)
         var volume: List<String>? = null,
     )
 
@@ -111,7 +65,7 @@ class ContainerScope(private val httpDockerClient: HttpDockerClient) {
 
     suspend fun list(block: ContainersListRequestBuilder.() -> Unit): String {
         val request = ContainersListRequestBuilder().apply(block)
-        val filters = request.filters?.let(httpDockerClient.context.json::encodeToString)
+        val filters = request.filters?.let(httpDockerClient.context.json::toJson)
         val url = buildQuery("/containers/json") {
             request.all?.let { "all" on it }
             request.limit?.let { "limit" on it }
