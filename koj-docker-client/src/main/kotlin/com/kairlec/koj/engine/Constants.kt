@@ -6,7 +6,6 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.experimental.ExperimentalTypeInference
 
-@DockerClientDSL
 class BuildQueryScope(internal val pairs: MutableList<Pair<String, String?>>) {
     infix fun String.on(value: Any) {
         pairs += this.encodeURLQueryComponent() to value.toString().encodeURLQueryComponent()

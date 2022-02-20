@@ -6,11 +6,20 @@ import com.github.dockerjava.api.model.*
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient
-import com.github.dockerjava.transport.DockerHttpClient
 import com.kairlec.koj.sandbox.Sandbox
 import mu.KotlinLogging
-import java.io.*
+import java.io.ByteArrayInputStream
+import java.io.InputStream
+import java.io.OutputStream
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
 import java.time.Duration
+
+fun makePiped(): Pair<InputStream, OutputStream> {
+    val pipedOutputStream = PipedOutputStream()
+    val pipedInputStream = PipedInputStream(pipedOutputStream)
+    return Pair(pipedInputStream, pipedOutputStream)
+}
 
 object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerSandboxCompileConfig> {
     private val log = KotlinLogging.logger {}
@@ -41,7 +50,7 @@ object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerS
         }
     }
 
-    override fun run(runConfig: DockerSandboxRunConfig): InputStream {
+    override fun run(runConfig: DockerSandboxRunConfig, block: (InputStream) -> Unit) {
         val result = dockerClient.createContainerCmd(runConfig.image)
             .withHostConfig(
                 HostConfig.newHostConfig()
@@ -60,19 +69,17 @@ object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerS
             .withTty(true)
             .exec()
         dockerClient.startContainerCmd(result.id).exec()
-        val stdin = PipedInputStream()
-        val inOutputStream = PipedOutputStream(stdin)
-        val pipedOutputStream = PipedOutputStream()
-        val pipedInputStream = PipedInputStream(pipedOutputStream)
-        val start = dockerClient
+        val (pipedInputStream, pipedOutputStream) = makePiped()
+        val attach = dockerClient
             .attachContainerCmd(result.id)
-            .withStdIn(stdin)
+            .withStdIn(ByteArrayInputStream(runConfig.input.toByteArray()))
             .withFollowStream(true)
             .withStdOut(true)
             .withStdErr(true)
             .exec(object : Adapter<Frame>() {
                 override fun onNext(frame: Frame) {
                     pipedOutputStream.write(frame.payload)
+                    pipedOutputStream.flush()
                 }
 
                 override fun onComplete() {
@@ -80,9 +87,8 @@ object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerS
                     pipedOutputStream.close()
                 }
             })
-        inOutputStream.write(runConfig.input.toByteArray())
-        inOutputStream.close()
-        start.awaitCompletion()
+        block(pipedInputStream)
+        attach.awaitCompletion()
     }
 
     fun run(image: String) {
@@ -110,13 +116,15 @@ fun main() {
 
     Docker.run(
         DockerSandboxRunConfig(
-            "ubuntu:20.04",
-            "/home/kairlec/KOJ/sample",
-            listOf("/home/kairlec/KOJ/sample/main"),
-            "kairlec",
-            "WOOOOOOORLD\n\r\n"
+            image = "ubuntu:20.04",
+            workspace = "/home/kairlec/KOJ/sample",
+            executable = listOf("/home/kairlec/KOJ/sample/main"),
+            namespace = "kairlec",
+            input = "WOOOOOOORLD\r\n"
         )
-    ).readAllBytes().toString(Charsets.UTF_8).let {
-        println(it)
+    ) {
+        it.readAllBytes().toString(Charsets.UTF_8).let {
+            println(it)
+        }
     }
 }

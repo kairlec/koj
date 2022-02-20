@@ -83,13 +83,148 @@ data class CreateContainerRequest(
     var volumes: Volumes? = null,
 
     @JsonProperty("WorkingDir")
-    var workingDir: String? = null // string
+    var workingDir: String? = null, // string
+
+    @JsonProperty("HostConfig")
+    var hostConfig: HostConfig? = null
 ) {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class HostConfig(
+        @JsonProperty("AutoRemove")
+        var autoRemove: Boolean? = null, // true
+        @JsonProperty("Binds")
+        var binds: List<String>? = null,
+        @JsonProperty("BlkioDeviceReadBps")
+        var blkioDeviceReadBps: List<Any>? = null,
+        @JsonProperty("BlkioDeviceReadIOps")
+        var blkioDeviceReadIOps: List<Any>? = null,
+        @JsonProperty("BlkioDeviceWriteBps")
+        var blkioDeviceWriteBps: List<Any>? = null,
+        @JsonProperty("BlkioDeviceWriteIOps")
+        var blkioDeviceWriteIOps: List<Any>? = null,
+        @JsonProperty("BlkioWeight")
+        var blkioWeight: Int? = null, // 300
+        @JsonProperty("BlkioWeightDevice")
+        var blkioWeightDevice: List<Any>? = null,
+        @JsonProperty("CapAdd")
+        var capAdd: List<Any>? = null,
+        @JsonProperty("CapDrop")
+        var capDrop: List<Any>? = null,
+        @JsonProperty("CgroupParent")
+        var cgroupParent: String? = null,
+        @JsonProperty("CpuPercent")
+        var cpuPercent: Int? = null, // 80
+        @JsonProperty("CpuPeriod")
+        var cpuPeriod: Int? = null, // 100000
+        @JsonProperty("CpuQuota")
+        var cpuQuota: Int? = null, // 50000
+        @JsonProperty("CpuRealtimePeriod")
+        var cpuRealtimePeriod: Int? = null, // 1000000
+        @JsonProperty("CpuRealtimeRuntime")
+        var cpuRealtimeRuntime: Int? = null, // 10000
+        @JsonProperty("CpuShares")
+        var cpuShares: Int? = null, // 512
+        @JsonProperty("CpusetCpus")
+        var cpusetCpus: String? = null, // 0,1
+        @JsonProperty("CpusetMems")
+        var cpusetMems: String? = null, // 0,1
+        @JsonProperty("DeviceRequests")
+        var deviceRequests: List<Any>? = null,
+        @JsonProperty("Devices")
+        var devices: List<Any>? = null,
+        @JsonProperty("Dns")
+        var dns: List<Any>? = null,
+        @JsonProperty("DnsOptions")
+        var dnsOptions: List<Any>? = null,
+        @JsonProperty("DnsSearch")
+        var dnsSearch: List<Any>? = null,
+        @JsonProperty("GroupAdd")
+        var groupAdd: List<Any>? = null,
+        @JsonProperty("KernelMemory")
+        var kernelMemory: Int? = null, // 0
+        @JsonProperty("Links")
+        var links: List<Any>? = null,
+        @JsonProperty("MaximumIOBps")
+        var maximumIOBps: Int? = null, // 0
+        @JsonProperty("MaximumIOps")
+        var maximumIOps: Int? = null, // 0
+        @JsonProperty("Memory")
+        var memory: Int? = null, // 0
+        @JsonProperty("MemoryReservation")
+        var memoryReservation: Int? = null, // 0
+        @JsonProperty("MemorySwap")
+        var memorySwap: Int? = null, // 0
+        @JsonProperty("MemorySwappiness")
+        var memorySwappiness: Int? = null, // 60
+        @JsonProperty("NanoCpus")
+        var nanoCpus: Int? = null, // 500000
+        @JsonProperty("NetworkMode")
+        var networkMode: String? = null, // bridge
+        @JsonProperty("OomKillDisable")
+        var oomKillDisable: Boolean? = null, // false
+        @JsonProperty("OomScoreAdj")
+        var oomScoreAdj: Int? = null, // 500
+        @JsonProperty("PidMode")
+        var pidMode: String? = null,
+        @JsonProperty("PidsLimit")
+        var pidsLimit: Int? = null, // 0
+        @JsonProperty("Privileged")
+        var privileged: Boolean? = null, // false
+        @JsonProperty("PublishAllPorts")
+        var publishAllPorts: Boolean? = null, // false
+        @JsonProperty("ReadonlyRootfs")
+        var readonlyRootfs: Boolean? = null, // false
+        @JsonProperty("RestartPolicy")
+        var restartPolicy: RestartPolicy? = null,
+        @JsonProperty("SecurityOpt")
+        var securityOpt: List<Any>? = null,
+        @JsonProperty("ShmSize")
+        var shmSize: Int? = null, // 67108864
+        @JsonProperty("StorageOpt")
+        var storageOpt: Map<String, String>? = null,
+        @JsonProperty("Ulimits")
+        var ulimits: List<Any>? = null,
+        @JsonProperty("VolumeDriver")
+        var volumeDriver: String? = null,
+        @JsonProperty("VolumesFrom")
+        var volumesFrom: List<Any>? = null,
+    ) {
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        sealed class RestartPolicy {
+            @get:JsonProperty("Name")
+            abstract val name: String
+
+            @get:JsonProperty("MaximumRetryCount")
+            open val maximumRetryCount: Int? = null
+
+            object Never : RestartPolicy() {
+                override val name: String = "no"
+            }
+
+            object Always : RestartPolicy() {
+                override val name: String = "always"
+            }
+
+            object UnlessStopped : RestartPolicy() {
+                override val name: String = "unless-stopped"
+            }
+
+            class OnFailure(override val maximumRetryCount: Int) : RestartPolicy() {
+                override val name: String
+                    get() = "on-failure"
+            }
+        }
+    }
+
+    fun hostConfig(block: HostConfig.() -> Unit) {
+        hostConfig = HostConfig().apply(block)
+    }
+
     @JsonSerialize(using = ExposedPorts.ExposedPortsSerializer::class)
     data class ExposedPorts(
         private val list: List<ExposedPort>
     ) : List<ExposedPorts.ExposedPort> by list {
-        class ExposedPort(
+        data class ExposedPort(
             val port: Int,
             val type: PortType
         ) {
@@ -117,7 +252,7 @@ data class CreateContainerRequest(
             }
         }
     }
-
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     data class HealthCheck(
         @JsonProperty("Interval")
         var interval: Int? = null, // 0
@@ -234,7 +369,7 @@ class ContainersListRequestBuilder(
     var limit: Int? = null,
     var size: Boolean? = null,
     internal var filters: ContainersListRequestFilterScope? = null,
-){
+) {
     @DockerClientDSL
     fun filters(block: ContainersListRequestFilterScope.() -> Unit) {
         filters = ContainersListRequestFilterScope().apply(block)
