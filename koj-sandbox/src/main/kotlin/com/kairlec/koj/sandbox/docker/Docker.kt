@@ -1,18 +1,16 @@
 package com.kairlec.koj.sandbox.docker
 
 import com.github.dockerjava.api.DockerClient
-import com.github.dockerjava.api.async.ResultCallback.Adapter
-import com.github.dockerjava.api.model.*
+import com.github.dockerjava.api.model.AccessMode
+import com.github.dockerjava.api.model.Bind
+import com.github.dockerjava.api.model.HostConfig
+import com.github.dockerjava.api.model.Volume
 import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient
 import com.kairlec.koj.sandbox.Sandbox
 import mu.KotlinLogging
-import java.io.ByteArrayInputStream
-import java.io.InputStream
-import java.io.OutputStream
-import java.io.PipedInputStream
-import java.io.PipedOutputStream
+import java.io.*
 import java.time.Duration
 
 fun makePiped(): Pair<InputStream, OutputStream> {
@@ -50,45 +48,57 @@ object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerS
         }
     }
 
-    override fun run(runConfig: DockerSandboxRunConfig, block: (InputStream) -> Unit) {
-        val result = dockerClient.createContainerCmd(runConfig.image)
-            .withHostConfig(
-                HostConfig.newHostConfig()
-                    .withBinds(Bind(runConfig.workspace, Volume(runConfig.workspace), AccessMode.ro))
-                    .withAutoRemove(true)
-                // todo 限制资源
-            )
-            .withWorkingDir(runConfig.workspace)
-            .withNetworkDisabled(true)
-            .withName(runConfig.namespace)
-            .withCmd(runConfig.executable)
-            .withStdinOpen(true)
-            .withAttachStderr(true)
-            .withAttachStdout(true)
-            .withStdInOnce(true)
-            .withTty(true)
-            .exec()
-        dockerClient.startContainerCmd(result.id).exec()
-        val (pipedInputStream, pipedOutputStream) = makePiped()
-        val attach = dockerClient
-            .attachContainerCmd(result.id)
-            .withStdIn(ByteArrayInputStream(runConfig.input.toByteArray()))
-            .withFollowStream(true)
-            .withStdOut(true)
-            .withStdErr(true)
-            .exec(object : Adapter<Frame>() {
-                override fun onNext(frame: Frame) {
-                    pipedOutputStream.write(frame.payload)
-                    pipedOutputStream.flush()
-                }
-
-                override fun onComplete() {
-                    super.onComplete()
-                    pipedOutputStream.close()
-                }
-            })
-        block(pipedInputStream)
-        attach.awaitCompletion()
+    override fun run(runConfig: DockerSandboxRunConfig): String {
+        return TempDirectory.create(runConfig.workspace).use {
+            val createResult = dockerClient.createContainerCmd(runConfig.image)
+                .withHostConfig(
+                    HostConfig.newHostConfig()
+                        .withBinds(Bind(it.absolutePath, Volume("/tmp/output"), AccessMode.rw))
+                        .withAutoRemove(true)
+                )
+                .withWorkingDir(runConfig.workspace)
+                .withNetworkDisabled(true)
+                .withName(runConfig.namespace)
+                .withCmd(runConfig.executable)
+                .withStdinOpen(true)
+                .withAttachStdin(true)
+                .withStdInOnce(true)
+                .withTty(true)
+                .exec()
+            dockerClient.startContainerCmd(createResult.id).exec()
+            val attachResult = dockerClient
+                .attachContainerCmd(createResult.id)
+                .withStdIn(ByteArrayInputStream(runConfig.input.toByteArray()))
+                .withFollowStream(true)
+                .withStdErr(true)
+                .start()
+            attachResult.awaitCompletion()
+            it.readText()
+//        val (pipedInputStream, pipedOutputStream) = makePiped()
+//        val logListenResult = dockerClient.logContainerCmd(createResult.id)
+//            .withStdOut(true)
+//            .withFollowStream(true)
+//            .exec(object : Adapter<Frame>() {
+//                override fun onNext(frame: Frame) {
+//                    pipedOutputStream.write(frame.payload)
+//                    pipedOutputStream.flush()
+//                }
+//
+//                override fun onComplete() {
+//                    super.onComplete()
+//                    pipedOutputStream.close()
+//                }
+//            })
+//        logListenResult.awaitStarted()
+//        val attachResult = dockerClient
+//            .attachContainerCmd(createResult.id)
+//            .withStdIn(ByteArrayInputStream(runConfig.input.toByteArray()))
+//            .withFollowStream(true)
+//            .withStdErr(true)
+//            .start()
+//        block(pipedInputStream)
+//        attachResult.awaitCompletion()
+        }
     }
 
     fun run(image: String) {
@@ -120,11 +130,11 @@ fun main() {
             workspace = "/home/kairlec/KOJ/sample",
             executable = listOf("/home/kairlec/KOJ/sample/main"),
             namespace = "kairlec",
-            input = "WOOOOOOORLD\r\n"
+            input = "WOOOOOOORLD\n"
         )
     ) {
         it.readAllBytes().toString(Charsets.UTF_8).let {
-            println(it)
+            println("result=[${it}]")
         }
     }
 }

@@ -12,3 +12,4 @@ out/
 output/
 CMakePresets.json
 CMakeSettings.json
+.vs/

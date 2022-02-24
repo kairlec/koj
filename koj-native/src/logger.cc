@@ -18,7 +18,7 @@ const std::string LOG_LEVEL_NOTE[]{ "FATAL", "WARNING", "INFO", "DEBUG" };
 void write_time(std::ofstream& log_stream) {
 	auto t = std::time(nullptr);
 	auto tm = *std::localtime(&t);
-	log_stream.imbue(std::locale("zh_CN.UTF-8"));
+	//log_stream.imbue(std::locale("zh_CN.UTF-8"));
 	log_stream << std::put_time(&tm, "%c %Z");
 }
 

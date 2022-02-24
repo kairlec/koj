@@ -35,6 +35,9 @@ void child_process(const struct child_config& config) {
 	cfile_holder out_file(_KOJ_STDOUT_PATH, "w");
 	out_file.redirect_to(stdout);
 
+	cfile_holder in_file(_KOJ_STDIN_PATH, "r");
+	in_file.redirect_to(stdin);
+
 	execve(config.exe_path, config.args, config.env);
 	throw EXECVE_EXCEPTION();
 }

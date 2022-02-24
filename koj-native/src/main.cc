@@ -161,6 +161,7 @@ void tokenize(std::string&& s, char* block[], std::string&& del = ";") {
 		end = s.find(del, start);
 	}
 	block[cnt++] = (char*)s.substr(start, end - start).c_str();
+	block[cnt++] = nullptr;
 }
 int main() {
 	int max_cpu_time = atoi(std::getenv("MAX_CPU_TIME"));
@@ -192,6 +193,19 @@ int main() {
 	catch (koj_exception& koje) {
 		log_write(LOG_LEVEL_FATAL, __FILE__, __LINE__, log_stream, { koje.what() });
 		log_close(log_stream);
+
+		std::ofstream status_stream;
+		status_stream.open(_KOJ_STATUS_PATH, std::ios::out | std::ios::trunc);
+		status_stream << "CPU_TIME=" << result.cpu_time << std::endl;
+		status_stream << "REAL_TIME=" << result.real_time << std::endl;
+		status_stream << "MEMORY=" << result.memory << std::endl;
+		status_stream << "SIGNAL=" << result.signal << std::endl;
+		status_stream << "EXIT_CODE=" << result.exit_code << std::endl;
+		status_stream << "ERROR=" << result.error << std::endl;
+		status_stream << "RESULT=" << result.result << std::endl;
+		status_stream << "WRONG=" << koje.what() << std::endl;
+		status_stream.close();
+
 		raise(SIGUSR1);
 		exit(EXIT_FAILURE);
 	}
@@ -208,7 +222,7 @@ struct run_result {
 	*/
 
 	std::ofstream status_stream;
-	status_stream.open(_KOJ_STATUS_PATH);
+	status_stream.open(_KOJ_STATUS_PATH, std::ios::out | std::ios::trunc);
 	status_stream << "CPU_TIME=" << result.cpu_time << std::endl;
 	status_stream << "REAL_TIME=" << result.real_time << std::endl;
 	status_stream << "MEMORY=" << result.memory << std::endl;

@@ -3,6 +3,7 @@
 #define _KOJ_DEFINED_H
 
 #define _KOJ_LOG_PATH "/tmp/koj/log"
+#define _KOJ_STDIN_PATH "/tmp/koj/stdin"
 #define _KOJ_STDOUT_PATH "/tmp/koj/stdout"
 #define _KOJ_STATUS_PATH "/tmp/koj/status"
 
