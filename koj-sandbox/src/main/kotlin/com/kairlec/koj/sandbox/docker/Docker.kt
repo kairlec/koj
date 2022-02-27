@@ -79,20 +79,6 @@ object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerS
         }
     }
 
-    fun run(image: String) {
-        dockerClient.createContainerCmd("gcc:11")
-            .withWorkingDir("/usr/src/myapp")
-            .withHostConfig(
-                HostConfig.newHostConfig()
-                    .withBinds(Bind("/usr/src/myapp", Volume("/usr/src/myapp"), AccessMode.ro))
-                    .withAutoRemove(true)
-                // todo 限制资源
-            )
-            .withCmd("gcc", "-o", "myapp", "myapp.c")
-            .withNetworkDisabled(true)
-            .exec()
-    }
-
     override fun compile(compileConfig: DockerSandboxCompileConfig): String {
         return ""
     }

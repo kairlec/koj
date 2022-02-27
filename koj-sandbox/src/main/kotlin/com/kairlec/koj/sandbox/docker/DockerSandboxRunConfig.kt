@@ -30,7 +30,7 @@ data class KOJEnv(
     }
 }
 
-class DockerSandboxRunConfig(
+data class DockerSandboxRunConfig(
     val image: String,
     val namespace: String,
     val exeMount: Pair<String, String>,

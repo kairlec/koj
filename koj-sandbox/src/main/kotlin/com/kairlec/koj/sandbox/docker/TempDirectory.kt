@@ -1,7 +1,6 @@
 package com.kairlec.koj.sandbox.docker
 
 import java.io.Closeable
-import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
 
