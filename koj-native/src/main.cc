@@ -3,6 +3,7 @@
 #include "child.h"
 #include "logger.h"
 
+#include <iostream>
 #include <fstream>
 
 #include <csignal>
@@ -19,7 +20,11 @@
 #define PTHREAD_ERROR -2  // 线程创建出错
 #define WAIT_ERROR -3  // 等待进程结束时出错
 
-#define ERROR_EXIT(error_code) error_exit(log_stream,_result,error_code,__FILE__, __LINE__)
+#define ERROR_EXIT(error_code) \
+	{\
+		error_exit(log_stream,_result,error_code,__FILE__, __LINE__); \
+		return; \
+	}
 
 struct run_result {
 	int cpu_time = 0;
@@ -35,7 +40,6 @@ void error_exit(std::ofstream& log_stream, run_result& _result, const int error_
 	log_write(LOG_LEVEL_FATAL, __source_file, __line_number, log_stream, { std::to_string(error_code) });
 	_result.error = error_code;
 	log_close(log_stream);
-
 }
 
 enum {
@@ -88,13 +92,16 @@ void run(child_config& _config, run_result& _result) {
 
 		if (_config.max_real_time > 0) {
 			if (pthread_cancel(tid) != 0) {
-				// 不知道做啥
 			};
 		}
 
+
+		// 这就草了,正常运行没问题,在docker-gcc:9.4镜像中一直是非0
+		// 真是日了狗了,死活找不到问题
 		if (WIFSIGNALED(status) != 0) {
 			_result.signal = WTERMSIG(status);
 		}
+		// Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck Fuck
 
 		if (_result.signal == SIGUSR1) {
 			_result.result = SYSTEM_ERROR;
@@ -151,7 +158,12 @@ struct child_config {
 	char** env;
 };
 */
-void tokenize(std::string&& s, char* block[], std::string&& del = ";") {
+void tokenize(char* str, char* block[], std::string&& del = ";") {
+	if (str == nullptr) {
+		block[0] = nullptr;
+		return;
+	}
+	std::string s(str);
 	int start = 0;
 	int end = s.find(del);
 	int cnt = 0;
@@ -163,15 +175,25 @@ void tokenize(std::string&& s, char* block[], std::string&& del = ";") {
 	block[cnt++] = (char*)s.substr(start, end - start).c_str();
 	block[cnt++] = nullptr;
 }
-int main() {
-	int max_cpu_time = atoi(std::getenv("MAX_CPU_TIME"));
-	int max_real_time = atoi(std::getenv("MAX_REAL_TIME"));
-	long max_memory = atol(std::getenv("MAX_MEMORY"));
-	long max_stack = atol(std::getenv("MAX_STACK"));
-	int max_process_number = atoi(std::getenv("MAX_PROCESS_NUMBER"));
-	long max_output_size = atol(std::getenv("MAX_OUTPUT_SIZE"));
-	bool memory_limit_check_only = atoi(std::getenv("MEMORY_LIMIT_CHECK_ONLY")) != 0;
-	char* exe_path = std::getenv("EXE_PATH");
+
+char* get_env(const char* env_name, bool nullable = false) {
+	char* env = std::getenv(env_name);
+	if (env == nullptr && !nullable) {
+		std::cerr << "ERROR: Env Variable \"" << env_name << "\" is not set." << std::endl;
+		exit(-1);
+	}
+	return env;
+}
+
+void run() {
+	int max_cpu_time = atoi(get_env("MAX_CPU_TIME"));
+	int max_real_time = atoi(get_env("MAX_REAL_TIME"));
+	long max_memory = atol(get_env("MAX_MEMORY"));
+	long max_stack = atol(get_env("MAX_STACK"));
+	int max_process_number = atoi(get_env("MAX_PROCESS_NUMBER"));
+	long max_output_size = atol(get_env("MAX_OUTPUT_SIZE"));
+	bool memory_limit_check_only = atoi(get_env("MEMORY_LIMIT_CHECK_ONLY")) != 0;
+	char* exe_path = get_env("EXE_PATH");
 	child_config config{
 		max_cpu_time,
 		max_real_time,
@@ -182,8 +204,8 @@ int main() {
 		memory_limit_check_only,
 		exe_path
 	};
-	tokenize(std::getenv("ARGS"), config.args);
-	tokenize(std::getenv("ENV"), config.env);
+	tokenize(get_env("ARGS", true), config.args);
+	tokenize(get_env("ENV", true), config.env);
 
 	run_result result;
 	std::ofstream log_stream = log_open(_KOJ_LOG_PATH);
@@ -193,6 +215,8 @@ int main() {
 	catch (koj_exception& koje) {
 		log_write(LOG_LEVEL_FATAL, __FILE__, __LINE__, log_stream, { koje.what() });
 		log_close(log_stream);
+
+		std::cerr << "error to run with koj exception:" << koje.what() << std::endl;
 
 		std::ofstream status_stream;
 		status_stream.open(_KOJ_STATUS_PATH, std::ios::out | std::ios::trunc);
@@ -231,6 +255,16 @@ struct run_result {
 	status_stream << "ERROR=" << result.error << std::endl;
 	status_stream << "RESULT=" << result.result << std::endl;
 	status_stream.close();
+}
+
+int main() {
+	try {
+		run();
+	}
+	catch (std::exception& exp) {
+		std::cerr << "WARNING: RUN ERROR" << std::endl;
+		std::cerr << exp.what() << std::endl;
+	}
 
 	return 0;
 }

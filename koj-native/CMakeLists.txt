@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16.3)
+cmake_minimum_required(VERSION 3.13.4)
 project(koj CXX)
 
 set(CMAKE_CXX_FLAGS "-g -Wall -Werror -O3 -std=c++11 -pie -fPIC")

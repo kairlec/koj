@@ -63,10 +63,7 @@ class cfile_holder {
 public:
 	cfile_holder(const char* const&& _path, const char* const&& mode = "w");
 	~cfile_holder() noexcept;
-	const int no() const noexcept;
-	void redirect_to(const cfile_holder& other) const;
 	void redirect_to(FILE* other) const;
-	void close() noexcept;
 	inline cfile_holder& operator<<(const char*& __s) noexcept;
 	inline cfile_holder& operator<<(const std::string& __s) noexcept;
 	const char* const path;

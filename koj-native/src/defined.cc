@@ -4,7 +4,7 @@
 #include <string>
 
 koj_exception::koj_exception(PRE_INFO_PLACEHOLDER, std::string&& _msg) :std::runtime_error(_msg), source_file(__source_file), line_number(__line_number), msg(_msg) {}
-koj_exception::koj_exception(PRE_INFO_PLACEHOLDER, std::string& _msg) :std::runtime_error(_msg), source_file(__source_file), line_number(__line_number), msg(_msg) {}
+koj_exception::koj_exception(PRE_INFO_PLACEHOLDER, std::string& _msg) : std::runtime_error(_msg), source_file(__source_file), line_number(__line_number), msg(_msg) {}
 koj_exception::~koj_exception()noexcept {}
 const char* koj_exception::what()const noexcept {
 	return msg.c_str();
@@ -45,25 +45,12 @@ cfile_holder::~cfile_holder() noexcept {
 		file = nullptr;
 	}
 }
-const int cfile_holder::no() const noexcept {
-	return fileno(file);
-}
-void cfile_holder::redirect_to(const cfile_holder& other) const {
-	const int result = dup2(no(), other.no());
-	if (result == -1) {
-		throw DUP2_EXCEPTION(std::string(path) + ",rt=" + std::to_string(result));
-	}
-}
 void cfile_holder::redirect_to(FILE* other) const {
-	const int result = dup2(no(), fileno(other));
+	int thisno = fileno(file);
+	int otherno = fileno(other);
+	const int result = dup2(thisno, otherno);
 	if (result == -1) {
 		throw DUP2_EXCEPTION(std::string(path) + ",rt=" + std::to_string(result));
-	}
-}
-void cfile_holder::close()noexcept {
-	if (file != nullptr) {
-		fclose(file);
-		file = nullptr;
 	}
 }
 inline cfile_holder& cfile_holder::operator<<(const char*& __s) noexcept {
