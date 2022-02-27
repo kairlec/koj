@@ -64,7 +64,7 @@ object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerS
                             Bind(it.absolutePathString(), Volume("/tmp/koj"), AccessMode.rw),
                             Bind(stdin.absolutePathString(), Volume("/tmp/koj/stdin"), AccessMode.rw),
                         )
-//                        .withAutoRemove(true)
+                        .withAutoRemove(true)
                 )
                 .withEnv(runConfig.kojEnv.asList())
                 .withNetworkDisabled(true)

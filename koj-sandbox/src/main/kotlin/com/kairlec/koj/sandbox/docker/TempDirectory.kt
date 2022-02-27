@@ -9,7 +9,7 @@ class TempDirectory private constructor(
     private val path: Path
 ) : Closeable, Path by path {
     override fun close() {
-//        path.toFile().deleteRecursively()
+        path.toFile().deleteRecursively()
     }
 
     fun createFileWithContent(filename: String, content: String): Path {
