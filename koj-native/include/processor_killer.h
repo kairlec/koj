@@ -6,7 +6,7 @@
 
 struct timeout_args {
 	const pid_t& pid;
-	const int& timeout;
+	const long& timeout;
 };
 
 const int kill_pid(const pid_t& pid);

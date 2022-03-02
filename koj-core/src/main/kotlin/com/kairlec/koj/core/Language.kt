@@ -5,3 +5,7 @@ interface Language {
     val extension: String
     val version: String
 }
+
+interface LanguageSupport {
+    fun isSupported(language: Language): Boolean
+}

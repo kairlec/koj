@@ -1,9 +1,16 @@
 package com.kairlec.koj.sandbox
 
-import java.io.InputStream
+import com.kairlec.koj.common.TempDirectory
 
 interface Sandbox<I : SandboxInitConfig, R : SandboxRunConfig, C : SandboxCompileConfig> {
-    fun init(initConfig: I)
-    fun run(runConfig: R): SandboxOutput
-    fun compile(compileConfig: C): String
+    suspend fun init(initConfig: I)
+    suspend fun run(
+        tempDirectory: TempDirectory,
+        runConfig: R
+    ): SandboxOutput
+
+    suspend fun compile(
+        tempDirectory: TempDirectory,
+        compileConfig: C
+    ): SandboxOutput
 }

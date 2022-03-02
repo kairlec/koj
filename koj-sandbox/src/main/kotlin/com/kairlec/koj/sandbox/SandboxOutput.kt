@@ -10,7 +10,12 @@ enum class Result(val value: Int) {
     MEMORY_LIMIT_EXCEEDED(3),
     RUNTIME_ERROR(4),
     SYSTEM_ERROR(5),
+    OUTPUT_LIMIT_EXCEEDED(6),
     ;
+
+    fun isError(): Boolean {
+        return value != 0
+    }
 
     companion object {
         fun from(value: Int): Result {
@@ -20,10 +25,15 @@ enum class Result(val value: Int) {
 }
 
 enum class Error(val value: Int) {
+    NO_ERROR(0),
     FORK_ERROR(-1),
     PTHREAD_ERROR(-2),
     WAIT_ERROR(-3),
     ;
+
+    fun isError(): Boolean {
+        return value != 0
+    }
 
     companion object {
         fun from(value: Int): Error {
@@ -40,6 +50,7 @@ data class Status(
     val exitCode: Int,
     val error: Error,
     val result: Result,
+    val outputSize: Long,
     val wrong: String?
 ) {
     companion object {
@@ -55,6 +66,7 @@ data class Status(
                         properties.getProperty("EXIT_CODE").toInt(),
                         Error.from(properties.getProperty("ERROR").toInt()),
                         Result.from(properties.getProperty("RESULT").toInt()),
+                        properties.getProperty("OUTPUT_SIZE").toLong(),
                         properties.getProperty("WRONG")
                     )
                 }
@@ -70,7 +82,20 @@ value class Stdout(val value: String)
 value class Logging(val value: String)
 
 data class SandboxOutput(
-    val status: Status,
+    val containerCode: Int,
+    val status: Status?,
     val stdout: Stdout?,
     val logging: Logging?,
-)
+) {
+    fun exitCode(): Int {
+        return if (containerCode == 0) {
+            status?.exitCode ?: -1
+        } else {
+            containerCode
+        }
+    }
+
+    fun isError(): Boolean {
+        return exitCode() != 0
+    }
+}

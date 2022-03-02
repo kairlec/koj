@@ -6,12 +6,12 @@
 #include "logger.h"
 
 struct child_config {
-	int max_cpu_time;
-	int max_real_time;
-	long max_memory;
-	long max_stack;
-	int max_process_number;
-	long max_output_size;
+	long max_cpu_time;
+	long max_real_time;
+	long long max_memory;
+	long long max_stack;
+	long max_process_number;
+	long long max_output_size;
 	bool memory_limit_check_only;
 	char* exe_path;
 	char* args[64];
