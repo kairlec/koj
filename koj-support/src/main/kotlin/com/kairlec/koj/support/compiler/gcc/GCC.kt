@@ -52,7 +52,6 @@ abstract class GCC : KojCompiler {
         }
         val sourceFileName = "main.${suffix}"
         val compileArguments = buildList {
-            add(compiler)
             add("-std=${stdVersion}")
             add("-Wall")
             define.forEach {

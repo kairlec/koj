@@ -30,5 +30,6 @@ RUN apt-get update && \
     chmod +x /usr/local/share/kotlinc/bin/kotlinc && \
     ln -s /usr/local/share/kotlinc/bin/kotlinc /usr/sbin/kotlinc
 COPY --from=build /usr/src/koj /usr/sbin/
+COPY policy/java.policy /etc/policy/java.policy
 
 CMD ["koj"]
