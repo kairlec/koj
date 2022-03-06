@@ -168,22 +168,41 @@ struct child_config {
 	char** env;
 };
 */
-void tokenize(char* str, char* block[], std::string&& del = ";") {
+int tokenize(char* str, char* block[], std::string&& del = ";") {
 	if (str == nullptr) {
 		block[0] = nullptr;
-		return;
+		return 0;
 	}
+#ifdef _KOJ_DEBUG
+	std::cout << "raw:" << str << std::endl;
+#endif // _KOJ_DEBUG
 	std::string s(str);
 	std::size_t start = 0;
 	std::size_t end = s.find(del);
 	std::size_t cnt = 0;
 	while (end != std::string::npos) {
-		block[cnt++] = (char*)s.substr(start, end - start).c_str();
+		auto substr = s.substr(start, end - start);
+		auto data = substr.c_str();
+		block[cnt] = new char[substr.size() + 1];
+		memcpy(block[cnt], data, substr.size() + 1);
+		cnt++;
 		start = end + del.size();
 		end = s.find(del, start);
 	}
-	block[cnt++] = (char*)s.substr(start, end - start).c_str();
-	block[cnt++] = nullptr;
+
+	auto substr = s.substr(start, end - start);
+	auto data = substr.data();
+	block[cnt] = new char[substr.size() + 1];
+	memcpy(block[cnt], data, substr.size() + 1);
+#ifdef _KOJ_DEBUG
+	std::cout << block[cnt] << std::endl;
+	if (cnt > 0) {
+		std::cout << "0->" << std::hex << reinterpret_cast<void*>(block[cnt - 1]) << std::endl;
+		std::cout << "1->" << std::hex << reinterpret_cast<void*>(block[cnt]) << std::endl;
+	}
+#endif // _KOJ_DEBUG
+	block[cnt + 1] = nullptr;
+	return cnt;
 }
 
 char* get_env(const char* env_name, bool nullable = false) {
@@ -192,10 +211,13 @@ char* get_env(const char* env_name, bool nullable = false) {
 		std::cerr << "ERROR: Env Variable \"" << env_name << "\" is not set." << std::endl;
 		exit(-1);
 	}
+
 	return env;
 }
 
 void run() {
+	bool keep_stdin = atoi(get_env("KEEP_STDIN")) != 0;
+	bool keep_stdout = atoi(get_env("KEEP_STDOUT")) != 0;
 	long max_cpu_time = atol(get_env("MAX_CPU_TIME"));
 	long max_real_time = atol(get_env("MAX_REAL_TIME"));
 	long long max_memory = atoll(get_env("MAX_MEMORY"));
@@ -203,19 +225,44 @@ void run() {
 	long max_process_number = atol(get_env("MAX_PROCESS_NUMBER"));
 	long long max_output_size = atoll(get_env("MAX_OUTPUT_SIZE"));
 	bool memory_limit_check_only = atoi(get_env("MEMORY_LIMIT_CHECK_ONLY")) != 0;
-	char* exe_path = get_env("EXE_PATH");
 	child_config config{
+		keep_stdin,
+		keep_stdout,
 		max_cpu_time,
 		max_real_time,
 		max_memory,
 		max_stack,
 		max_process_number,
 		max_output_size,
-		memory_limit_check_only,
-		exe_path
+		memory_limit_check_only
 	};
-	tokenize(get_env("ARGS", true), config.args);
-	tokenize(get_env("ENV", true), config.env);
+#ifdef _KOJ_DEBUG
+	std::cout << "args:" << std::endl;
+#endif
+	config.args[0] = get_env("EXE_PATH");
+	tokenize(get_env("ARGS", true), &config.args[1]);
+#ifdef _KOJ_DEBUG
+	std::cout << "end args" << std::endl;
+	std::cout << "env:" << std::endl;
+#endif
+	char* addon = get_env("ADDON_PATH");
+	int addon_length = strlen(addon);
+	char* env_path = get_env("PATH");
+	int env_length = strlen(env_path);
+	int length = addon_length + env_length;
+	config.env[0] = new char[length + 2 + 5];
+	memcpy(config.env[0], "PATH=", 5);
+	memcpy(&config.env[0][5], addon, addon_length);
+	config.env[0][addon_length+5] = ';';
+	memcpy(&config.env[0][addon_length + 6], env_path, env_length);
+	config.env[0][length] = '\0';
+#ifdef _KOJ_DEBUG
+	std::cout << "path=" << config.env[0] << std::endl;
+#endif
+	tokenize(get_env("ENV", true), &config.env[1]);
+#ifdef _KOJ_DEBUG
+	std::cout << "end env" << std::endl;
+#endif
 
 	run_result result;
 	std::ofstream log_stream = log_open(_KOJ_LOG_PATH);
@@ -226,7 +273,7 @@ void run() {
 		log_write(LOG_LEVEL_FATAL, __FILE__, __LINE__, log_stream, { koje.what() });
 		log_close(log_stream);
 
-		std::cerr << "error to run with koj exception:" << koje.what() << std::endl;
+		std::cerr << "error to run with koj exception(" << koje.source_file << "," << koje.line_number << "):" << koje.what() << std::endl;
 
 		std::ofstream status_stream;
 		status_stream.open(_KOJ_STATUS_PATH, std::ios::out | std::ios::trunc);

@@ -6,6 +6,26 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
+#ifdef _KOJ_DEBUG
+#include <iostream>
+#endif // _KOJ_DEBUG
+
+
+child_config::~child_config() {
+	for (int i = 1; i < MAX_ARRAY_LENGTH; i++) {
+		if (args[i] == nullptr) {
+			break;
+		}
+		delete[] args[i];
+	}
+	for (int i = 0; i < MAX_ARRAY_LENGTH; i++) {
+		if (env[i] == nullptr) {
+			break;
+		}
+		delete[] env[i];
+	}
+}
+
 void setrlimit_check(int&& __resource, const unsigned long int& value) {
 	rlimit max_statck{ value,value };
 	int return_code = setrlimit(__resource, &max_statck);
@@ -32,12 +52,34 @@ void child_process(const struct child_config& config) {
 	if (config.max_output_size > 0) {
 		setrlimit_check(RLIMIT_FSIZE, config.max_output_size);
 	}
-	cfile_holder out_file(_KOJ_STDOUT_PATH, "w");
-	out_file.redirect_to(stdout);
 
-	cfile_holder in_file(_KOJ_STDIN_PATH, "r");
-	in_file.redirect_to(stdin);
+#ifdef _KOJ_DEBUG
+	std::cout << "config.args:" << std::endl;
+	for (int i = 0; i < MAX_ARRAY_LENGTH; i++) {
+		if (config.args[i] == nullptr) {
+			break;
+		}
+		std::cout << config.args[i] << std::endl;
+	}
+	std::cout << "config.env:" << std::endl;
+	for (int i = 0; i < MAX_ARRAY_LENGTH; i++) {
+		if (config.env[i] == nullptr) {
+			break;
+		}
+		std::cout << config.env[i] << std::endl;
+	}
+#endif // _KOJ_DEBUG
 
-	execve(config.exe_path, config.args, config.env);
+	if (!config.keep_stdout) {
+		cfile_holder out_file(_KOJ_STDOUT_PATH, "w");
+		out_file.redirect_to(stdout);
+	}
+
+	if (!config.keep_stdin){
+    	cfile_holder in_file(_KOJ_STDIN_PATH, "r");
+	    in_file.redirect_to(stdin);
+	}
+
+	execve(config.args[0], config.args, config.env);
 	throw EXECVE_EXCEPTION();
 }

@@ -29,6 +29,7 @@ RUN apt-get update && \
     rm /usr/local/share/kotlin-compiler-1.6.10.zip && \
     chmod +x /usr/local/share/kotlinc/bin/kotlinc && \
     ln -s /usr/local/share/kotlinc/bin/kotlinc /usr/sbin/kotlinc
+ENV CLASSPATH /usr/local/share/kotlinc/lib/*
 COPY --from=build /usr/src/koj /usr/sbin/
 COPY policy/java.policy /etc/policy/java.policy
 

@@ -10,7 +10,6 @@ import com.github.dockerjava.core.DefaultDockerClientConfig
 import com.github.dockerjava.core.DockerClientImpl
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient
 import com.kairlec.koj.common.TempDirectory
-import com.kairlec.koj.sandbox.*
 import kotlinx.coroutines.suspendCancellableCoroutine
 import mu.KotlinLogging
 import java.time.Duration
@@ -19,12 +18,17 @@ import kotlin.coroutines.resumeWithException
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.readText
 
-object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerSandboxCompileConfig> {
+object Docker {
     private val log = KotlinLogging.logger {}
     private lateinit var dockerClient: DockerClient
 
+    private const val containerPathPrefix = "/tmp/koj"
 
-    override suspend fun init(initConfig: DockerSandboxInitConfig) {
+    fun resolve(path: String): String {
+        return "$containerPathPrefix/$path"
+    }
+
+    suspend fun init(initConfig: DockerSandboxInitConfig) {
         suspendCancellableCoroutine<Unit> { continuation ->
             try {
                 val config = DefaultDockerClientConfig.createDefaultConfigBuilder().build()
@@ -64,7 +68,7 @@ object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerS
         }
     }
 
-    override suspend fun run(tempDirectory: TempDirectory, runConfig: DockerSandboxRunConfig): SandboxOutput {
+    suspend fun run(tempDirectory: TempDirectory, runConfig: DockerSandboxRunConfig): KojDockerOutput {
         return suspendCancellableCoroutine { continuation ->
             try {
                 val stdin = tempDirectory.createFileWithContent("stdin", runConfig.input)
@@ -72,15 +76,16 @@ object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerS
                     .withHostConfig(
                         HostConfig.newHostConfig()
                             .withBinds(
-                                Bind(runConfig.exeMount.first, Volume(runConfig.exeMount.second), AccessMode.ro),
-                                Bind(tempDirectory.absolutePathString(), Volume("/tmp/koj"), AccessMode.rw),
-                                Bind(stdin.absolutePathString(), Volume("/tmp/koj/stdin"), AccessMode.ro),
+                                Bind(runConfig.exeMount.first, Volume(resolve(runConfig.exeMount.second)), AccessMode.ro),
+                                Bind(tempDirectory.absolutePathString(), Volume(containerPathPrefix), AccessMode.rw),
+                                Bind(stdin.absolutePathString(), Volume(resolve("stdin")), AccessMode.ro),
                             )
                             .withAutoRemove(true)
                     )
                     .withEnv(runConfig.kojEnv.asList())
                     .withNetworkDisabled(true)
                     .withName(runConfig.namespace)
+                    .withWorkingDir(containerPathPrefix)
                     .exec()
                 dockerClient.startContainerCmd(createResult.id).exec()
                 val exitCode = try {
@@ -98,17 +103,17 @@ object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerS
                 val log = tryRead("load log file failed") {
                     Logging(tempDirectory.resolve("log").readText())
                 }
-                continuation.resume(SandboxOutput(exitCode, status, stdout, log))
+                continuation.resume(KojDockerOutput(exitCode, status, stdout, log))
             } catch (e: Exception) {
                 continuation.resumeWithException(e)
             }
         }
     }
 
-    override suspend fun compile(
+    suspend fun compile(
         tempDirectory: TempDirectory,
         compileConfig: DockerSandboxCompileConfig
-    ): SandboxOutput {
+    ): KojDockerOutput {
         return suspendCancellableCoroutine { continuation ->
             try {
                 val sourceFile =
@@ -117,16 +122,16 @@ object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerS
                     .withHostConfig(
                         HostConfig.newHostConfig()
                             .withBinds(
-                                Bind(tempDirectory.absolutePathString(), Volume("/tmp/koj"), AccessMode.rw),
+                                Bind(tempDirectory.absolutePathString(), Volume(containerPathPrefix), AccessMode.rw),
                                 Bind(
                                     sourceFile.absolutePathString(),
-                                    Volume("/tmp/koj/${compileConfig.sourceFileName}"),
+                                    Volume(resolve(compileConfig.sourceFileName)),
                                     AccessMode.ro
                                 ),
                             )
                             .withAutoRemove(true)
                     )
-                    .withWorkingDir("/tmp/koj")
+                    .withWorkingDir(containerPathPrefix)
                     .withEnv(compileConfig.kojEnv.asList())
                     .withNetworkDisabled(true)
                     .withName(compileConfig.namespace)
@@ -147,38 +152,10 @@ object Docker : Sandbox<DockerSandboxInitConfig, DockerSandboxRunConfig, DockerS
                 val log = tryRead("load log file failed") {
                     Logging(tempDirectory.resolve("log").readText())
                 }
-                continuation.resume(SandboxOutput(exitCode, status, stdout, log))
+                continuation.resume(KojDockerOutput(exitCode, status, stdout, log))
             } catch (e: Exception) {
                 continuation.resumeWithException(e)
             }
         }
-    }
-}
-
-suspend fun main() {
-    Docker.init(DockerSandboxInitConfig(emptyList()))
-    TempDirectory.create("kairlec").use {
-        val output = Docker.run(
-            it,
-            DockerSandboxRunConfig(
-                image = "koj-clike:latest",
-                exeMount = "/home/kairlec/KOJ/sample/main" to "/root/main",
-                namespace = "kairlec",
-                input = "WOOOOOOORLD\n",
-                kojEnv = KOJEnv(
-                    -1,
-                    -1,
-                    -1,
-                    -1,
-                    -1,
-                    -1,
-                    true,
-                    "/root/main",
-                    emptyList(),
-                    emptyList(),
-                )
-            )
-        )
-        println(output)
     }
 }

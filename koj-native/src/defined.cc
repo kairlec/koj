@@ -7,7 +7,7 @@ koj_exception::koj_exception(PRE_INFO_PLACEHOLDER, std::string&& _msg) :std::run
 koj_exception::koj_exception(PRE_INFO_PLACEHOLDER, std::string& _msg) : std::runtime_error(_msg), source_file(__source_file), line_number(__line_number), msg(_msg) {}
 koj_exception::~koj_exception()noexcept {}
 const char* koj_exception::what()const noexcept {
-	return msg.c_str();
+	return ("koj_raw_exp:" + msg).c_str();
 }
 
 set_rlimit_exception::set_rlimit_exception(PRE_INFO_PLACEHOLDER, int& resources, int& return_code, std::string&& msg) : koj_exception(PRE_INFO_BODY, msg),
@@ -31,7 +31,7 @@ execve_exception::execve_exception(PRE_INFO_PLACEHOLDER) :koj_exception(PRE_INFO
 execve_exception::~execve_exception() noexcept {}
 
 const char* execve_exception::what()const noexcept {
-	return "";
+	return "execve_error";
 }
 
 cfile_holder::cfile_holder(const char* const&& _path, const char* const&& mode) : path(_path), file(fopen(_path, mode)) {

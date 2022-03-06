@@ -27,7 +27,7 @@ public:
 	koj_exception(PRE_INFO_PLACEHOLDER, std::string& _msg);
 	~koj_exception()noexcept;
 	const char* source_file;
-	const int& line_number;
+	const int line_number;
 	const std::string& msg;
 	const char* what() const noexcept override;
 };

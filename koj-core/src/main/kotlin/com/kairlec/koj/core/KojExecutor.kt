@@ -3,7 +3,8 @@ package com.kairlec.koj.core
 sealed interface KojExecuteResult
 
 interface ExecuteSuccess : KojExecuteResult {
-    val type: ExecuteResultType get() = ExecuteResultType.AC
+    var type: ExecuteResultType
+    val stdout: String
 }
 
 enum class ExecuteResultType(
@@ -67,16 +68,47 @@ interface ExecuteFailure : KojExecuteResult {
 interface ExecutorConfig {
     val maxTime: Int
     val maxMemory: Long
+    val maxOutputSize: Long
     val maxStack: Long get() = -1
     val maxProcessNumber: Int get() = 1
-    val maxOutputSize: Long
     val args: List<String> get() = emptyList()
     val env: List<String> get() = emptyList()
 }
 
+fun ExecutorConfig(
+    maxTime: Int,
+    maxMemory: Long,
+    maxOutputSize: Long,
+    maxStack: Long = -1,
+    maxProcessNumber: Int = 1,
+    args: List<String> = emptyList(),
+    env: List<String> = emptyList(),
+): ExecutorConfig {
+    return ExecutorConfigImpl(
+        maxTime,
+        maxMemory,
+        maxOutputSize,
+        maxStack,
+        maxProcessNumber,
+        args,
+        env,
+    )
+}
+
+internal data class ExecutorConfigImpl(
+    override val maxTime: Int,
+    override val maxMemory: Long,
+    override val maxOutputSize: Long,
+    override val maxStack: Long = -1,
+    override val maxProcessNumber: Int = 1,
+    override val args: List<String> = emptyList(),
+    override val env: List<String> = emptyList(),
+) : ExecutorConfig
+
 interface KojExecutor : LanguageSupport {
     val name: String
-    context (KojContext) suspend fun execute(
+    suspend fun execute(
+        context: KojContext,
         compileSuccess: CompileSuccess,
         input: String,
         config: ExecutorConfig

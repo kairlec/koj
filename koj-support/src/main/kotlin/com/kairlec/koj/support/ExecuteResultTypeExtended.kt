@@ -1,7 +1,7 @@
 package com.kairlec.koj.support
 
 import com.kairlec.koj.core.ExecuteResultType
-import com.kairlec.koj.sandbox.Result
+import com.kairlec.koj.sandbox.docker.Result
 
 fun Result.toExecuteResultType(): ExecuteResultType? {
     return when (this) {

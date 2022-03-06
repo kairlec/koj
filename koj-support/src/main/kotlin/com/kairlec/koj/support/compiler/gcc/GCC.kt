@@ -1,6 +1,6 @@
 package com.kairlec.koj.support.compiler.gcc
 
-import com.google.auto.service.AutoService
+
 import com.kairlec.koj.core.*
 import com.kairlec.koj.language.c.C
 import com.kairlec.koj.language.c.C11
@@ -28,9 +28,9 @@ data class GCCCompileConfig(
 ) : AbstractCompileConfig()
 
 abstract class GCC : KojCompiler {
-    context(KojContext) override suspend fun compile(compileConfig: CompileConfig): CompileResult {
+    override suspend fun compile(context: KojContext, compileConfig: CompileConfig): CompileResult {
         require(compileConfig is GCCCompileConfig) { "GCCCompileConfig required" }
-        val language = useLanguage
+        val language = context.useLanguage
         val stdVersion = when (language) {
             is C99 -> "c99"
             is C11 -> "c11"
@@ -41,7 +41,7 @@ abstract class GCC : KojCompiler {
             is CPP17 -> "c++17"
             is CPP20 -> "c++20"
             else -> throw UnsupportedLanguageException(
-                useLanguage,
+                language,
                 "current gcc impl is not supported for this language yet"
             )
         }
@@ -67,13 +67,25 @@ abstract class GCC : KojCompiler {
         }
         val image = "${compileConfig.compileImage}:${compileConfig.compileImageVersion}"
         val output = Docker.compile(
-            tempDirectory,
+            context.tempDirectory,
             DockerSandboxCompileConfig(
                 sourceFileName = sourceFileName,
                 sourceContent = compileConfig.source.source,
-                namespace = "${namespace}-${id}",
+                namespace = "${context.namespace}-${context.id}",
                 image = image,
-                kojEnv = KOJEnv(50.s, 60.s, 256.MB, -1, -1, 10.MB, false, compiler, compileArguments, emptyList())
+                kojEnv = KOJEnv(
+                    keepStdin = true,
+                    maxCpuTime = 50.s,
+                    maxRealTime = 60.s,
+                    maxMemory = 256.MB,
+                    maxStack = -1,
+                    maxProcessNumber = -1,
+                    maxOutputSize = 10.MB,
+                    memoryCheckOnly = false,
+                    exePath = compiler,
+                    args = compileArguments,
+                    env = emptyList()
+                )
             )
         )
         return if (output.isError()) {
@@ -95,8 +107,10 @@ abstract class GCC : KojCompiler {
     }
 }
 
-@AutoService(KojCompiler::class)
-class GCCForC(override val name: String = "gcc") : GCC()
+object GCCForC : GCC() {
+    override val name get() = "gcc"
+}
 
-@AutoService(KojCompiler::class)
-class GCCForCpp(override val name: String = "g++") : GCC()
+object GCCForCpp : GCC() {
+    override val name get() = "g++"
+}

@@ -1,4 +1,4 @@
-package com.kairlec.koj.sandbox
+package com.kairlec.koj.sandbox.docker
 
 import java.nio.file.Path
 import java.util.*
@@ -81,7 +81,7 @@ value class Stdout(val value: String)
 @JvmInline
 value class Logging(val value: String)
 
-data class SandboxOutput(
+data class KojDockerOutput(
     val containerCode: Int,
     val status: Status?,
     val stdout: Stdout?,

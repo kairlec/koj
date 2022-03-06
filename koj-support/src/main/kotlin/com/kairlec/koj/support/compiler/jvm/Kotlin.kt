@@ -2,41 +2,27 @@ package com.kairlec.koj.support.compiler.jvm
 
 
 import com.kairlec.koj.core.*
-import com.kairlec.koj.language.java.Java
-import com.kairlec.koj.language.java.Java11
-import com.kairlec.koj.language.java.Java17
-import com.kairlec.koj.language.java.Java8
+import com.kairlec.koj.language.kotlin.Kotlin
+import com.kairlec.koj.language.kotlin.Kotlin1610_Java11
+import com.kairlec.koj.language.kotlin.Kotlin1610_Java17
+import com.kairlec.koj.language.kotlin.Kotlin1610_Java8
 import com.kairlec.koj.sandbox.docker.Docker
 import com.kairlec.koj.sandbox.docker.DockerSandboxCompileConfig
 import com.kairlec.koj.sandbox.docker.KOJEnv
 import com.kairlec.koj.support.MB
-import com.kairlec.koj.support.compiler.AbstractCompileConfig
 import com.kairlec.koj.support.s
 import mu.KotlinLogging
 
-data class JvmCompileSuccess(
-    val mainClassQualifierName: String,
-    val image: String
-) : CompileSuccess
-
-data class JvmCompileFailure(override val message: String, override val cause: Throwable?) : CompileFailure
-
-data class JvmCompileConfig(
-    override val source: CompileSource,
-    override val compileImage: String = "kairlec/koj-jvm",
-    override val compileImageVersion: String = ""
-) : AbstractCompileConfig()
-
-object Java : KojCompiler {
-    override val name get() = "openjdk"
+object Kotlin : KojCompiler {
+    override val name get() = "kotlin"
 
     override suspend fun compile(context: KojContext, compileConfig: CompileConfig): CompileResult {
         require(compileConfig is JvmCompileConfig) { "JvmCompileConfig required" }
         val imageVersion = if (compileConfig.compileImageVersion.isEmpty()) {
             when (context.useLanguage) {
-                is Java8 -> "8"
-                is Java11 -> "11"
-                is Java17 -> "17"
+                is Kotlin1610_Java8 -> "8"
+                is Kotlin1610_Java11 -> "11"
+                is Kotlin1610_Java17 -> "17"
                 else -> throw UnsupportedLanguageException(
                     context.useLanguage,
                     "current jvm impl is not supported for this language yet"
@@ -44,13 +30,13 @@ object Java : KojCompiler {
             }
         } else {
             when (context.useLanguage) {
-                is Java8 -> {
+                is Kotlin1610_Java8 -> {
                     require(compileConfig.compileImageVersion == "8") { "Java8 requires compileImageVersion == 8" }
                 }
-                is Java11 -> {
+                is Kotlin1610_Java11 -> {
                     require(compileConfig.compileImageVersion == "11") { "Java11 requires compileImageVersion == 11" }
                 }
-                is Java17 -> {
+                is Kotlin1610_Java17 -> {
                     require(compileConfig.compileImageVersion == "17") { "Java17 requires compileImageVersion == 17" }
                 }
                 else -> throw UnsupportedLanguageException(
@@ -60,11 +46,9 @@ object Java : KojCompiler {
             }
             compileConfig.compileImageVersion
         }
-        val sourceFileName = "Main.java"
+        val sourceFileName = "Main.kt"
         val compileArguments = buildList {
             add(sourceFileName)
-            add("-encoding")
-            add("UTF8")
         }
         val image = "${compileConfig.compileImage}:${imageVersion}"
         val output = Docker.compile(
@@ -83,7 +67,7 @@ object Java : KojCompiler {
                     maxProcessNumber = -1,
                     maxOutputSize = 10.MB,
                     memoryCheckOnly = true,
-                    exePath = "javac",
+                    exePath = "kotlinc",
                     args = compileArguments,
                     env = emptyList()
                 )
@@ -99,9 +83,9 @@ object Java : KojCompiler {
     }
 
     override fun isSupported(language: Language): Boolean {
-        return language is Java
+        return language is Kotlin
     }
 
     private val log = KotlinLogging.logger {}
-    private const val mainClassQualifierName = "Main"
+    private const val mainClassQualifierName = "MainKt"
 }

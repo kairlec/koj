@@ -4,7 +4,7 @@ interface KojCompiler : LanguageSupport {
     /**
      * Compile the source code to bytecode.
      */
-    context (KojContext) suspend fun compile(compileConfig: CompileConfig): CompileResult
+    suspend fun compile(context: KojContext, compileConfig: CompileConfig): CompileResult
 
     val name: String
 }
@@ -25,3 +25,9 @@ interface CompileConfig {
 interface CompileSource {
     val source: String
 }
+
+fun CompileSource(source: String): CompileSource {
+    return CompileSourceImpl(source)
+}
+
+internal data class CompileSourceImpl(override val source: String) : CompileSource

@@ -1,6 +1,6 @@
 package com.kairlec.koj.support.executor.clike
 
-import com.google.auto.service.AutoService
+
 import com.kairlec.koj.core.*
 import com.kairlec.koj.language.c.C
 import com.kairlec.koj.language.cpp.CPP
@@ -9,9 +9,11 @@ import com.kairlec.koj.sandbox.docker.DockerSandboxRunConfig
 import com.kairlec.koj.sandbox.docker.KOJEnv
 import com.kairlec.koj.support.compiler.gcc.GCCCompileSuccess
 import com.kairlec.koj.support.toExecuteResultType
+import kotlin.io.path.absolutePathString
 
 data class ClikeExecuteSuccess(
-    val stdout: String,
+    override var type: ExecuteResultType,
+    override val stdout: String,
 ) : ExecuteSuccess
 
 data class ClikeExecuteFailure(
@@ -23,22 +25,26 @@ data class ClikeExecuteFailure(
     override val failureType: ExecuteResultType
 ) : ExecuteFailure
 
-@AutoService(KojExecutor::class)
-class Clike(override val name: String = "clike") : KojExecutor {
-    context(KojContext) override suspend fun execute(
+object Clike : KojExecutor {
+    override val name get() = "clike"
+
+    override suspend fun execute(
+        context: KojContext,
         compileSuccess: CompileSuccess,
         input: String,
         config: ExecutorConfig,
     ): KojExecuteResult {
         require(compileSuccess is GCCCompileSuccess)
+        val executablePath = context.tempDirectory.resolve(compileSuccess.executableName).absolutePathString()
         val output = Docker.run(
-            tempDirectory,
+            context.tempDirectory,
             DockerSandboxRunConfig(
                 image = compileSuccess.image,
-                namespace = "${namespace}-${id}",
-                exeMount = compileSuccess.executableName to compileSuccess.executableName,
+                namespace = "${context.namespace}-${context.id}",
+                exeMount = executablePath to compileSuccess.executableName,
                 input = input,
                 kojEnv = KOJEnv(
+                    keepStdin = false,
                     maxCpuTime = config.maxTime,
                     maxRealTime = config.maxTime * 2,
                     maxMemory = config.maxMemory,
@@ -62,7 +68,10 @@ class Clike(override val name: String = "clike") : KojExecutor {
                 output.status?.result?.toExecuteResultType() ?: ExecuteResultType.SE
             )
         } else {
-            ClikeExecuteSuccess(output.stdout?.value ?: "")
+            ClikeExecuteSuccess(
+                output.status?.result?.toExecuteResultType() ?: ExecuteResultType.AC,
+                output.stdout?.value ?: ""
+            )
         }
     }
 

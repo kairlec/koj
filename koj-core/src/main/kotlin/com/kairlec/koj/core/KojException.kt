@@ -1,6 +1,6 @@
 package com.kairlec.koj.core
 
-import com.kairlec.koj.sandbox.SandboxOutput
+import com.kairlec.koj.sandbox.docker.KojDockerOutput
 
 abstract class KojException(override val message: String, override val cause: Throwable?) :
     RuntimeException(message, cause)
@@ -16,7 +16,7 @@ class UnsupportedLanguageException(
 ) : CompilerException(message, cause)
 
 class SandboxCompileException(
-    val output: SandboxOutput,
+    val output: KojDockerOutput,
     override val message: String = output.stdout?.value ?: "",
     override val cause: Throwable? = null
 ) : CompilerException(message, cause)
@@ -24,8 +24,15 @@ class SandboxCompileException(
 abstract class ExecuteException(override val message: String, override val cause: Throwable?) :
     KojException(message, cause)
 
+class ProblemExecuteException(
+    val problem: Problem,
+    val result: ExecuteResultType,
+    override val message: String = result.verdict,
+    override val cause: Throwable? = null
+) : ExecuteException(message, cause)
+
 class SandboxExecuteException(
-    val output: SandboxOutput,
+    val output: KojDockerOutput,
     override val message: String = output.stdout?.value ?: "",
     override val cause: Throwable? = null
 ) : ExecuteException(message, cause)
