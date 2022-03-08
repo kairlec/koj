@@ -50,7 +50,7 @@ object Kotlin : KojCompiler {
         val compileArguments = buildList {
             add(sourceFileName)
         }
-        val image = "${compileConfig.compileImage}:${imageVersion}"
+        val image = "${compileConfig.compileImage}${imageVersion}"
         val output = Docker.compile(
             context.tempDirectory,
             DockerSandboxCompileConfig(

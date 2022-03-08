@@ -23,7 +23,7 @@ data class GCCCompileFailure(override val message: String, override val cause: T
 
 data class GCCCompileConfig(
     override val source: CompileSource,
-    override val compileImage: String = "kairlec/koj-clike",
+    override val compileImage: String = "kairlec/koj-support:clike",
     override val compileImageVersion: String = "latest"
 ) : AbstractCompileConfig()
 

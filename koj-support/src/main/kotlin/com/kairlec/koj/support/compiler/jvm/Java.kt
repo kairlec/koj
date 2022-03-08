@@ -23,7 +23,7 @@ data class JvmCompileFailure(override val message: String, override val cause: T
 
 data class JvmCompileConfig(
     override val source: CompileSource,
-    override val compileImage: String = "kairlec/koj-jvm",
+    override val compileImage: String = "kairlec/koj-support:jvm",
     override val compileImageVersion: String = ""
 ) : AbstractCompileConfig()
 
@@ -66,7 +66,7 @@ object Java : KojCompiler {
             add("-encoding")
             add("UTF8")
         }
-        val image = "${compileConfig.compileImage}:${imageVersion}"
+        val image = "${compileConfig.compileImage}${imageVersion}"
         val output = Docker.compile(
             context.tempDirectory,
             DockerSandboxCompileConfig(
