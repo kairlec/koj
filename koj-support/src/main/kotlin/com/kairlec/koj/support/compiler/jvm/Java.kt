@@ -83,7 +83,7 @@ object Java : KojCompiler {
                     maxProcessNumber = -1,
                     maxOutputSize = 10.MB,
                     memoryCheckOnly = true,
-                    exePath = "javac",
+                    exePath = "/usr/sbin/javac",
                     args = compileArguments,
                     env = emptyList()
                 )

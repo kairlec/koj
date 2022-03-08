@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+  koj-kt:
+    image: kairlec/koj-jvm:8
+    container_name: koj
+    environment:
+      - KEEP_STDIN=1
+      - KEEP_STDOUT=1
+      - MAX_CPU_TIME=-1
+      - MAX_REAL_TIME=-1
+      - MAX_MEMORY=-1
+      - MAX_STACK=-1
+      - MAX_PROCESS_NUMBER=-1
+      - MAX_OUTPUT_SIZE=-1
+      - MEMORY_LIMIT_CHECK_ONLY=1
+      - EXE_PATH=/usr/sbin/kotlinc
+      - ARGS=Main.kt
+      - ADDON_PATH=
+      - ENV=
+    volumes:
+      - /mnt/d/Code/IdeaProject/KOJ/koj-native/demo:/tmp/koj
+    # working_dir: /tmp/koj
+    # stdin_open: true
+    # tty: true
+    # command: bash

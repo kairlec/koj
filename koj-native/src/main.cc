@@ -248,14 +248,32 @@ void run() {
 	char* addon = get_env("ADDON_PATH");
 	int addon_length = strlen(addon);
 	char* env_path = get_env("PATH");
-	int env_length = strlen(env_path);
-	int length = addon_length + env_length;
-	config.env[0] = new char[length + 2 + 5];
-	memcpy(config.env[0], "PATH=", 5);
-	memcpy(&config.env[0][5], addon, addon_length);
-	config.env[0][addon_length+5] = ';';
-	memcpy(&config.env[0][addon_length + 6], env_path, env_length);
-	config.env[0][length] = '\0';
+#ifdef _KOJ_DEBUG
+	std::cout << "env path=" << env_path << std::endl;
+#endif
+	int env_path_length = strlen(env_path);
+	if (addon_length == 0) {
+		// 附加的path为空,第一参数为"PATH="固定长5 + 原环境参数
+		int real_length = env_path_length + 1 + 5;
+		config.env[0] = new char[real_length];
+		char* path_pt = config.env[0];
+		memcpy(path_pt, "PATH=", 5);
+		// 偏移5格,拷贝环境长度+1,和最后的\0
+		memcpy(&path_pt[5], env_path, env_path_length + 1);
+	}
+	else {
+		int length = addon_length + env_path_length;
+		int real_length = length + 2 + 5;
+		config.env[0] = new char[real_length];
+		char* path_pt = config.env[0];
+		memcpy(path_pt, "PATH=", 5);
+		// 偏移5格,先拷贝附加参数
+		memcpy(&path_pt[5], addon, addon_length);
+		// 紧随其后设置冒号
+		path_pt[addon_length + 5] = ':';
+		// 剩余接上
+		memcpy(&path_pt[addon_length + 6], env_path, env_path_length + 1);
+	}
 #ifdef _KOJ_DEBUG
 	std::cout << "path=" << config.env[0] << std::endl;
 #endif
@@ -270,7 +288,7 @@ void run() {
 		run(config, result);
 	}
 	catch (koj_exception& koje) {
-		log_write(LOG_LEVEL_FATAL, __FILE__, __LINE__, log_stream, { koje.what() });
+		log_write(LOG_LEVEL_FATAL, koje.source_file, koje.line_number, log_stream, { koje.what() });
 		log_close(log_stream);
 
 		std::cerr << "error to run with koj exception(" << koje.source_file << "," << koje.line_number << "):" << koje.what() << std::endl;

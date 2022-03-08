@@ -205,36 +205,38 @@ data class KojContextImpl(
     }
 
     override suspend fun run() {
-        val contextFactory = factory.chooseContextFactory(this)
-        val compiler = factory.chooseCompiler(useLanguage)
-        val executor = factory.chooseExecutor(useLanguage)
-        val compileConfig = contextFactory.createCompileConfig(this)
-        val executorConfig = contextFactory.createExecutorConfig(this)
-        val compileResult = compiler.compile(this, compileConfig)
-        if (compileResult is CompileSuccess) {
-            log.info { "Compile success" }
-            val executeResult = executor.execute(this, compileResult, problem.stdin, executorConfig)
-            if (executeResult is ExecuteSuccess) {
-                log.info { "Execute success" }
-                if (executeResult.type == ExecuteResultType.AC) {
-                    when (problem.diff(executeResult.stdout)) {
-                        DiffResult.PE -> executeResult.type = ExecuteResultType.PE
-                        DiffResult.WA -> executeResult.type = ExecuteResultType.WA
-                        else -> {}
+//        tempDirectory.use{
+            val contextFactory = factory.chooseContextFactory(this)
+            val compiler = factory.chooseCompiler(useLanguage)
+            val executor = factory.chooseExecutor(useLanguage)
+            val compileConfig = contextFactory.createCompileConfig(this)
+            val executorConfig = contextFactory.createExecutorConfig(this)
+            val compileResult = compiler.compile(this, compileConfig)
+            if (compileResult is CompileSuccess) {
+                log.info { "Compile success" }
+                val executeResult = executor.execute(this, compileResult, problem.stdin, executorConfig)
+                if (executeResult is ExecuteSuccess) {
+                    log.info { "Execute success" }
+                    if (executeResult.type == ExecuteResultType.AC) {
+                        when (problem.diff(executeResult.stdout)) {
+                            DiffResult.PE -> executeResult.type = ExecuteResultType.PE
+                            DiffResult.WA -> executeResult.type = ExecuteResultType.WA
+                            else -> {}
+                        }
                     }
-                }
-                if (executeResult.type == ExecuteResultType.AC) {
-                    throw ProblemExecuteException(problem, executeResult.type)
+                    if (executeResult.type == ExecuteResultType.AC) {
+                        throw ProblemExecuteException(problem, executeResult.type)
+                    }
+                } else {
+                    log.info { "Execute failed" }
+                    (executeResult as ExecuteFailure).cause?.let { throw it }
+                        ?: throw IllegalStateException("Execute failure:${executeResult.message}")
                 }
             } else {
-                log.info { "Execute failed" }
-                (executeResult as ExecuteFailure).cause?.let { throw it }
-                    ?: throw IllegalStateException("Execute failure:${executeResult.message}")
+                log.info { "Compile failed" }
+                (compileResult as CompileFailure).cause?.let { throw it }
+                    ?: throw IllegalStateException("Compile failure:${compileResult.message}")
             }
-        } else {
-            log.info { "Compile failed" }
-            (compileResult as CompileFailure).cause?.let { throw it }
-                ?: throw IllegalStateException("Compile failure:${compileResult.message}")
-        }
+//        }
     }
 }

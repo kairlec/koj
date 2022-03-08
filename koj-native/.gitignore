@@ -13,3 +13,10 @@ output/
 CMakePresets.json
 CMakeSettings.json
 .vs/
+/kotlinc/
+/demo/META-INF/
+/demo/*.class
+/demo/*.out
+/demo/status
+/demo/stdout
+/demo/log

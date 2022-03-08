@@ -60,14 +60,16 @@ object Kotlin : KojCompiler {
                 image = image,
                 kojEnv = KOJEnv(
                     keepStdin = true,
-                    maxCpuTime = 50.s,
-                    maxRealTime = 60.s,
-                    maxMemory = 256.MB,
+                    keepStdout = true,
+                    maxCpuTime = 180.s,
+                    maxRealTime = 180.s,
+                    maxMemory = 512.MB,
                     maxStack = -1,
                     maxProcessNumber = -1,
-                    maxOutputSize = 10.MB,
+                    maxOutputSize = 256.MB,
                     memoryCheckOnly = true,
-                    exePath = "kotlinc",
+                    exePath = "/usr/sbin/kotlinc",
+                    addonPath = "",
                     args = compileArguments,
                     env = emptyList()
                 )

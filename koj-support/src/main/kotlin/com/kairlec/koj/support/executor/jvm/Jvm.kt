@@ -40,8 +40,6 @@ object Jvm : KojExecutor {
         require(compileSuccess is JvmCompileSuccess)
         val classFilename = "${compileSuccess.mainClassQualifierName}.class"
         val args = buildList {
-            add("-cp")
-            add(".:\$CLASSPATH")
             add("-XX:MaxRAM=${config.maxMemory}k")
             add("-Djava.security.manager")
             add("-Djava.security.policy=/etc/policy/java.policy")
@@ -73,7 +71,7 @@ object Jvm : KojExecutor {
                     maxProcessNumber = config.maxProcessNumber,
                     maxOutputSize = config.maxOutputSize,
                     memoryCheckOnly = true,
-                    exePath = "java",
+                    exePath = "/usr/sbin/java",
                     args = args,
                     env = env,
                 )
