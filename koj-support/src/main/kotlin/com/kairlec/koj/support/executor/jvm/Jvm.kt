@@ -40,12 +40,14 @@ object Jvm : KojExecutor {
         require(compileSuccess is JvmCompileSuccess)
         val classFilename = "${compileSuccess.mainClassQualifierName}.class"
         val args = buildList {
-            add("-XX:MaxRAM=${config.maxMemory}k")
+            if (config.maxMemory > 0) {
+                add("-XX:MaxRAM=${config.maxMemory}")
+            }
             add("-Djava.security.manager")
             add("-Djava.security.policy=/etc/policy/java.policy")
             add("-Dfile.encoding=UTF-8")
-            addAll(config.args)
             add(compileSuccess.mainClassQualifierName)
+            addAll(config.args)
         }
 
         val env = buildSet {

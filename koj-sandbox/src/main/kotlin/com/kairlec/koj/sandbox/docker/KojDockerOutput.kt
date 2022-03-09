@@ -96,6 +96,6 @@ data class KojDockerOutput(
     }
 
     fun isError(): Boolean {
-        return exitCode() != 0
+        return exitCode() != 0 || status?.error?.isError() == true || status?.result?.isError() == true
     }
 }

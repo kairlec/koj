@@ -80,7 +80,7 @@ object Docker {
                                 Bind(tempDirectory.absolutePathString(), Volume(containerPathPrefix), AccessMode.rw),
                                 Bind(stdin.absolutePathString(), Volume(resolve("stdin")), AccessMode.ro),
                             )
-                            .withAutoRemove(true)
+//                            .withAutoRemove(true)
                     )
                     .withEnv(runConfig.kojEnv.asList())
                     .withNetworkDisabled(true)
