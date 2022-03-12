@@ -2,6 +2,11 @@
 
 #include <exception>
 #include <string>
+#ifdef _KOJ_DEBUG
+#include <iostream>
+using std::cout;
+using std::endl;
+#endif // _KOJ_DEBUG
 
 koj_exception::koj_exception(PRE_INFO_PLACEHOLDER, std::string&& _msg) :std::runtime_error(_msg), source_file(__source_file), line_number(__line_number), msg(_msg) {}
 koj_exception::koj_exception(PRE_INFO_PLACEHOLDER, std::string& _msg) : std::runtime_error(_msg), source_file(__source_file), line_number(__line_number), msg(_msg) {}
@@ -36,22 +41,38 @@ const char* execve_exception::what()const noexcept {
 
 cfile_holder::cfile_holder(const char* const&& _path, const char* const&& mode) : path(_path), file(fopen(_path, mode)) {
 	if (file == nullptr) {
+#ifdef _KOJ_DEBUG
+		cout << "cannot open " << _path << "for mode:" << mode << endl;
+#endif // _KOJ_DEBUG
 		throw DUP2_EXCEPTION(std::string("open ") + mode + " " + _path);
 	}
 }
 cfile_holder::~cfile_holder() noexcept {
 	if (file != nullptr) {
-		fclose(file);
+		//fclose(file);
 		file = nullptr;
 	}
 }
 void cfile_holder::redirect_to(FILE* other) const {
 	int thisno = fileno(file);
+
 	int otherno = fileno(other);
+#ifdef _KOJ_DEBUG
+	cout << "fileno this_no(" << path << ")=" << thisno << endl;
+	cout << "fileno otherno=" << otherno << endl;
+#endif // _KOJ_DEBUG
 	const int result = dup2(thisno, otherno);
 	if (result == -1) {
+#ifdef _KOJ_DEBUG
+		cout << "redirect " << path << " error:" << result << endl;
+#endif // _KOJ_DEBUG
 		throw DUP2_EXCEPTION(std::string(path) + ",rt=" + std::to_string(result));
 	}
+#ifdef _KOJ_DEBUG
+	else {
+		cout << "redirect " << path << " success:" << result << endl;
+	}
+#endif // _KOJ_DEBUG
 }
 inline cfile_holder& cfile_holder::operator<<(const char*& __s) noexcept {
 	if (file != nullptr) {

@@ -10,8 +10,8 @@ cmake-build-debug/
 .ycm_extra_conf.py
 out/
 output/
-CMakePresets.json
-CMakeSettings.json
+dockerfiles/cc-src/CMakePresets.json
+dockerfiles/cc-src/CMakeSettings.json
 .vs/
 /dockerfiles/jvm-context/kotlinc/
 /demo/META-INF/

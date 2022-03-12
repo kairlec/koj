@@ -5,7 +5,7 @@
 
 std::ofstream log_open(const std::string& filename) {
 	std::ofstream log_stream;
-	log_stream.open(filename, std::ios::out | std::ios::trunc);
+	log_stream.open(filename, std::ios::out | std::ios::app | std::ios::ate);
 	return log_stream;
 }
 

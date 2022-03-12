@@ -45,7 +45,7 @@ internal data class ProblemImpl(
     val runConfigs: Map<Language, RunConfig>
 ) : Problem {
     override fun diff(stdout: String): DiffResult {
-        println("out:${stdout}")
+        println("out: ${stdout}")
         return DiffResult.ACCEPT
     }
 
@@ -205,7 +205,7 @@ data class KojContextImpl(
     }
 
     override suspend fun run() {
-//        tempDirectory.use{
+        tempDirectory.use{
             val contextFactory = factory.chooseContextFactory(this)
             val compiler = factory.chooseCompiler(useLanguage)
             val executor = factory.chooseExecutor(useLanguage)
@@ -224,7 +224,7 @@ data class KojContextImpl(
                             else -> {}
                         }
                     }
-                    if (executeResult.type == ExecuteResultType.AC) {
+                    if (executeResult.type != ExecuteResultType.AC) {
                         throw ProblemExecuteException(problem, executeResult.type)
                     }
                 } else {
@@ -237,6 +237,6 @@ data class KojContextImpl(
                 (compileResult as CompileFailure).cause?.let { throw it }
                     ?: throw IllegalStateException("Compile failure:${compileResult.message}")
             }
-//        }
+        }
     }
 }

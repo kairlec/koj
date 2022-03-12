@@ -17,6 +17,10 @@ docker pull python:3.10
 
 docker build --no-cache -t kairlec/koj-runtime:latest -f runtime.Dockerfile cc-src
 
+mkdir -p $(pwd)/jvm-context
+mkdir -p $(pwd)/clike-context
+mkdir -p $(pwd)/py-context
+
 id=$(docker create kairlec/koj-runtime)
 rm -rf $(pwd)/jvm-context/koj
 docker cp $id:/usr/src/koj/koj $(pwd)/jvm-context/koj
