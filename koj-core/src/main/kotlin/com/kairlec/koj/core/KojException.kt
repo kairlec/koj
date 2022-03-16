@@ -24,8 +24,7 @@ class SandboxCompileException(
 abstract class ExecuteException(override val message: String, override val cause: Throwable?) :
     KojException(message, cause)
 
-class ProblemExecuteException(
-    val problem: Problem,
+class ExecuteResultException(
     val result: ExecuteResultType,
     override val message: String = result.verdict,
     override val cause: Throwable? = null

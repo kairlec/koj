@@ -1,10 +1,14 @@
 package com.kairlec.koj.core
 
-sealed interface KojExecuteResult
+sealed interface KojExecuteResult {
+    val stdout: String
+    val stderr: String
+}
 
 interface ExecuteSuccess : KojExecuteResult {
     var type: ExecuteResultType
-    val stdout: String
+    val time: Long
+    val memory: Long
 }
 
 enum class ExecuteResultType(

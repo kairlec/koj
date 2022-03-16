@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  koj-pulsar:
+    image: apachepulsar/pulsar
+    container_name: koj-pulsar
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 5s
+        window: 60s
+    ports:
+      - "6650:6650"
+      - "8080:8080"
+    volumes:
+      - "./data/pulsar/data:/pulsar/data"
+      - "./data/pulsar/conf:/pulsar/conf"
+    command: bin/pulsar standalone

@@ -5,7 +5,7 @@ import com.kairlec.koj.core.Language
 abstract class C : Language {
     final override val name: String get() = "C"
     final override val extension: String get() = ".c"
-
+    override val id: String get() = "C$version"
     open val preDefine: List<String> = listOf("ONLINE_JUDGE")
 
     override fun toString(): String {

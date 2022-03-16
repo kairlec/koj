@@ -44,7 +44,7 @@ enum class Error(val value: Int) {
 
 data class Status(
     val cpuTime: Int,
-    val real_time: Int,
+    val realTime: Int,
     val memory: Long,
     val signal: Int,
     val exitCode: Int,
@@ -79,12 +79,16 @@ data class Status(
 value class Stdout(val value: String)
 
 @JvmInline
+value class Stderr(val value: String)
+
+@JvmInline
 value class Logging(val value: String)
 
 data class KojDockerOutput(
     val containerCode: Int,
     val status: Status?,
     val stdout: Stdout?,
+    val stderr: Stderr?,
     val logging: Logging?,
 ) {
     fun exitCode(): Int {

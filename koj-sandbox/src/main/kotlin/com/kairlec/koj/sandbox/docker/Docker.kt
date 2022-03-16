@@ -42,7 +42,6 @@ object Docker {
                 dockerClient = DockerClientImpl.getInstance(config, dockerHttpClient)
                 val dockerVersion = dockerClient.versionCmd().exec()
                 log.debug { "Sandbox of docker engine connect success using docker version: ${dockerVersion.version}" }
-
                 initConfig.prepareImages.map {
                     val imagePullResult = dockerClient.pullImageCmd(it).start()
                     try {
@@ -76,7 +75,11 @@ object Docker {
                     .withHostConfig(
                         HostConfig.newHostConfig()
                             .withBinds(
-                                Bind(runConfig.exeMount.first, Volume(resolve(runConfig.exeMount.second)), AccessMode.ro),
+                                Bind(
+                                    runConfig.exeMount.first,
+                                    Volume(resolve(runConfig.exeMount.second)),
+                                    AccessMode.ro
+                                ),
                                 Bind(tempDirectory.absolutePathString(), Volume(containerPathPrefix), AccessMode.rw),
                                 Bind(stdin.absolutePathString(), Volume(resolve("stdin")), AccessMode.ro),
                             )
@@ -100,10 +103,13 @@ object Docker {
                 val stdout = tryRead("load stdout file failed") {
                     Stdout(tempDirectory.resolve("stdout").readText())
                 }
+                val stderr = tryRead("load stderr file failed") {
+                    Stderr(tempDirectory.resolve("stderr").readText())
+                }
                 val log = tryRead("load log file failed") {
                     Logging(tempDirectory.resolve("log").readText())
                 }
-                continuation.resume(KojDockerOutput(exitCode, status, stdout, log))
+                continuation.resume(KojDockerOutput(exitCode, status, stdout, stderr, log))
             } catch (e: Exception) {
                 continuation.resumeWithException(e)
             }
@@ -149,10 +155,13 @@ object Docker {
                 val stdout = tryRead("load stdout file failed") {
                     Stdout(tempDirectory.resolve("stdout").readText())
                 }
+                val stderr = tryRead("load stderr file failed") {
+                    Stderr(tempDirectory.resolve("stderr").readText())
+                }
                 val log = tryRead("load log file failed") {
                     Logging(tempDirectory.resolve("log").readText())
                 }
-                continuation.resume(KojDockerOutput(exitCode, status, stdout, log))
+                continuation.resume(KojDockerOutput(exitCode, status, stdout, stderr, log))
             } catch (e: Exception) {
                 continuation.resumeWithException(e)
             }

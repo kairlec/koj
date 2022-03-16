@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package com.kairlec.koj.model;
+
+option java_package = "com.kairlec.koj.model";
+option java_outer_classname = "ModelProto";
+option java_multiple_files = true;
+
+message TaskConfig{
+  int32 max_time = 1;
+  int64 max_memory = 2;
+  int64 max_output_size = 3;
+  int64 max_stack = 4;
+  int32 max_process_number = 5;
+  repeated string args = 6;
+  repeated string env = 7;
+}
+
+message Task{
+  int64 id = 1;
+  string namespace = 2;
+  string code = 3;
+  string language_id = 4;
+  TaskConfig config = 5;
+  string stdin = 6;
+}
+
+enum TaskResultType{
+  NO_ERROR = 0;
+  CPU_TIME_LIMIT_EXCEEDED = 1;
+  REAL_TIME_LIMIT_EXCEEDED = 2;
+  MEMORY_LIMIT_EXCEEDED = 3;
+  RUNTIME_ERROR = 4;
+  SYSTEM_ERROR = 5;
+  OUTPUT_LIMIT_EXCEEDED = 6;
+  COMPILE_ERROR = 7;
+}
+
+message TaskResult{
+  int64 id = 1;
+  TaskResultType type = 2;
+  int64 time = 3;
+  int64 memory = 4;
+  string stdout = 5;
+  string stderr = 6;
+}
+
+enum TaskIntermediateStatusEnum{
+  COMPILING = 0;
+  RUNNING = 1;
+}
+
+message TaskStatus{
+  int64 id = 1;
+  TaskIntermediateStatusEnum status = 2;
+}

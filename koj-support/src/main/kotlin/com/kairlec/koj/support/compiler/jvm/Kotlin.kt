@@ -78,9 +78,9 @@ object Kotlin : KojCompiler {
         return if (output.isError()) {
             log.warn { "compile error :$output" }
             val exception = SandboxCompileException(output)
-            JvmCompileFailure(exception.message, exception)
+            JvmCompileFailure(exception.message, exception, output.stdout?.value ?: "", output.stderr?.value ?: "")
         } else {
-            JvmCompileSuccess(mainClassQualifierName, image)
+            JvmCompileSuccess(mainClassQualifierName, image, output.stdout?.value ?: "", output.stderr?.value ?: "")
         }
     }
 

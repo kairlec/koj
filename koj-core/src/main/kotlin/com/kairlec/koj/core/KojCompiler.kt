@@ -9,7 +9,10 @@ interface KojCompiler : LanguageSupport {
     val name: String
 }
 
-sealed interface CompileResult
+sealed interface CompileResult {
+    val stdout: String
+    val stderr: String
+}
 
 interface CompileSuccess : CompileResult
 

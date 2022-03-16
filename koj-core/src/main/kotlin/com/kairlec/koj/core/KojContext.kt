@@ -1,15 +1,11 @@
 package com.kairlec.koj.core
 
 import com.kairlec.koj.common.TempDirectory
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import mu.KotlinLogging
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
-
-enum class DiffResult {
-    ACCEPT,
-    PE,
-    WA
-}
 
 data class RunConfig(
     val maxTime: Int,
@@ -21,51 +17,16 @@ data class RunConfig(
     val env: List<String> = emptyList(),
 )
 
-interface Problem {
-    val id: Long
-    val stdin: String
-    val special: Boolean
-    fun getRunConfig(language: Language): RunConfig
-    fun diff(stdout: String): DiffResult
-}
-
-fun Problem(
-    id: Long,
-    stdin: String,
-    special: Boolean,
-    runConfigs: Map<Language, RunConfig>,
-): Problem {
-    return ProblemImpl(id, stdin, special, runConfigs)
-}
-
-internal data class ProblemImpl(
-    override val id: Long,
-    override val stdin: String,
-    override val special: Boolean,
-    val runConfigs: Map<Language, RunConfig>
-) : Problem {
-    override fun diff(stdout: String): DiffResult {
-        println("out: ${stdout}")
-        return DiffResult.ACCEPT
-    }
-
-    override fun getRunConfig(language: Language): RunConfig {
-        return runConfigs[language] ?: throw IllegalArgumentException("No run config for language $language")
-    }
-}
-
-interface ProblemFactory {
-    operator fun get(id: Long): Problem
-}
-
 interface KojContext {
     val id: Long
     val namespace: String
     val tempDirectory: TempDirectory
     val useLanguage: Language
-    val problem: Problem
+    val runConfig: RunConfig
+    val stdin: String
     val factory: KojFactory
-    val input: String
+    val code: String
+    val state: StateFlow<State>
 
     suspend fun run()
 }
@@ -73,7 +34,7 @@ interface KojContext {
 interface KojContextFactory : LanguageSupport {
     fun createCompileConfig(context: KojContext): CompileConfig
     fun createExecutorConfig(context: KojContext): ExecutorConfig {
-        context.problem.getRunConfig(context.useLanguage).let {
+        context.runConfig.let {
             return ExecutorConfig(
                 it.maxTime,
                 it.maxMemory,
@@ -93,19 +54,23 @@ interface KojFactory : LanguageSupport {
         namespace: String,
         tempDirectory: TempDirectory,
         useLanguage: Language,
-        input: String,
-        problem: Problem
+        code: String,
+        stdin: String,
+        runConfig: RunConfig
     ): KojContext {
         return KojContextImpl(
-            id,
-            namespace,
-            tempDirectory,
-            useLanguage,
-            problem,
-            input,
-            this
+            id = id,
+            namespace = namespace,
+            tempDirectory = tempDirectory,
+            useLanguage = useLanguage,
+            runConfig = runConfig,
+            stdin = stdin,
+            code = code,
+            factory = this,
         )
     }
+
+    val supportLanguages: Set<Language>
 
     fun chooseCompiler(language: Language): KojCompiler
     fun chooseCompilers(language: Language): List<KojCompiler>
@@ -124,11 +89,13 @@ interface KojFactory : LanguageSupport {
 
     companion object : KojFactory {
         private val log = KotlinLogging.logger {}
-        private val languages: Set<Language>
+        val languages: Set<Language>
         private val compiler: Set<KojCompiler>
         private val executor: Set<KojExecutor>
         private val kojContextFactories: Set<KojContextFactory>
         private val languageSupports: MutableMap<Language, Supports> = mutableMapOf()
+        override val supportLanguages: Set<Language>
+            get() = languageSupports.keys
 
         init {
             val reflections = Reflections("com.kairlec.koj", Scanners.SubTypes)
@@ -149,11 +116,24 @@ interface KojFactory : LanguageSupport {
             log.info { "Loaded executors: ${executor.joinToString { it.name }}" }
             log.info { "Loaded context factories: ${kojContextFactories.joinToString { it::class.simpleName ?: "" }}" }
             languages.forEach { language ->
-                languageSupports[language] = Supports(
+                val supports = Supports(
                     compiler.filter { it.isSupported(language) },
                     executor.filter { it.isSupported(language) },
                     kojContextFactories.filter { it.isSupported(language) }
                 )
+                if (supports.compilers.isEmpty()) {
+                    log.error { "No compiler found for language ${language.name}" }
+                    return@forEach
+                }
+                if (supports.executors.isEmpty()) {
+                    log.error { "No executor found for language ${language.name}" }
+                    return@forEach
+                }
+                if (supports.contextFactories.isEmpty()) {
+                    log.error { "No context factory found for language ${language.name}" }
+                    return@forEach
+                }
+                languageSupports[language] = supports
                 log.info { "Language $language supports: ${languageSupports[language]}" }
             }
         }
@@ -196,16 +176,36 @@ data class KojContextImpl(
     override val namespace: String,
     override val tempDirectory: TempDirectory,
     override val useLanguage: Language,
-    override val problem: Problem,
-    override val input: String,
+    override val runConfig: RunConfig,
+    override val stdin: String,
+    override val code: String,
     override val factory: KojFactory,
+    override val state: MutableStateFlow<State> = MutableStateFlow(State()),
 ) : KojContext {
     companion object {
         private val log = KotlinLogging.logger {}
     }
 
+    private fun MutableStateFlow<State>.next(
+        stdout: String? = null,
+        stderr: String? = null,
+        time: Long = -1,
+        memory: Long = -1
+    ) {
+        state.value = state.value.next(stdout, stderr, time, memory)
+    }
+
+    private fun MutableStateFlow<State>.next(value: Int, stdout: String? = null, stderr: String? = null) {
+        state.value = state.value.next(value, stdout, stderr)
+    }
+
+    private fun MutableStateFlow<State>.error(cause: Throwable, stdout: String? = null, stderr: String? = null) {
+        state.value = state.value.error(cause, stdout, stderr)
+    }
+
     override suspend fun run() {
-        tempDirectory.use{
+        tempDirectory.use {
+            state.next() // inited
             val contextFactory = factory.chooseContextFactory(this)
             val compiler = factory.chooseCompiler(useLanguage)
             val executor = factory.chooseExecutor(useLanguage)
@@ -213,30 +213,37 @@ data class KojContextImpl(
             val executorConfig = contextFactory.createExecutorConfig(this)
             val compileResult = compiler.compile(this, compileConfig)
             if (compileResult is CompileSuccess) {
+                state.next() //compiled
                 log.info { "Compile success" }
-                val executeResult = executor.execute(this, compileResult, problem.stdin, executorConfig)
+                val executeResult = executor.execute(this, compileResult, stdin, executorConfig)
                 if (executeResult is ExecuteSuccess) {
                     log.info { "Execute success" }
-                    if (executeResult.type == ExecuteResultType.AC) {
-                        when (problem.diff(executeResult.stdout)) {
-                            DiffResult.PE -> executeResult.type = ExecuteResultType.PE
-                            DiffResult.WA -> executeResult.type = ExecuteResultType.WA
-                            else -> {}
-                        }
-                    }
                     if (executeResult.type != ExecuteResultType.AC) {
-                        throw ProblemExecuteException(problem, executeResult.type)
+                        state.error(ExecuteResultException(executeResult.type), stderr = executeResult.stderr)
+                    } else {
+                        state.next(
+                            executeResult.stdout,
+                            executeResult.stderr,
+                            executeResult.time,
+                            executeResult.memory
+                        ) // executed
                     }
                 } else {
-                    log.info { "Execute failed" }
-                    (executeResult as ExecuteFailure).cause?.let { throw it }
-                        ?: throw IllegalStateException("Execute failure:${executeResult.message}")
+                    state.error(
+                        (executeResult as ExecuteFailure).cause
+                            ?: IllegalStateException("Execute failure:${executeResult.message}"),
+                        stderr = executeResult.stderr
+                    )
                 }
             } else {
-                log.info { "Compile failed" }
-                (compileResult as CompileFailure).cause?.let { throw it }
-                    ?: throw IllegalStateException("Compile failure:${compileResult.message}")
+                state.error(
+                    (compileResult as CompileFailure).cause
+                        ?: IllegalStateException("Compile failure:${compileResult.message}"),
+                    stderr = compileResult.stderr
+                )
+
             }
         }
+        state.next(State.END) // end
     }
 }

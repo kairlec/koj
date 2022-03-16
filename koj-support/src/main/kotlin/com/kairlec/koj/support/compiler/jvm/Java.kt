@@ -16,10 +16,17 @@ import mu.KotlinLogging
 
 data class JvmCompileSuccess(
     val mainClassQualifierName: String,
-    val image: String
+    val image: String,
+    override val stdout: String,
+    override val stderr: String
 ) : CompileSuccess
 
-data class JvmCompileFailure(override val message: String, override val cause: Throwable?) : CompileFailure
+data class JvmCompileFailure(
+    override val message: String,
+    override val cause: Throwable?,
+    override val stdout: String,
+    override val stderr: String
+) : CompileFailure
 
 data class JvmCompileConfig(
     override val source: CompileSource,
@@ -92,9 +99,9 @@ object Java : KojCompiler {
         return if (output.isError()) {
             log.warn { "compile error :$output" }
             val exception = SandboxCompileException(output)
-            JvmCompileFailure(exception.message, exception)
+            JvmCompileFailure(exception.message, exception, output.stdout?.value ?: "", output.stderr?.value ?: "")
         } else {
-            JvmCompileSuccess(mainClassQualifierName, image)
+            JvmCompileSuccess(mainClassQualifierName, image, output.stdout?.value ?: "", output.stderr?.value ?: "")
         }
     }
 

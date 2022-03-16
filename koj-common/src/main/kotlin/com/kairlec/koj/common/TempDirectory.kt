@@ -1,6 +1,7 @@
 package com.kairlec.koj.common
 
 import java.io.Closeable
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.*
 
@@ -30,11 +31,14 @@ class TempDirectory private constructor(
     }
 
     companion object {
-        fun create(
+        private val tempDir = Path.of(System.getProperty("java.io.tmpdir"))
+        fun createOrUse(
             id: String,
             prefix: String = "koj-",
         ): TempDirectory {
-            val path = createTempDirectory(
+            val path = Files.newDirectoryStream(tempDir, "$prefix${id}-*").use {
+                it.firstOrNull()
+            } ?: createTempDirectory(
                 "$prefix${id}-"
             )
             return TempDirectory(path)

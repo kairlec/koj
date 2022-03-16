@@ -7,7 +7,8 @@ abstract class Java : Jvm() {
         get() = "Java"
     override val extension: String
         get() = ".java"
-
+    override val id: String
+        get() = "Java $version"
     override fun toString(): String {
         return "Java ($version)"
     }

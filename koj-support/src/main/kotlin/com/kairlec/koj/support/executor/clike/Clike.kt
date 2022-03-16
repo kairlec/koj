@@ -14,10 +14,14 @@ import kotlin.io.path.absolutePathString
 data class ClikeExecuteSuccess(
     override var type: ExecuteResultType,
     override val stdout: String,
+    override val stderr: String,
+    override val time: Long,
+    override val memory: Long
 ) : ExecuteSuccess
 
 data class ClikeExecuteFailure(
-    val stdout: String?,
+    override val stdout: String,
+    override val stderr: String,
     val log: String?,
     val code: Int,
     override val message: String,
@@ -60,7 +64,8 @@ object Clike : KojExecutor {
         )
         return if (output.isError()) {
             ClikeExecuteFailure(
-                output.stdout?.value,
+                output.stdout?.value ?: "",
+                output.stderr?.value ?: "",
                 output.logging?.value,
                 output.exitCode(),
                 output.status?.wrong ?: "",
@@ -70,7 +75,10 @@ object Clike : KojExecutor {
         } else {
             ClikeExecuteSuccess(
                 output.status?.result?.toExecuteResultType() ?: ExecuteResultType.AC,
-                output.stdout?.value ?: ""
+                output.stdout?.value ?: "",
+                output.stderr?.value ?: "",
+                output.status?.cpuTime?.toLong() ?: -1L,
+                output.status?.memory ?: -1L
             )
         }
     }

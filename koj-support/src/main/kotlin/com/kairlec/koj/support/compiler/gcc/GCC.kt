@@ -16,10 +16,17 @@ import mu.KotlinLogging
 
 data class GCCCompileSuccess(
     val executableName: String,
-    val image: String
+    val image: String,
+    override val stdout: String,
+    override val stderr: String
 ) : CompileSuccess
 
-data class GCCCompileFailure(override val message: String, override val cause: Throwable?) : CompileFailure
+data class GCCCompileFailure(
+    override val message: String,
+    override val cause: Throwable?,
+    override val stdout: String,
+    override val stderr: String
+) : CompileFailure
 
 data class GCCCompileConfig(
     override val source: CompileSource,
@@ -91,9 +98,9 @@ abstract class GCC : KojCompiler {
         return if (output.isError()) {
             log.warn { "compile error :$output" }
             val exception = SandboxCompileException(output)
-            GCCCompileFailure(exception.message, exception)
+            GCCCompileFailure(exception.message, exception, output.stdout?.value ?: "", output.stderr?.value ?: "")
         } else {
-            GCCCompileSuccess(executableName, image)
+            GCCCompileSuccess(executableName, image, output.stdout?.value ?: "", output.stderr?.value ?: "")
         }
     }
 

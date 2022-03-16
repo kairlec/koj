@@ -7,6 +7,8 @@ import java.util.*
 abstract class Kotlin(
     open val baseJava: Java
 ) : Jvm() {
+    override val id: String
+        get() = "Kotlin $version(${baseJava.id})"
     override val extension: String
         get() = ".kt"
 

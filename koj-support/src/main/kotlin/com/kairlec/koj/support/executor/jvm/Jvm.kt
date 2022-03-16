@@ -1,12 +1,9 @@
 package com.kairlec.koj.support.executor.jvm
 
 
-import com.kairlec.koj.common.TempDirectory
 import com.kairlec.koj.core.*
 import com.kairlec.koj.language.Jvm
-import com.kairlec.koj.language.kotlin.Kotlin1610_Java8
 import com.kairlec.koj.sandbox.docker.Docker
-import com.kairlec.koj.sandbox.docker.DockerSandboxInitConfig
 import com.kairlec.koj.sandbox.docker.DockerSandboxRunConfig
 import com.kairlec.koj.sandbox.docker.KOJEnv
 import com.kairlec.koj.support.compiler.jvm.JvmCompileSuccess
@@ -17,10 +14,14 @@ import kotlin.io.path.absolutePathString
 data class JvmExecuteSuccess(
     override var type: ExecuteResultType,
     override val stdout: String,
+    override val stderr: String,
+    override val time: Long,
+    override val memory: Long,
 ) : ExecuteSuccess
 
 data class JvmExecuteFailure(
-    val stdout: String?,
+    override val stdout: String,
+    override val stderr: String,
     val log: String?,
     val code: Int,
     override val message: String,
@@ -81,7 +82,8 @@ object Jvm : KojExecutor {
         )
         return if (output.isError()) {
             JvmExecuteFailure(
-                output.stdout?.value,
+                output.stdout?.value ?: "",
+                output.stderr?.value ?: "",
                 output.logging?.value,
                 output.exitCode(),
                 output.status?.wrong ?: "",
@@ -91,7 +93,10 @@ object Jvm : KojExecutor {
         } else {
             JvmExecuteSuccess(
                 output.status?.result?.toExecuteResultType() ?: ExecuteResultType.AC,
-                output.stdout?.value ?: ""
+                output.stdout?.value ?: "",
+                output.stderr?.value ?: "",
+                output.status?.cpuTime?.toLong() ?: -1L,
+                output.status?.memory ?: -1L
             )
         }
     }
@@ -99,27 +104,4 @@ object Jvm : KojExecutor {
     override fun isSupported(language: Language): Boolean {
         return language is Jvm
     }
-}
-
-suspend fun main() {
-    Docker.init(DockerSandboxInitConfig(emptyList()))
-    val context = KojFactory.create(
-        id = 123456,
-        "kairlec",
-        TempDirectory.create("123456"),
-        Kotlin1610_Java8,
-        """
-            fun main(){
-                println(readln())
-            }
-        """.trimIndent(),
-        Problem(123L,
-            "hello koj\n",
-            false,
-            buildMap {
-                put(Kotlin1610_Java8, RunConfig(-1, -1, -1))
-            }
-        )
-    )
-    context.run()
 }

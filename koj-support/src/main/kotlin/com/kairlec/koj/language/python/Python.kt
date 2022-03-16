@@ -7,4 +7,6 @@ abstract class Python : Language {
         get() = "Python"
     override val extension: String
         get() = ".py"
+    override val id: String
+        get() = "Python $version"
 }
