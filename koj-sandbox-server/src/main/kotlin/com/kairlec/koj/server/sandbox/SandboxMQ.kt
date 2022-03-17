@@ -76,7 +76,15 @@ internal class SandboxMQ(
     @EventListener(ApplicationReadyEvent::class)
     fun subscribe() {
         runBlocking {
-            Docker.init(DockerSandboxInitConfig(emptyList()))
+            Docker.init(DockerSandboxInitConfig(listOf(
+                "kairlec/koj-support:py36",
+                "kairlec/koj-support:py38",
+                "kairlec/koj-support:py310",
+                "kairlec/koj-support:clike",
+                "kairlec/koj-support:jvm8",
+                "kairlec/koj-support:jvm11",
+                "kairlec/koj-support:jvm17",
+            )))
         }
         val taskFlows = KojFactory.supportLanguages.map {
             newConsumer(it).asFlux().asFlow()
