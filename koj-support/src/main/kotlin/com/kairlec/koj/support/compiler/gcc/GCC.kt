@@ -31,7 +31,8 @@ data class GCCCompileFailure(
 data class GCCCompileConfig(
     override val source: CompileSource,
     override val compileImage: String = "kairlec/koj-support:clike",
-    override val compileImageVersion: String = "latest"
+    override val compileImageVersion: String = "latest",
+    override val debug: Boolean = false
 ) : AbstractCompileConfig()
 
 abstract class GCC : KojCompiler {
@@ -92,7 +93,8 @@ abstract class GCC : KojCompiler {
                     exePath = compiler,
                     args = compileArguments,
                     env = emptyList()
-                )
+                ),
+                debug = compileConfig.debug
             )
         )
         return if (output.isError()) {

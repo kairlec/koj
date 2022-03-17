@@ -15,25 +15,12 @@ docker pull python:3.6
 docker pull python:3.8
 docker pull python:3.10
 
-docker build --no-cache -t kairlec/koj-runtime:latest -f runtime.Dockerfile cc-src
+docker buildx build --no-cache -t kairlec/koj-runtime:latest -f runtime.Dockerfile --platform linux/amd64,linux/arm64 cc-src --push
 
-mkdir -p $(pwd)/jvm-context
-mkdir -p $(pwd)/clike-context
-mkdir -p $(pwd)/py-context
-
-id=$(docker create kairlec/koj-runtime)
-rm -rf $(pwd)/jvm-context/koj
-docker cp $id:/usr/src/koj/koj $(pwd)/jvm-context/koj
-rm -rf $(pwd)/clike-context/koj
-docker cp $id:/usr/src/koj/koj $(pwd)/clike-context/koj
-rm -rf $(pwd)/py-context/koj
-docker cp $id:/usr/src/koj/koj $(pwd)/py-context/koj
-docker rm -v $id
-
-docker build --no-cache -t kairlec/koj-support:py36  -f py36.Dockerfile py-context
-docker build --no-cache -t kairlec/koj-support:py38  -f py38.Dockerfile py-context
-docker build --no-cache -t kairlec/koj-support:py310  -f py310.Dockerfile py-context
-docker build --no-cache -t kairlec/koj-support:clike -f clike.Dockerfile clike-context
-docker build --no-cache -t kairlec/koj-support:jvm8  -f jvm8.Dockerfile jvm-context
-docker build --no-cache -t kairlec/koj-support:jvm11 -f jvm11.Dockerfile jvm-context
-docker build --no-cache -t kairlec/koj-support:jvm17 -f jvm17.Dockerfile jvm-context
+docker buildx build --no-cache -t kairlec/koj-support:py36  -f py36.Dockerfile --platform linux/amd64,linux/arm64 py-context --push
+docker buildx build --no-cache -t kairlec/koj-support:py38  -f py38.Dockerfile --platform linux/amd64,linux/arm64 py-context --push
+docker buildx build --no-cache -t kairlec/koj-support:py310  -f py310.Dockerfile --platform linux/amd64,linux/arm64 py-context --push
+docker buildx build --no-cache -t kairlec/koj-support:clike -f clike.Dockerfile --platform linux/amd64,linux/arm64 clike-context --push
+docker buildx build --no-cache -t kairlec/koj-support:jvm8  -f jvm8.Dockerfile --platform linux/amd64,linux/arm64 jvm-context --push
+docker buildx build --no-cache -t kairlec/koj-support:jvm11 -f jvm11.Dockerfile --platform linux/amd64,linux/arm64 jvm-context --push
+docker buildx build --no-cache -t kairlec/koj-support:jvm17 -f jvm17.Dockerfile --platform linux/amd64,linux/arm64 jvm-context --push

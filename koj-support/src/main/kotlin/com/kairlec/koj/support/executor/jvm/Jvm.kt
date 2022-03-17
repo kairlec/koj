@@ -77,7 +77,8 @@ object Jvm : KojExecutor {
                     exePath = "/usr/sbin/java",
                     args = args,
                     env = env,
-                )
+                ),
+                debug = config.debug
             )
         )
         return if (output.isError()) {

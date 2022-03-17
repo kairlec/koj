@@ -27,6 +27,7 @@ interface KojContext {
     val factory: KojFactory
     val code: String
     val state: StateFlow<State>
+    val debug: Boolean
 
     suspend fun run()
 }
@@ -42,7 +43,8 @@ interface KojContextFactory : LanguageSupport {
                 it.maxStack,
                 it.maxProcessNumber,
                 it.args,
-                it.env
+                it.env,
+                context.debug
             )
         }
     }
@@ -56,7 +58,8 @@ interface KojFactory : LanguageSupport {
         useLanguage: Language,
         code: String,
         stdin: String,
-        runConfig: RunConfig
+        runConfig: RunConfig,
+        debug: Boolean
     ): KojContext {
         return KojContextImpl(
             id = id,
@@ -67,6 +70,7 @@ interface KojFactory : LanguageSupport {
             stdin = stdin,
             code = code,
             factory = this,
+            debug = debug
         )
     }
 
@@ -181,6 +185,7 @@ data class KojContextImpl(
     override val code: String,
     override val factory: KojFactory,
     override val state: MutableStateFlow<State> = MutableStateFlow(State()),
+    override val debug: Boolean,
 ) : KojContext {
     companion object {
         private val log = KotlinLogging.logger {}
@@ -203,45 +208,53 @@ data class KojContextImpl(
         state.value = state.value.error(cause, stdout, stderr)
     }
 
-    override suspend fun run() {
-        tempDirectory.use {
-            state.next() // inited
-            val contextFactory = factory.chooseContextFactory(this)
-            val compiler = factory.chooseCompiler(useLanguage)
-            val executor = factory.chooseExecutor(useLanguage)
-            val compileConfig = contextFactory.createCompileConfig(this)
-            val executorConfig = contextFactory.createExecutorConfig(this)
-            val compileResult = compiler.compile(this, compileConfig)
-            if (compileResult is CompileSuccess) {
-                state.next() //compiled
-                log.info { "Compile success" }
-                val executeResult = executor.execute(this, compileResult, stdin, executorConfig)
-                if (executeResult is ExecuteSuccess) {
-                    log.info { "Execute success" }
-                    if (executeResult.type != ExecuteResultType.AC) {
-                        state.error(ExecuteResultException(executeResult.type), stderr = executeResult.stderr)
-                    } else {
-                        state.next(
-                            executeResult.stdout,
-                            executeResult.stderr,
-                            executeResult.time,
-                            executeResult.memory
-                        ) // executed
-                    }
+    private suspend fun runInternal() {
+        state.next() // inited
+        val contextFactory = factory.chooseContextFactory(this)
+        val compiler = factory.chooseCompiler(useLanguage)
+        val executor = factory.chooseExecutor(useLanguage)
+        val compileConfig = contextFactory.createCompileConfig(this)
+        val executorConfig = contextFactory.createExecutorConfig(this)
+        val compileResult = compiler.compile(this, compileConfig)
+        if (compileResult is CompileSuccess) {
+            state.next() //compiled
+            log.info { "Compile success" }
+            val executeResult = executor.execute(this, compileResult, stdin, executorConfig)
+            if (executeResult is ExecuteSuccess) {
+                log.info { "Execute success" }
+                if (executeResult.type != ExecuteResultType.AC) {
+                    state.error(ExecuteResultException(executeResult.type), stderr = executeResult.stderr)
                 } else {
-                    state.error(
-                        (executeResult as ExecuteFailure).cause
-                            ?: IllegalStateException("Execute failure:${executeResult.message}"),
-                        stderr = executeResult.stderr
-                    )
+                    state.next(
+                        executeResult.stdout,
+                        executeResult.stderr,
+                        executeResult.time,
+                        executeResult.memory
+                    ) // executed
                 }
             } else {
                 state.error(
-                    (compileResult as CompileFailure).cause
-                        ?: IllegalStateException("Compile failure:${compileResult.message}"),
-                    stderr = compileResult.stderr
+                    (executeResult as ExecuteFailure).cause
+                        ?: IllegalStateException("Execute failure:${executeResult.message}"),
+                    stderr = executeResult.stderr
                 )
+            }
+        } else {
+            state.error(
+                (compileResult as CompileFailure).cause
+                    ?: IllegalStateException("Compile failure:${compileResult.message}"),
+                stderr = compileResult.stderr
+            )
 
+        }
+    }
+
+    override suspend fun run() {
+        if (debug) {
+            runInternal()
+        } else {
+            tempDirectory.use {
+                runInternal()
             }
         }
         state.next(State.END) // end

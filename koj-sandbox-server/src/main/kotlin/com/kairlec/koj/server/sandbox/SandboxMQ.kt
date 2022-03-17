@@ -1,4 +1,4 @@
-package com.kairlec.koj.server.sanbod
+package com.kairlec.koj.server.sandbox
 
 import com.kairlec.koj.common.*
 import com.kairlec.koj.core.*
@@ -25,7 +25,9 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import java.net.InetAddress
-import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
 @Configuration
@@ -48,8 +50,13 @@ internal class SandboxMQ(
         private val hostname = InetAddress.getLocalHost().hostName
     }
 
-    private val dispatcher =
-        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 3).asCoroutineDispatcher()
+    private val dispatcher = ThreadPoolExecutor(
+        1,
+        Runtime.getRuntime().availableProcessors() + 3,
+        1,
+        TimeUnit.MINUTES,
+        LinkedBlockingQueue(),
+    ).asCoroutineDispatcher()
 
     private val coroutineScope = CoroutineScope(dispatcher)
 
@@ -57,10 +64,11 @@ internal class SandboxMQ(
         return fluxConsumerFactory.newConsumer(
             PulsarFluxConsumer.builder()
                 .setTopic(taskTopic(language.id))
-                .setConsumerName("koj-sandbox-${language.id}-${hostname}-${Random.nextLong()}")
+                .setConsumerName("koj-sandbox-${language.id}-$hostname-${Random.nextLong()}")
                 .setSubscriptionName("koj-sandbox")
                 .setSubscriptionType(SubscriptionType.Shared)
                 .setMessageClass(ByteArray::class.java)
+                .setSimple(false)
                 .build()
         )
     }
@@ -82,6 +90,8 @@ internal class SandboxMQ(
                         msg.consumer.acknowledge(msg.message)
                     } catch (e: PulsarClientException) {
                         msg.consumer.negativeAcknowledge(msg.message)
+                    } catch (e: Exception) {
+                        throw e
                     }
                 }
             }
@@ -105,7 +115,8 @@ internal class SandboxMQ(
                 maxProcessNumber = task.config.maxProcessNumber,
                 args = task.config.argsList,
                 env = task.config.envList
-            )
+            ),
+            debug = task.debug
         )
         coroutineScope.launch {
             context.state.collect {
@@ -124,6 +135,7 @@ internal class SandboxMQ(
                     }
                     State.END -> {
                         if (it.isError) {
+                            log.info(it.cause) { "task error: ${it.stdout}\n\n${it.stderr}" }
                             producer.send(resultTopic(), taskResult {
                                 id = task.id
                                 type = when (it.cause) {
@@ -142,6 +154,7 @@ internal class SandboxMQ(
                                 stderr = it.stderr ?: ""
                             }.toByteArray().compress())
                         } else {
+                            log.info { "task end:${it}" }
                             producer.send(resultTopic(), taskResult {
                                 id = task.id
                                 stdout = it.stdout ?: ""

@@ -62,7 +62,7 @@ object Docker {
         return try {
             block()
         } catch (e: Exception) {
-            log.error(e) { message }
+            log.error { "${message}: ${e.message}" }
             null
         }
     }
@@ -83,11 +83,11 @@ object Docker {
                                 Bind(tempDirectory.absolutePathString(), Volume(containerPathPrefix), AccessMode.rw),
                                 Bind(stdin.absolutePathString(), Volume(resolve("stdin")), AccessMode.ro),
                             )
-                            .withAutoRemove(true)
+                            .withAutoRemove(!runConfig.debug)
                     )
                     .withEnv(runConfig.kojEnv.asList())
                     .withNetworkDisabled(true)
-                    .withName(runConfig.namespace)
+                    .withName("${runConfig.namespace}-execute")
                     .withWorkingDir(containerPathPrefix)
                     .exec()
                 dockerClient.startContainerCmd(createResult.id).exec()
@@ -97,16 +97,16 @@ object Docker {
                 } catch (_: NotFoundException) {
                     0
                 }
-                val status = tryRead("load status file failed") {
+                val status = tryRead("load run status file failed") {
                     Status.load(tempDirectory.resolve("status"))
                 }
-                val stdout = tryRead("load stdout file failed") {
+                val stdout = tryRead("load run stdout file failed") {
                     Stdout(tempDirectory.resolve("stdout").readText())
                 }
-                val stderr = tryRead("load stderr file failed") {
+                val stderr = tryRead("load run stderr file failed") {
                     Stderr(tempDirectory.resolve("stderr").readText())
                 }
-                val log = tryRead("load log file failed") {
+                val log = tryRead("load run log file failed") {
                     Logging(tempDirectory.resolve("log").readText())
                 }
                 continuation.resume(KojDockerOutput(exitCode, status, stdout, stderr, log))
@@ -135,12 +135,12 @@ object Docker {
                                     AccessMode.ro
                                 ),
                             )
-                            .withAutoRemove(true)
+                            .withAutoRemove(!compileConfig.debug)
                     )
                     .withWorkingDir(containerPathPrefix)
                     .withEnv(compileConfig.kojEnv.asList())
                     .withNetworkDisabled(true)
-                    .withName(compileConfig.namespace)
+                    .withName("${compileConfig.namespace}-compile")
                     .exec()
                 dockerClient.startContainerCmd(createResult.id).exec()
                 val exitCode = try {
@@ -149,16 +149,16 @@ object Docker {
                 } catch (_: NotFoundException) {
                     0
                 }
-                val status = tryRead("load status file failed") {
+                val status = tryRead("load compile status file failed") {
                     Status.load(tempDirectory.resolve("status"))
                 }
-                val stdout = tryRead("load stdout file failed") {
+                val stdout = tryRead("load compile stdout file failed") {
                     Stdout(tempDirectory.resolve("stdout").readText())
                 }
-                val stderr = tryRead("load stderr file failed") {
+                val stderr = tryRead("load compile stderr file failed") {
                     Stderr(tempDirectory.resolve("stderr").readText())
                 }
-                val log = tryRead("load log file failed") {
+                val log = tryRead("load compile log file failed") {
                     Logging(tempDirectory.resolve("log").readText())
                 }
                 continuation.resume(KojDockerOutput(exitCode, status, stdout, stderr, log))

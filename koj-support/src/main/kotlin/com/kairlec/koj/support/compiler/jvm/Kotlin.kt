@@ -72,7 +72,8 @@ object Kotlin : KojCompiler {
                     addonPath = "",
                     args = compileArguments,
                     env = emptyList()
-                )
+                ),
+                debug = compileConfig.debug
             )
         )
         return if (output.isError()) {

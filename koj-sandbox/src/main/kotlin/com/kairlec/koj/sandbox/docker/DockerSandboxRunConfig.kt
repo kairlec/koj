@@ -40,4 +40,5 @@ data class DockerSandboxRunConfig(
     val exeMount: Pair<String, String>,
     val input: String,
     val kojEnv: KOJEnv,
+    val debug: Boolean
 )

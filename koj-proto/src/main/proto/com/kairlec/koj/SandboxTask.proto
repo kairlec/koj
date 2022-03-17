@@ -23,6 +23,7 @@ message Task{
   string language_id = 4;
   TaskConfig config = 5;
   string stdin = 6;
+  bool debug = 7;
 }
 
 enum TaskResultType{

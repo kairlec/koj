@@ -1,6 +1,6 @@
 FROM python:3.10
 
-COPY koj /usr/sbin/
+COPY --from=kairlec/koj-runtime /usr/src/koj/koj /usr/sbin/
 
 RUN chmod +x /usr/sbin/koj
 

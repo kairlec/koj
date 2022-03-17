@@ -1,4 +1,4 @@
-package com.kairlec.koj.server.sanbod
+package com.kairlec.koj.server.sandbox
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

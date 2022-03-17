@@ -10,7 +10,7 @@ import com.kairlec.koj.support.compiler.jvm.JvmCompileConfig
 
 object ClikeContextFactory : KojContextFactory {
     override fun createCompileConfig(context: KojContext): CompileConfig {
-        return GCCCompileConfig(CompileSource(context.code))
+        return GCCCompileConfig(CompileSource(context.code), debug = context.debug)
     }
 
     override fun isSupported(language: Language): Boolean {
@@ -20,7 +20,7 @@ object ClikeContextFactory : KojContextFactory {
 
 object JvmContextFactory : KojContextFactory {
     override fun createCompileConfig(context: KojContext): CompileConfig {
-        return JvmCompileConfig(CompileSource(context.code))
+        return JvmCompileConfig(CompileSource(context.code), debug = context.debug)
     }
 
     override fun isSupported(language: Language): Boolean {

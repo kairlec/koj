@@ -77,6 +77,7 @@ interface ExecutorConfig {
     val maxProcessNumber: Int get() = 1
     val args: List<String> get() = emptyList()
     val env: List<String> get() = emptyList()
+    val debug: Boolean
 }
 
 fun ExecutorConfig(
@@ -87,6 +88,7 @@ fun ExecutorConfig(
     maxProcessNumber: Int = 1,
     args: List<String> = emptyList(),
     env: List<String> = emptyList(),
+    debug: Boolean = false,
 ): ExecutorConfig {
     return ExecutorConfigImpl(
         maxTime,
@@ -96,6 +98,7 @@ fun ExecutorConfig(
         maxProcessNumber,
         args,
         env,
+        debug
     )
 }
 
@@ -107,6 +110,7 @@ internal data class ExecutorConfigImpl(
     override val maxProcessNumber: Int = 1,
     override val args: List<String> = emptyList(),
     override val env: List<String> = emptyList(),
+    override val debug: Boolean = false,
 ) : ExecutorConfig
 
 interface KojExecutor : LanguageSupport {

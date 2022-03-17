@@ -2,7 +2,7 @@ FROM openjdk:11
 
 WORKDIR /tmp/koj
 
-COPY koj /usr/sbin/
+COPY --from=kairlec/koj-runtime /usr/src/koj/koj /usr/sbin/
 COPY policy/java.policy /etc/policy/java.policy
 COPY kotlinc/ /usr/local/share/kotlinc
 

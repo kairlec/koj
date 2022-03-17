@@ -1,6 +1,6 @@
 FROM gcc:9.4
 
-COPY koj /usr/sbin/
+COPY --from=kairlec/koj-runtime /usr/src/koj/koj /usr/sbin/
 
 RUN chmod +x /usr/sbin/koj
 

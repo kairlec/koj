@@ -31,7 +31,8 @@ data class JvmCompileFailure(
 data class JvmCompileConfig(
     override val source: CompileSource,
     override val compileImage: String = "kairlec/koj-support:jvm",
-    override val compileImageVersion: String = ""
+    override val compileImageVersion: String = "",
+    override val debug: Boolean = false,
 ) : AbstractCompileConfig()
 
 object Java : KojCompiler {
@@ -93,7 +94,8 @@ object Java : KojCompiler {
                     exePath = "/usr/sbin/javac",
                     args = compileArguments,
                     env = emptyList()
-                )
+                ),
+                debug = compileConfig.debug
             )
         )
         return if (output.isError()) {

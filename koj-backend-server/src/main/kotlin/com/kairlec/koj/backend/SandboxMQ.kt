@@ -20,6 +20,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RestController
 import java.net.InetAddress
 import kotlin.random.Random
 
@@ -36,7 +38,7 @@ class ProducerConfig {
 }
 
 @Service
-internal class SandboxMQ(
+class SandboxMQ(
     fluxConsumerFactory: FluxConsumerFactory,
     private val producer: PulsarTemplate<ByteArray>
 ) {
@@ -54,6 +56,7 @@ internal class SandboxMQ(
             .setSubscriptionName("koj-backend")
             .setSubscriptionType(SubscriptionType.Shared)
             .setMessageClass(ByteArray::class.java)
+            .setSimple(false)
             .build()
     )
 
@@ -64,6 +67,7 @@ internal class SandboxMQ(
             .setSubscriptionName("koj-backend")
             .setSubscriptionType(SubscriptionType.Shared)
             .setMessageClass(ByteArray::class.java)
+            .setSimple(false)
             .build()
     )
 
@@ -91,24 +95,6 @@ internal class SandboxMQ(
                 }
             }
         }
-        sendTask(task {
-            id = 123456L
-            namespace = "kairlec"
-            code = """
-                fun main(){
-                    println(readln())
-                }
-            """.trimIndent()
-            languageId = Kotlin1610_Java11.id
-            stdin = "hello koj backend\n"
-            config = taskConfig {
-                maxTime = -1
-                maxMemory = -1
-                maxOutputSize = -1
-                maxStack = -1
-                maxProcessNumber = -1
-            }
-        })
     }
 
     private suspend fun taskStatus(data: ByteArray) {
@@ -125,4 +111,38 @@ internal class SandboxMQ(
         producer.send(taskTopic(task.languageId), task.toByteArray().compress())
     }
 
+}
+
+@RestController
+class Cont(
+    private val mq: SandboxMQ
+) {
+    @GetMapping
+    fun get(): String {
+        mq.sendTask(task {
+            id = 123456L
+            namespace = "kairlec"
+            code = """
+                fun main(){
+                    println(readln())
+                }
+            """.trimIndent()
+            languageId = Kotlin1610_Java11.id
+            stdin = "hello koj backend\n"
+            config = taskConfig {
+                maxTime = -1
+                maxMemory = -1
+                maxOutputSize = -1
+                maxStack = -1
+                maxProcessNumber = -1
+            }
+            debug = true
+        })
+        log.info { "sent task" }
+        return "ok"
+    }
+
+    companion object {
+        private val log = KotlinLogging.logger { }
+    }
 }

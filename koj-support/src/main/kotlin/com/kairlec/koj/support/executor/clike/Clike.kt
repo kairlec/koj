@@ -59,7 +59,8 @@ object Clike : KojExecutor {
                     exePath = compileSuccess.executableName,
                     args = config.args,
                     env = config.env,
-                )
+                ),
+                debug = config.debug,
             )
         )
         return if (output.isError()) {

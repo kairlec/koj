@@ -1,4 +1,4 @@
-package com.kairlec.koj.server.sanbod
+package com.kairlec.koj.server.sandbox
 
 class RoundRobin<T> {
     private data class Element<T>(

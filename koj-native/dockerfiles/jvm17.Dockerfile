@@ -4,7 +4,7 @@ WORKDIR /tmp/koj
 
 COPY policy/java.policy /etc/policy/java.policy
 COPY kotlinc/ /usr/local/share/kotlinc
-COPY koj /usr/sbin/
+COPY --from=kairlec/koj-runtime /usr/src/koj/koj /usr/sbin/
 
 RUN ln -s /usr/local/share/kotlinc/bin/kotlinc /usr/sbin/kotlinc && \
     ln -s /usr/java/openjdk-17/bin/javac /usr/sbin/javac && \

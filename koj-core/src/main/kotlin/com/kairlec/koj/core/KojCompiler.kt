@@ -23,6 +23,7 @@ interface CompileFailure : CompileResult {
 
 interface CompileConfig {
     val source: CompileSource
+    val debug: Boolean
 }
 
 interface CompileSource {
