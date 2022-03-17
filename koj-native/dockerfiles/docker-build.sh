@@ -17,6 +17,10 @@ docker pull python:3.10
 
 docker buildx build --no-cache -t kairlec/koj-runtime:latest -f runtime.Dockerfile --platform linux/amd64,linux/arm64 cc-src --push
 
+mkdir -p $(pwd)/jvm-context
+mkdir -p $(pwd)/clike-context
+mkdir -p $(pwd)/py-context
+
 docker buildx build --no-cache -t kairlec/koj-support:py36  -f py36.Dockerfile --platform linux/amd64,linux/arm64 py-context --push
 docker buildx build --no-cache -t kairlec/koj-support:py38  -f py38.Dockerfile --platform linux/amd64,linux/arm64 py-context --push
 docker buildx build --no-cache -t kairlec/koj-support:py310  -f py310.Dockerfile --platform linux/amd64,linux/arm64 py-context --push
