@@ -71,6 +71,7 @@ object Docker {
         return suspendCancellableCoroutine { continuation ->
             try {
                 val stdin = tempDirectory.createFileWithContent("stdin", runConfig.input)
+                log.debug { "create stdin file:${stdin} with content:${runConfig.input}" }
                 val createResult = dockerClient.createContainerCmd(runConfig.image)
                     .withHostConfig(
                         HostConfig.newHostConfig()
@@ -91,12 +92,14 @@ object Docker {
                     .withWorkingDir(containerPathPrefix)
                     .exec()
                 dockerClient.startContainerCmd(createResult.id).exec()
+                log.debug { "container started:${createResult.id} with name:${runConfig.namespace}-compile" }
                 val exitCode = try {
                     val waitResult = dockerClient.waitContainerCmd(createResult.id).start()
                     waitResult.awaitStatusCode()
                 } catch (_: NotFoundException) {
                     0
                 }
+                log.debug { "container exited:${exitCode}" }
                 val status = tryRead("load run status file failed") {
                     Status.load(tempDirectory.resolve("status"))
                 }
@@ -124,6 +127,7 @@ object Docker {
             try {
                 val sourceFile =
                     tempDirectory.createFileWithContent(compileConfig.sourceFileName, compileConfig.sourceContent)
+                log.debug { "create source file:${sourceFile} with content:${compileConfig.sourceContent}" }
                 val createResult = dockerClient.createContainerCmd(compileConfig.image)
                     .withHostConfig(
                         HostConfig.newHostConfig()
@@ -143,12 +147,14 @@ object Docker {
                     .withName("${compileConfig.namespace}-compile")
                     .exec()
                 dockerClient.startContainerCmd(createResult.id).exec()
+                log.debug { "container started:${createResult.id} with name:${compileConfig.namespace}-compile" }
                 val exitCode = try {
                     val waitResult = dockerClient.waitContainerCmd(createResult.id).start()
                     waitResult.awaitStatusCode()
                 } catch (_: NotFoundException) {
                     0
                 }
+                log.debug { "container exited:${exitCode}" }
                 val status = tryRead("load compile status file failed") {
                     Status.load(tempDirectory.resolve("status"))
                 }

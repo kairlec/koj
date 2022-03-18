@@ -10,12 +10,9 @@ import io.github.majusko.pulsar.producer.PulsarTemplate
 import io.github.majusko.pulsar.reactor.FluxConsumer
 import io.github.majusko.pulsar.reactor.FluxConsumerFactory
 import io.github.majusko.pulsar.reactor.PulsarFluxConsumer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.apache.pulsar.client.api.PulsarClientException
 import org.apache.pulsar.client.api.SubscriptionType
@@ -45,11 +42,6 @@ internal class SandboxMQ(
     private val fluxConsumerFactory: FluxConsumerFactory,
     private val producer: PulsarTemplate<ByteArray>
 ) {
-    companion object {
-        private val log = KotlinLogging.logger { }
-        private val hostname = InetAddress.getLocalHost().hostName
-    }
-
     private val dispatcher = ThreadPoolExecutor(
         1,
         Runtime.getRuntime().availableProcessors() + 3,
@@ -76,15 +68,19 @@ internal class SandboxMQ(
     @EventListener(ApplicationReadyEvent::class)
     fun subscribe() {
         runBlocking {
-            Docker.init(DockerSandboxInitConfig(listOf(
-                "kairlec/koj-support:py36",
-                "kairlec/koj-support:py38",
-                "kairlec/koj-support:py310",
-                "kairlec/koj-support:clike",
-                "kairlec/koj-support:jvm8",
-                "kairlec/koj-support:jvm11",
-                "kairlec/koj-support:jvm17",
-            )))
+            Docker.init(
+                DockerSandboxInitConfig(
+                    listOf(
+                        "kairlec/koj-support:py36",
+                        "kairlec/koj-support:py38",
+                        "kairlec/koj-support:py310",
+                        "kairlec/koj-support:clike",
+                        "kairlec/koj-support:jvm8",
+                        "kairlec/koj-support:jvm11",
+                        "kairlec/koj-support:jvm17",
+                    )
+                )
+            )
         }
         val taskFlows = KojFactory.supportLanguages.map {
             newConsumer(it).asFlux().asFlow()
@@ -107,7 +103,11 @@ internal class SandboxMQ(
     }
 
     private suspend fun receive(data: ByteArray) {
-        val task = Task.parseFrom(data)
+        receive(Task.parseFrom(data))
+    }
+
+    internal suspend fun receive(task: Task) {
+        log.debug { "receiver task :\n${task}" }
         val context = KojFactory.create(
             id = task.id,
             namespace = task.namespace,
@@ -128,6 +128,7 @@ internal class SandboxMQ(
         )
         coroutineScope.launch {
             context.state.collect {
+                log.info { "(id=${task.id})state -> $it" }
                 when (it.current) {
                     State.INITED -> {
                         producer.send(statusTopic(), taskStatus {
@@ -176,7 +177,13 @@ internal class SandboxMQ(
                 }
             }
         }
+        delay(50)
         context.run()
+    }
+
+    companion object {
+        private val log = KotlinLogging.logger { }
+        private val hostname = InetAddress.getLocalHost().hostName
     }
 
 }

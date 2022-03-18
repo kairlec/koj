@@ -15,7 +15,7 @@ data class State(
     fun next(stdout: String? = null, stderr: String? = null, time: Long? = null, memory: Long? = null): State {
         return State(
             (value shl 1) or value,
-            current,
+            current shl 1,
             stdout = stdout ?: this.stdout,
             stderr = stderr ?: this.stderr,
             time = time ?: this.time,

@@ -212,14 +212,20 @@ data class KojContextImpl(
         state.next() // inited
         val contextFactory = factory.chooseContextFactory(this)
         val compiler = factory.chooseCompiler(useLanguage)
+        log.debug { "choose compile:${compiler}" }
         val executor = factory.chooseExecutor(useLanguage)
+        log.debug { "choose executor:${executor}" }
         val compileConfig = contextFactory.createCompileConfig(this)
+        log.debug { "create compile config:${compileConfig}" }
         val executorConfig = contextFactory.createExecutorConfig(this)
+        log.debug { "create executor config:${executorConfig}" }
         val compileResult = compiler.compile(this, compileConfig)
+        log.info { "compile result:${compileResult}" }
         if (compileResult is CompileSuccess) {
             state.next() //compiled
             log.info { "Compile success" }
             val executeResult = executor.execute(this, compileResult, stdin, executorConfig)
+            log.info { "execute result:${executeResult}" }
             if (executeResult is ExecuteSuccess) {
                 log.info { "Execute success" }
                 if (executeResult.type != ExecuteResultType.AC) {

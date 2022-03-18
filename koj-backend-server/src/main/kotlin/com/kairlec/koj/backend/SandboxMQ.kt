@@ -136,9 +136,11 @@ class Cont(
                 maxStack = -1
                 maxProcessNumber = -1
             }
-            debug = true
+            debug = false
+        }.apply {
+            log.debug { "send task content:${this}" }
         })
-        log.info { "sent task" }
+        log.info { "sent task success" }
         return "ok"
     }
 

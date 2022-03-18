@@ -1,5 +1,6 @@
 package com.kairlec.koj.common
 
+import mu.KotlinLogging
 import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
@@ -14,9 +15,6 @@ class TempDirectory private constructor(
 
     fun createFileWithContent(filename: String, content: String): Path {
         return path.resolve(filename).apply {
-            if (this.notExists()) {
-                this.createFile()
-            }
             writeText(content)
         }
     }
@@ -31,6 +29,7 @@ class TempDirectory private constructor(
     }
 
     companion object {
+        private val log = KotlinLogging.logger {  }
         private val tempDir = Path.of(System.getProperty("java.io.tmpdir"))
         fun createOrUse(
             id: String,
