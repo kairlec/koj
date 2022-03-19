@@ -24,6 +24,7 @@ dependencyResolutionManagement {
             version("kotlin-logging", "2.+")
             version("coroutines", "1.6.+")
             version("reflections", "0.10.+")
+            version("pulsar", "2.9.+")
             library("reflections", "org.reflections", "reflections").versionRef("reflections")
 
             library("docker-java", "com.github.docker-java", "docker-java").versionRef("docker-java")
@@ -42,6 +43,7 @@ dependencyResolutionManagement {
             bundle("protobuf", listOf("protobuf-java", "protobuf-kotlin", "protobuf-java-util"))
 
             library("pulsar", "io.github.majusko", "pulsar-java-spring-boot-starter").versionRef("pulsar-starter")
+            library("pulsar.admin", "org.apache.pulsar", "pulsar-client-admin").versionRef("pulsar")
             library(
                 "coroutines-reactive",
                 "org.jetbrains.kotlinx",
@@ -53,7 +55,7 @@ dependencyResolutionManagement {
                 "kotlinx-coroutines-reactor"
             ).versionRef("coroutines")
             library("coroutines-core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").versionRef("coroutines")
-
+            library("reactive-lock", "pro.chenggang", "reactive-lock").version("1.0.0-SNAPSHOT")
             library("kotlin-stdlib", "org.jetbrains.kotlin", "kotlin-stdlib").withoutVersion()
             library("kotlin-stdlib-jdk8", "org.jetbrains.kotlin", "kotlin-stdlib-jdk8").withoutVersion()
             library("kotlin-reflect", "org.jetbrains.kotlin", "kotlin-reflect").withoutVersion()
@@ -63,6 +65,7 @@ dependencyResolutionManagement {
             library("reactor.kotlin", "io.projectreactor.kotlin", "reactor-kotlin-extensions").withoutVersion()
             library("reactor.test", "io.projectreactor", "reactor-test").withoutVersion()
 
+            library("spring-boot-starter-jooq", "org.springframework.boot", "spring-boot-starter-jooq").withoutVersion()
             library("spring-boot-starter-web", "org.springframework.boot", "spring-boot-starter-web").withoutVersion()
             library("spring-boot-starter", "org.springframework.boot", "spring-boot-starter").withoutVersion()
             library("spring-boot-starter-test", "org.springframework.boot", "spring-boot-starter-test").withoutVersion()
@@ -98,11 +101,16 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "KOJ"
-include("koj-sandbox")
-include("koj-support")
-include("koj-core")
-include("koj-common")
-include("koj-sandbox-server")
-include("koj-proto")
-include("koj-stub")
-include("koj-backend-server")
+include("common")
+include("common:koj-common")
+include("common:koj-stub")
+include("common:koj-proto")
+
+include("sandbox")
+include("sandbox:koj-sandbox")
+include("sandbox:koj-support")
+include("sandbox:koj-core")
+include("sandbox:koj-sandbox-server")
+
+include("backend")
+include("backend:koj-backend-server")
