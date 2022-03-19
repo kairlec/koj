@@ -16,6 +16,7 @@ data class State(
         return State(
             (value shl 1) or value,
             current shl 1,
+            cause = this.cause,
             stdout = stdout ?: this.stdout,
             stderr = stderr ?: this.stderr,
             time = time ?: this.time,
@@ -27,6 +28,7 @@ data class State(
         return State(
             this.value or value,
             value,
+            cause = this.cause,
             stdout = stdout ?: this.stdout,
             stderr = stderr ?: this.stderr,
             time = time,

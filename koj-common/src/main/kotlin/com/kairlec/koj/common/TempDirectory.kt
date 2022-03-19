@@ -21,9 +21,6 @@ class TempDirectory private constructor(
 
     fun createFileWithContent(filename: String, content: ByteArray): Path {
         return path.resolve(filename).apply {
-            if (this.notExists()) {
-                this.createFile()
-            }
             writeBytes(content)
         }
     }

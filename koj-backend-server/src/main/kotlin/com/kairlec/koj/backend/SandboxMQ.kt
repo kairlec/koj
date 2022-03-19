@@ -99,12 +99,12 @@ class SandboxMQ(
 
     private suspend fun taskStatus(data: ByteArray) {
         val status = TaskStatus.parseFrom(data)
-        log.info { status }
+        log.info { "task staus(${status.status}):${status}" }
     }
 
     private suspend fun taskResult(data: ByteArray) {
         val result = TaskResult.parseFrom(data)
-        log.info { result }
+        log.info { "task result(${result.type}):${result}" }
     }
 
     fun sendTask(task: Task) {

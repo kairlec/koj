@@ -11,7 +11,9 @@ import io.github.majusko.pulsar.reactor.FluxConsumer
 import io.github.majusko.pulsar.reactor.FluxConsumerFactory
 import io.github.majusko.pulsar.reactor.PulsarFluxConsumer
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.reactive.asFlow
 import mu.KotlinLogging
 import org.apache.pulsar.client.api.PulsarClientException
@@ -131,12 +133,14 @@ internal class SandboxMQ(
                 log.info { "(id=${task.id})state -> $it" }
                 when (it.current) {
                     State.INITED -> {
+                        log.info { "(id=${task.id}) send status -> COMPILING" }
                         producer.send(statusTopic(), taskStatus {
                             id = task.id
                             status = TaskIntermediateStatusEnum.COMPILING
                         }.toByteArray().compress())
                     }
                     State.COMPILED -> {
+                        log.info { "(id=${task.id}) send status -> RUNNING" }
                         producer.send(statusTopic(), taskStatus {
                             id = task.id
                             status = TaskIntermediateStatusEnum.RUNNING
@@ -144,7 +148,7 @@ internal class SandboxMQ(
                     }
                     State.END -> {
                         if (it.isError) {
-                            log.info(it.cause) { "task error: ${it.stdout}\n\n${it.stderr}" }
+                            log.info(it.cause) { "(id=${task.id})task error: ${it.stdout}\n\n${it.stderr}" }
                             producer.send(resultTopic(), taskResult {
                                 id = task.id
                                 type = when (it.cause) {

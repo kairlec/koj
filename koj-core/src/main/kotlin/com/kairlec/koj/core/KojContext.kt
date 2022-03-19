@@ -1,8 +1,9 @@
 package com.kairlec.koj.core
 
 import com.kairlec.koj.common.TempDirectory
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import mu.KotlinLogging
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
@@ -26,7 +27,7 @@ interface KojContext {
     val stdin: String
     val factory: KojFactory
     val code: String
-    val state: StateFlow<State>
+    val state: Flow<State>
     val debug: Boolean
 
     suspend fun run()
@@ -184,32 +185,38 @@ data class KojContextImpl(
     override val stdin: String,
     override val code: String,
     override val factory: KojFactory,
-    override val state: MutableStateFlow<State> = MutableStateFlow(State()),
+    private val stateChannel: Channel<State> = Channel(6),
     override val debug: Boolean,
 ) : KojContext {
+    override val state: Flow<State> = stateChannel.receiveAsFlow()
+    private var stateValue = State()
+
     companion object {
         private val log = KotlinLogging.logger {}
     }
 
-    private fun MutableStateFlow<State>.next(
+    private suspend fun nextState(
         stdout: String? = null,
         stderr: String? = null,
-        time: Long = -1,
-        memory: Long = -1
+        time: Long? = null,
+        memory: Long? = null
     ) {
-        state.value = state.value.next(stdout, stderr, time, memory)
+        stateValue = stateValue.next(stdout, stderr, time, memory)
+        stateChannel.send(stateValue)
     }
 
-    private fun MutableStateFlow<State>.next(value: Int, stdout: String? = null, stderr: String? = null) {
-        state.value = state.value.next(value, stdout, stderr)
+    private suspend fun nextState(value: Int, stdout: String? = null, stderr: String? = null) {
+        stateValue = stateValue.next(value, stdout, stderr)
+        stateChannel.send(stateValue)
     }
 
-    private fun MutableStateFlow<State>.error(cause: Throwable, stdout: String? = null, stderr: String? = null) {
-        state.value = state.value.error(cause, stdout, stderr)
+    private suspend fun errorState(cause: Throwable, stdout: String? = null, stderr: String? = null) {
+        stateValue = stateValue.error(cause, stdout, stderr)
+        stateChannel.send(stateValue)
     }
 
     private suspend fun runInternal() {
-        state.next() // inited
+        nextState() // inited
         val contextFactory = factory.chooseContextFactory(this)
         val compiler = factory.chooseCompiler(useLanguage)
         log.debug { "choose compile:${compiler}" }
@@ -222,16 +229,16 @@ data class KojContextImpl(
         val compileResult = compiler.compile(this, compileConfig)
         log.info { "compile result:${compileResult}" }
         if (compileResult is CompileSuccess) {
-            state.next() //compiled
+            nextState() //compiled
             log.info { "Compile success" }
             val executeResult = executor.execute(this, compileResult, stdin, executorConfig)
             log.info { "execute result:${executeResult}" }
             if (executeResult is ExecuteSuccess) {
                 log.info { "Execute success" }
                 if (executeResult.type != ExecuteResultType.AC) {
-                    state.error(ExecuteResultException(executeResult.type), stderr = executeResult.stderr)
+                    errorState(ExecuteResultException(executeResult.type), stderr = executeResult.stderr)
                 } else {
-                    state.next(
+                    nextState(
                         executeResult.stdout,
                         executeResult.stderr,
                         executeResult.time,
@@ -239,19 +246,18 @@ data class KojContextImpl(
                     ) // executed
                 }
             } else {
-                state.error(
+                errorState(
                     (executeResult as ExecuteFailure).cause
                         ?: IllegalStateException("Execute failure:${executeResult.message}"),
                     stderr = executeResult.stderr
                 )
             }
         } else {
-            state.error(
+            errorState(
                 (compileResult as CompileFailure).cause
                     ?: IllegalStateException("Compile failure:${compileResult.message}"),
                 stderr = compileResult.stderr
             )
-
         }
     }
 
@@ -263,6 +269,7 @@ data class KojContextImpl(
                 runInternal()
             }
         }
-        state.next(State.END) // end
+        nextState(State.END) // end
+        stateChannel.close()
     }
 }
