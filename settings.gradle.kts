@@ -54,6 +54,11 @@ dependencyResolutionManagement {
                 "org.jetbrains.kotlinx",
                 "kotlinx-coroutines-reactor"
             ).versionRef("coroutines")
+            library(
+                "coroutines-jdk8",
+                "org.jetbrains.kotlinx",
+                "kotlinx-coroutines-jdk8"
+            ).versionRef("coroutines")
             library("coroutines-core", "org.jetbrains.kotlinx", "kotlinx-coroutines-core").versionRef("coroutines")
             library("reactive-lock", "pro.chenggang", "reactive-lock").version("1.0.0-SNAPSHOT")
             library("kotlin-stdlib", "org.jetbrains.kotlin", "kotlin-stdlib").withoutVersion()
@@ -88,7 +93,7 @@ dependencyResolutionManagement {
             library("driver-mysql", "mysql", "mysql-connector-java").withoutVersion()
             library("driver-mysql-r2dbc", "dev.miku", "r2dbc-mysql").withoutVersion()
 
-            bundle("base", listOf("kotlin-stdlib", "kotlin-logging", "coroutines-core"))
+            bundle("base", listOf("kotlin-stdlib", "kotlin-logging", "coroutines-core", "coroutines-jdk8"))
 
             plugin("protobuf", "com.google.protobuf").versionRef("pb-plugin")
             plugin("kotlin-spring", "org.jetbrains.kotlin.plugin.spring").versionRef("kotlin")

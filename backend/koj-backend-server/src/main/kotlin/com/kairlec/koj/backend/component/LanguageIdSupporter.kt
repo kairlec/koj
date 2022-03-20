@@ -3,10 +3,9 @@ package com.kairlec.koj.backend.component
 import com.kairlec.koj.common.taskTopic
 import com.kairlec.koj.common.taskTopicPrefix
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import org.apache.pulsar.client.admin.PulsarAdmin
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.ReactiveRedisOperations
 import org.springframework.data.redis.core.deleteAndAwait
-import org.springframework.data.redis.core.leftPushAllAndAwait
 import org.springframework.data.redis.core.rangeAsFlow
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -29,10 +27,17 @@ class LanguageIdSupporter(
     @Value("\${koj.namespace:public/default}")
     private lateinit var namespace: String
 
-    fun getSupportLanguageIds(): List<String> {
-        return pulsarAdmin.topics().getList(namespace).mapNotNull {
-            "(?:persistent|non-persistent)://${namespace}/$taskTopicPrefix(.*)".toRegex()
+    suspend fun getSupportLanguageIds(): Flow<String> {
+        return pulsarAdmin.topics().getListAsync(namespace).await().mapNotNull {
+            "(?:non-)?persistent://${namespace}/$taskTopicPrefix(.*)".toRegex()
                 .matchEntire(it)?.groupValues?.get(1)
+        }.asFlow().filter { languageId ->
+            pulsarAdmin.topics().getStatsAsync(taskTopic(languageId))
+                .await()
+                .subscriptions
+                .filterKeys { it == "koj-sandbox" }
+                .values
+                .sumOf { it.consumers.size } > 0
         }
     }
 
@@ -52,8 +57,10 @@ class LanguageIdSupporter(
                 runBlocking {
                     val supportLanguages = getSupportLanguageIds()
                     listOperations.deleteAndAwait(LANGUAGE_IDS_KEY)
-                    listOperations.leftPushAllAndAwait(LANGUAGE_IDS_KEY, supportLanguages)
-                    _supportLanguageChanges.emit(supportLanguages.asFlow())
+                    supportLanguages.map { languageId ->
+                        async { listOperations.leftPush(LANGUAGE_IDS_KEY, languageId).awaitSingle() }
+                    }.toList().awaitAll()
+                    _supportLanguageChanges.emit(supportLanguages)
                 }
             } else {
                 log.debug { "get lock failed, execute pull" }

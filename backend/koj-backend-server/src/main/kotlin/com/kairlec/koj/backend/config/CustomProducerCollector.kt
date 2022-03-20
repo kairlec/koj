@@ -10,6 +10,10 @@ import io.github.majusko.pulsar.utils.UrlBuildService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.apache.pulsar.client.api.Producer
@@ -28,6 +32,7 @@ class CustomProducerCollector(
 ) : ProducerCollector(pulsarClient, urlBuildService) {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
+    @Suppress("UNCHECKED_CAST")
     private val superProducers by lazy {
         val property =
             ProducerCollector::class.memberProperties.first { it.name == "producers" } as KProperty1<CustomProducerCollector, MutableMap<String, Producer<*>>>
@@ -51,28 +56,38 @@ class CustomProducerCollector(
         if (superProducers.containsKey(topic)) {
             throw IllegalArgumentException("Producer for topic $topic already exists")
         }
+        log.debug { "add new producer for topic:${topic}" }
         superProducers[topic] = buildProducerFunction(ProducerHolder(topic, clazz, serialization))
     }
 
     init {
         coroutineScope.launch {
             languageIdSupporter.supportLanguageChanges.collect { languageIds ->
+                // 现在有的topic
                 val topics = superProducers.keys.toMutableSet()
-                languageIds.collect { languageId ->
-                    val topic = taskTopic(languageId)
-                    if (superProducers.containsKey(topic)) {
-                        topics.remove(topic)
-                    } else {
+                // 这是新来的topic
+                val jobs = languageIds.map { taskTopic(it) }.filter { topic ->
+                    !topics.contains(topic).also {
+                        if (it) {
+                            topics.remove(topic)
+                        }
+                    }
+                }.map { topic ->
+                    launch {
+                        log.info { "Create new producer for topic $topic" }
                         addProducer(topic, ByteArray::class.java, Serialization.BYTE)
                     }
-                }
+                }.toList()
+                // 剩余的topic
                 topics.forEach { topic ->
                     try {
+                        log.info { "close producer for topic:${topic} because no subscriptions on it" }
                         superProducers.remove(topic)?.close()
                     } catch (e: Exception) {
                         log.error(e) { "close producer for topic:${topic} failed" }
                     }
                 }
+                jobs.joinAll()
             }
         }
     }

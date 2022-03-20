@@ -11,8 +11,10 @@ import io.github.majusko.pulsar.reactor.FluxConsumerFactory
 import io.github.majusko.pulsar.reactor.PulsarFluxConsumer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.collect
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.apache.pulsar.client.api.PulsarClientException
 import org.apache.pulsar.client.api.SubscriptionType
@@ -32,10 +34,17 @@ class ProducerConfig(
     @Bean
     fun producerFactory(): ProducerFactory {
         return ProducerFactory().apply {
-            languageIdSupporter.getSupportLanguageIds().forEach {
-                addProducer(taskTopic(it), ByteArray::class.java)
+            runBlocking {
+                languageIdSupporter.getSupportLanguageIds().collect {
+                    log.debug { "add new producer for topic:${taskTopic(it)}" }
+                    addProducer(taskTopic(it), ByteArray::class.java)
+                }
             }
         }
+    }
+
+    companion object {
+        private val log = KotlinLogging.logger {}
     }
 }
 

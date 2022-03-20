@@ -11,14 +11,13 @@ import io.github.majusko.pulsar.reactor.FluxConsumer
 import io.github.majusko.pulsar.reactor.FluxConsumerFactory
 import io.github.majusko.pulsar.reactor.PulsarFluxConsumer
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.reactive.asFlow
 import mu.KotlinLogging
 import org.apache.pulsar.client.api.PulsarClientException
 import org.apache.pulsar.client.api.SubscriptionType
 import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
@@ -42,7 +41,8 @@ class ProducerConfig {
 @Service
 internal class SandboxMQ(
     private val fluxConsumerFactory: FluxConsumerFactory,
-    private val producer: PulsarTemplate<ByteArray>
+    private val producer: PulsarTemplate<ByteArray>,
+    private val applicationContext: ApplicationContext,
 ) {
     private val dispatcher = ThreadPoolExecutor(
         1,
@@ -54,11 +54,17 @@ internal class SandboxMQ(
 
     private val coroutineScope = CoroutineScope(dispatcher)
 
+    private val applicationName = applicationContext.applicationName.ifBlank {
+        "koj-sb-app-server"
+    }
+
+    private val consumerNameSuffix = "$hostname-${Random.nextLong()}-${applicationName}"
+
     private fun newConsumer(language: Language): FluxConsumer<ByteArray> {
         return fluxConsumerFactory.newConsumer(
             PulsarFluxConsumer.builder()
                 .setTopic(taskTopic(language.id))
-                .setConsumerName("koj-sandbox-${language.id}-$hostname-${Random.nextLong()}")
+                .setConsumerName("koj-sandbox-${language.id}-${consumerNameSuffix}")
                 .setSubscriptionName("koj-sandbox")
                 .setSubscriptionType(SubscriptionType.Shared)
                 .setMessageClass(ByteArray::class.java)
@@ -137,6 +143,7 @@ internal class SandboxMQ(
                         producer.send(statusTopic(), taskStatus {
                             id = task.id
                             status = TaskIntermediateStatusEnum.COMPILING
+                            processorName = consumerNameSuffix
                         }.toByteArray().compress())
                     }
                     State.COMPILED -> {
@@ -144,6 +151,7 @@ internal class SandboxMQ(
                         producer.send(statusTopic(), taskStatus {
                             id = task.id
                             status = TaskIntermediateStatusEnum.RUNNING
+                            processorName = consumerNameSuffix
                         }.toByteArray().compress())
                     }
                     State.END -> {
@@ -165,6 +173,7 @@ internal class SandboxMQ(
                                 }
                                 stdout = it.stdout ?: ""
                                 stderr = it.stderr ?: ""
+                                processorName = consumerNameSuffix
                             }.toByteArray().compress())
                         } else {
                             log.info { "task end:${it}" }
@@ -175,6 +184,7 @@ internal class SandboxMQ(
                                 time = it.time
                                 memory = it.memory
                                 type = TaskResultType.NO_ERROR
+                                processorName = consumerNameSuffix
                             }.toByteArray().compress())
                         }
                     }
@@ -189,7 +199,6 @@ internal class SandboxMQ(
         private val log = KotlinLogging.logger { }
         private val hostname = InetAddress.getLocalHost().hostName
     }
-
 }
 
 private fun ExecuteResultType.asTaskResultType(): TaskResultType {

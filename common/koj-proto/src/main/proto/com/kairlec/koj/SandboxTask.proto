@@ -24,6 +24,7 @@ message Task{
   TaskConfig config = 5;
   string stdin = 6;
   bool debug = 7;
+  string processor_name = 8;
 }
 
 enum TaskResultType{
@@ -44,6 +45,7 @@ message TaskResult{
   int64 memory = 4;
   string stdout = 5;
   string stderr = 6;
+  string processor_name = 7;
 }
 
 enum TaskIntermediateStatusEnum{
@@ -54,4 +56,5 @@ enum TaskIntermediateStatusEnum{
 message TaskStatus{
   int64 id = 1;
   TaskIntermediateStatusEnum status = 2;
+  string processor_name = 3;
 }
