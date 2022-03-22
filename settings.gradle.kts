@@ -119,3 +119,4 @@ include("sandbox:koj-sandbox-server")
 
 include("backend")
 include("backend:koj-backend-server")
+include("backend:koj-judger")

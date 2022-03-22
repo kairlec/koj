@@ -1,14 +1,16 @@
-package com.kairlec.koj.backend
+package com.kairlec.koj.backend.config
 
 import com.kairlec.koj.backend.component.LanguageIdSupporter
 import com.kairlec.koj.common.*
 import com.kairlec.koj.model.Task
 import com.kairlec.koj.model.TaskResult
 import com.kairlec.koj.model.TaskStatus
+import io.github.majusko.pulsar.producer.ProducerCollector
 import io.github.majusko.pulsar.producer.ProducerFactory
 import io.github.majusko.pulsar.producer.PulsarTemplate
 import io.github.majusko.pulsar.reactor.FluxConsumerFactory
 import io.github.majusko.pulsar.reactor.PulsarFluxConsumer
+import io.github.majusko.pulsar.utils.UrlBuildService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -16,23 +18,32 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.collect
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
+import org.apache.pulsar.client.admin.PulsarAdmin
+import org.apache.pulsar.client.api.PulsarClient
 import org.apache.pulsar.client.api.PulsarClientException
 import org.apache.pulsar.client.api.SubscriptionType
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
-import org.springframework.stereotype.Service
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.data.redis.core.ReactiveRedisOperations
+import pro.chenggang.project.reactive.lock.core.ReactiveLockRegistry
 import java.net.InetAddress
 import kotlin.random.Random
 
 @Configuration
-class ProducerConfig(
-    private val languageIdSupporter: LanguageIdSupporter,
-) {
+class SandboxConfig {
     @Bean
-    fun producerFactory(): ProducerFactory {
+    fun customProducer(
+        pulsarClient: PulsarClient,
+        urlBuildService: UrlBuildService,
+        languageIdSupporter: LanguageIdSupporter,
+    ): ProducerCollector {
+        return CustomProducerCollector(pulsarClient, urlBuildService, languageIdSupporter)
+    }
+
+    @Bean
+    fun producerFactory(languageIdSupporter: LanguageIdSupporter): ProducerFactory {
         return ProducerFactory().apply {
             runBlocking {
                 languageIdSupporter.getSupportLanguageIds().collect {
@@ -43,12 +54,32 @@ class ProducerConfig(
         }
     }
 
+    @Bean
+    fun sandboxMQ(
+        fluxConsumerFactory: FluxConsumerFactory,
+        producer: PulsarTemplate<ByteArray>
+    ): SandboxMQ {
+        return SandboxMQ(fluxConsumerFactory, producer)
+    }
+
+    @Bean
+    fun languageIdSupporter(
+        pulsarAdmin: PulsarAdmin,
+        redisReactiveLockRegistry: ReactiveLockRegistry,
+        redisOperations: ReactiveRedisOperations<String, String>,
+    ): LanguageIdSupporter {
+        return LanguageIdSupporter(
+            pulsarAdmin,
+            redisReactiveLockRegistry,
+            redisOperations,
+        )
+    }
+
     companion object {
         private val log = KotlinLogging.logger {}
     }
 }
 
-@Service
 class SandboxMQ(
     fluxConsumerFactory: FluxConsumerFactory,
     private val producer: PulsarTemplate<ByteArray>
@@ -110,7 +141,7 @@ class SandboxMQ(
 
     private suspend fun taskStatus(data: ByteArray) {
         val status = TaskStatus.parseFrom(data)
-        log.info { "task staus(${status.status}):${status}" }
+        log.info { "task status(${status.status}):${status}" }
     }
 
     private suspend fun taskResult(data: ByteArray) {
@@ -122,40 +153,4 @@ class SandboxMQ(
         producer.send(taskTopic(task.languageId), task.toByteArray().compress())
     }
 
-}
-
-@RestController
-class Cont(
-    private val mq: SandboxMQ
-) {
-//    @GetMapping
-//    fun get(): String {
-//        mq.sendTask(task {
-//            id = 123456L
-//            namespace = "kairlec"
-//            code = """
-//                fun main(){
-//                    println(readln())
-//                }
-//            """.trimIndent()
-//            languageId = Kotlin1610_Java11.id
-//            stdin = "hello koj backend\n"
-//            config = taskConfig {
-//                maxTime = -1
-//                maxMemory = -1
-//                maxOutputSize = -1
-//                maxStack = -1
-//                maxProcessNumber = -1
-//            }
-//            debug = false
-//        }.apply {
-//            log.debug { "send task content:${this}" }
-//        })
-//        log.info { "sent task success" }
-//        return "ok"
-//    }
-
-    companion object {
-        private val log = KotlinLogging.logger { }
-    }
 }

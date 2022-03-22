@@ -18,7 +18,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import pro.chenggang.project.reactive.lock.core.ReactiveLockRegistry
 
-@Component
 class LanguageIdSupporter(
     private val pulsarAdmin: PulsarAdmin,
     private val redisReactiveLockRegistry: ReactiveLockRegistry,

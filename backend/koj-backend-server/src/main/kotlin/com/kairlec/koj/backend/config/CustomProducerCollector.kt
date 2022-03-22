@@ -18,13 +18,11 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.apache.pulsar.client.api.Producer
 import org.apache.pulsar.client.api.PulsarClient
-import org.springframework.stereotype.Component
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
-@Component
 class CustomProducerCollector(
     pulsarClient: PulsarClient,
     urlBuildService: UrlBuildService,
