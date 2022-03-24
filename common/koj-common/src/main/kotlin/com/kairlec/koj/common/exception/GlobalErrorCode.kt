@@ -1,0 +1,44 @@
+package com.kairlec.koj.common.exception
+
+import com.kairlec.koj.common.HttpStatusCode
+
+/**
+ * @author : Kairlec
+ * @since : 2022/2/14
+ **/
+enum class GlobalErrorCode(
+    val code: Int,
+    val message: String,
+    val httpStatusCode: HttpStatusCode = HttpStatusCode.Companion.ClientError.BadRequest,
+) {
+    // 0为无错误
+    NO_ERROR(0, "无错误", HttpStatusCode.Companion.Successful.OK),
+    SUCCESS(0, "无错误", HttpStatusCode.Companion.Successful.OK),
+
+    // 登录认证相关
+    ACCOUNT_NOT_LOGIN(10001, "账户未登录", HttpStatusCode.Companion.ClientError.Unauthorized),
+    USERNAME_PASSWORD_WRONG(10002, "用户名或密码错误", HttpStatusCode.Companion.ClientError.Unauthorized),
+
+    //10004
+    ILLEGAL_REQUEST(10007, "非法请求", HttpStatusCode.Companion.ClientError.Forbidden),
+    ILLEGAL_RESPONSE_TYPE(10008, "无效的请求类型", HttpStatusCode.Companion.ClientError.BadRequest),
+    USER_DISABLED(10011, "用户已被禁用", HttpStatusCode.Companion.ClientError.Forbidden),
+
+    // 请求出错
+    MISMATCH_ARGUMENTS(20000, "参数出错", HttpStatusCode.Companion.ClientError.BadRequest),
+    UNKOWN_REQUEST(20001, "未知的请求", HttpStatusCode.Companion.ClientError.NotFound),
+    METHOD_NOT_ALLOW(20002, "无效的请求方法", HttpStatusCode.Companion.ClientError.MethodNotAllowed),
+    CONTENT_NOT_FOUND(20004, "无法找到相应的内容", HttpStatusCode.Companion.ClientError.NotFound),
+    REQUEST_CONFLICT(20007, "请求冲突", HttpStatusCode.Companion.ClientError.Conflict),
+    DATA_TOO_LONG(20008, "数据过长", HttpStatusCode.Companion.ClientError.RequestEntityTooLarge),
+
+    // 业务问题
+    USERNAME_EXISTS(30000, "用户名已存在", HttpStatusCode.Companion.ClientError.Conflict),
+    USER_CREATE_FAILED(30003, "用户创建失败", HttpStatusCode.Companion.ServerError.InternalServerError),
+
+    // 服务器方面错误或未知的错误,9开头
+    DATA_ERROR(90001, "数据错误", HttpStatusCode.Companion.ServerError.InternalServerError),
+    UNKNOWN_ERROR(90002, "未知错误", HttpStatusCode.Companion.ServerError.InternalServerError),
+    AN_EXCEPTION_OCCURRED(90003, "发生了一个异常", HttpStatusCode.Companion.ServerError.InternalServerError),
+    MISSING_REQUIRE_ATTRIBUTE(90005, "缺少所需的属性", HttpStatusCode.Companion.ServerError.InternalServerError);
+}

@@ -25,6 +25,14 @@ dependencyResolutionManagement {
             version("coroutines", "1.6.+")
             version("reflections", "0.10.+")
             version("pulsar", "2.9.+")
+            version("jooq-codegen", "6.+")
+            version("jackson", "2.13.+")
+
+            // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+            version("apache-common-lang3", "3.+")
+
+            library("apache-common-lang3", "org.apache.commons", "commons-lang3").versionRef("apache-common-lang3")
+
             library("reflections", "org.reflections", "reflections").versionRef("reflections")
 
             library("docker-java", "com.github.docker-java", "docker-java").versionRef("docker-java")
@@ -66,10 +74,17 @@ dependencyResolutionManagement {
             library("kotlin-reflect", "org.jetbrains.kotlin", "kotlin-reflect").withoutVersion()
             library("kotlin-logging", "io.github.microutils", "kotlin-logging-jvm").versionRef("kotlin-logging")
 
-            library("jackson.module.kotlin", "com.fasterxml.jackson.module", "jackson-module-kotlin").withoutVersion()
+            library("jackson.core", "com.fasterxml.jackson.core", "jackson-core").versionRef("jackson")
+            library("jackson.databind", "com.fasterxml.jackson.core", "jackson-databind").versionRef("jackson")
+            library("jackson.annotations", "com.fasterxml.jackson.core", "jackson-annotations").versionRef("jackson")
+            library("jackson.module.kotlin", "com.fasterxml.jackson.module", "jackson-module-kotlin").versionRef("jackson")
+
+            bundle("jackson", listOf("jackson.core", "jackson.databind", "jackson.annotations", "jackson.module.kotlin"))
+
             library("reactor.kotlin", "io.projectreactor.kotlin", "reactor-kotlin-extensions").withoutVersion()
             library("reactor.test", "io.projectreactor", "reactor-test").withoutVersion()
 
+            library("spring-security-crypto", "org.springframework.security", "spring-security-crypto").withoutVersion()
             library("spring-boot-starter-jooq", "org.springframework.boot", "spring-boot-starter-jooq").withoutVersion()
             library("spring-boot-starter-web", "org.springframework.boot", "spring-boot-starter-web").withoutVersion()
             library("spring-boot-starter", "org.springframework.boot", "spring-boot-starter").withoutVersion()
@@ -101,6 +116,7 @@ dependencyResolutionManagement {
             plugin("kotlin-kapt", "org.jetbrains.kotlin.kapt").versionRef("kotlin")
             plugin("spring", "org.springframework.boot").versionRef("spring")
             plugin("spring.dependency", "io.spring.dependency-management").version("latest.release")
+            plugin("jooq.codegen", "nu.studer.jooq").versionRef("jooq.codegen")
 
         }
     }
@@ -120,3 +136,9 @@ include("sandbox:koj-sandbox-server")
 include("backend")
 include("backend:koj-backend-server")
 include("backend:koj-judger")
+include("backend:koj-uid")
+findProject(":backend:koj-uid")?.name = "koj-uid"
+include("backend:koj-dao-codegen")
+findProject(":backend:koj-dao-codegen")?.name = "koj-dao-codegen"
+include("backend:koj-dao")
+findProject(":backend:koj-dao")?.name = "koj-dao"
