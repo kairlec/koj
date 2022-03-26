@@ -4,7 +4,16 @@
 package com.kairlec.koj.dao;
 
 
+import com.kairlec.koj.dao.tables.Code;
+import com.kairlec.koj.dao.tables.Competition;
+import com.kairlec.koj.dao.tables.Contestants;
+import com.kairlec.koj.dao.tables.Problem;
+import com.kairlec.koj.dao.tables.ProblemConfig;
+import com.kairlec.koj.dao.tables.ProblemTag;
+import com.kairlec.koj.dao.tables.TagBelongProblem;
+import com.kairlec.koj.dao.tables.Task;
 import com.kairlec.koj.dao.tables.UidWorkerNode;
+import com.kairlec.koj.dao.tables.User;
 
 
 /**
@@ -14,7 +23,52 @@ import com.kairlec.koj.dao.tables.UidWorkerNode;
 public class Tables {
 
     /**
+     * 代码表
+     */
+    public static final Code CODE = Code.CODE;
+
+    /**
+     * 比赛表
+     */
+    public static final Competition COMPETITION = Competition.COMPETITION;
+
+    /**
+     * 参赛者关系表
+     */
+    public static final Contestants CONTESTANTS = Contestants.CONTESTANTS;
+
+    /**
+     * 题目表
+     */
+    public static final Problem PROBLEM = Problem.PROBLEM;
+
+    /**
+     * 题目语言配置表
+     */
+    public static final ProblemConfig PROBLEM_CONFIG = ProblemConfig.PROBLEM_CONFIG;
+
+    /**
+     * 题目标签表
+     */
+    public static final ProblemTag PROBLEM_TAG = ProblemTag.PROBLEM_TAG;
+
+    /**
+     * 题目标签关系表
+     */
+    public static final TagBelongProblem TAG_BELONG_PROBLEM = TagBelongProblem.TAG_BELONG_PROBLEM;
+
+    /**
+     * 任务表
+     */
+    public static final Task TASK = Task.TASK;
+
+    /**
      * DB WorkerID Assigner for UID Generator
      */
     public static final UidWorkerNode UID_WORKER_NODE = UidWorkerNode.UID_WORKER_NODE;
+
+    /**
+     * 用户表
+     */
+    public static final User USER = User.USER;
 }

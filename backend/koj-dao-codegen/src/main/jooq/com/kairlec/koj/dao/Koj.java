@@ -4,7 +4,16 @@
 package com.kairlec.koj.dao;
 
 
+import com.kairlec.koj.dao.tables.Code;
+import com.kairlec.koj.dao.tables.Competition;
+import com.kairlec.koj.dao.tables.Contestants;
+import com.kairlec.koj.dao.tables.Problem;
+import com.kairlec.koj.dao.tables.ProblemConfig;
+import com.kairlec.koj.dao.tables.ProblemTag;
+import com.kairlec.koj.dao.tables.TagBelongProblem;
+import com.kairlec.koj.dao.tables.Task;
 import com.kairlec.koj.dao.tables.UidWorkerNode;
+import com.kairlec.koj.dao.tables.User;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,9 +37,54 @@ public class Koj extends SchemaImpl {
     public static final Koj KOJ = new Koj();
 
     /**
+     * 代码表
+     */
+    public final Code CODE = Code.CODE;
+
+    /**
+     * 比赛表
+     */
+    public final Competition COMPETITION = Competition.COMPETITION;
+
+    /**
+     * 参赛者关系表
+     */
+    public final Contestants CONTESTANTS = Contestants.CONTESTANTS;
+
+    /**
+     * 题目表
+     */
+    public final Problem PROBLEM = Problem.PROBLEM;
+
+    /**
+     * 题目语言配置表
+     */
+    public final ProblemConfig PROBLEM_CONFIG = ProblemConfig.PROBLEM_CONFIG;
+
+    /**
+     * 题目标签表
+     */
+    public final ProblemTag PROBLEM_TAG = ProblemTag.PROBLEM_TAG;
+
+    /**
+     * 题目标签关系表
+     */
+    public final TagBelongProblem TAG_BELONG_PROBLEM = TagBelongProblem.TAG_BELONG_PROBLEM;
+
+    /**
+     * 任务表
+     */
+    public final Task TASK = Task.TASK;
+
+    /**
      * DB WorkerID Assigner for UID Generator
      */
     public final UidWorkerNode UID_WORKER_NODE = UidWorkerNode.UID_WORKER_NODE;
+
+    /**
+     * 用户表
+     */
+    public final User USER = User.USER;
 
     /**
      * No further instances allowed
@@ -48,6 +102,15 @@ public class Koj extends SchemaImpl {
     @Override
     public final List<Table<?>> getTables() {
         return Arrays.<Table<?>>asList(
-            UidWorkerNode.UID_WORKER_NODE);
+            Code.CODE,
+            Competition.COMPETITION,
+            Contestants.CONTESTANTS,
+            Problem.PROBLEM,
+            ProblemConfig.PROBLEM_CONFIG,
+            ProblemTag.PROBLEM_TAG,
+            TagBelongProblem.TAG_BELONG_PROBLEM,
+            Task.TASK,
+            UidWorkerNode.UID_WORKER_NODE,
+            User.USER);
     }
 }

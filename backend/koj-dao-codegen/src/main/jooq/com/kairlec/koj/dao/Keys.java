@@ -4,9 +4,28 @@
 package com.kairlec.koj.dao;
 
 
+import com.kairlec.koj.dao.tables.Code;
+import com.kairlec.koj.dao.tables.Competition;
+import com.kairlec.koj.dao.tables.Contestants;
+import com.kairlec.koj.dao.tables.Problem;
+import com.kairlec.koj.dao.tables.ProblemConfig;
+import com.kairlec.koj.dao.tables.ProblemTag;
+import com.kairlec.koj.dao.tables.TagBelongProblem;
+import com.kairlec.koj.dao.tables.Task;
 import com.kairlec.koj.dao.tables.UidWorkerNode;
+import com.kairlec.koj.dao.tables.User;
+import com.kairlec.koj.dao.tables.records.CodeRecord;
+import com.kairlec.koj.dao.tables.records.CompetitionRecord;
+import com.kairlec.koj.dao.tables.records.ContestantsRecord;
+import com.kairlec.koj.dao.tables.records.ProblemConfigRecord;
+import com.kairlec.koj.dao.tables.records.ProblemRecord;
+import com.kairlec.koj.dao.tables.records.ProblemTagRecord;
+import com.kairlec.koj.dao.tables.records.TagBelongProblemRecord;
+import com.kairlec.koj.dao.tables.records.TaskRecord;
 import com.kairlec.koj.dao.tables.records.UidWorkerNodeRecord;
+import com.kairlec.koj.dao.tables.records.UserRecord;
 
+import org.jooq.ForeignKey;
 import org.jooq.TableField;
 import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
@@ -24,5 +43,27 @@ public class Keys {
     // UNIQUE and PRIMARY KEY definitions
     // -------------------------------------------------------------------------
 
+    public static final UniqueKey<CodeRecord> KEY_CODE_PRIMARY = Internal.createUniqueKey(Code.CODE, DSL.name("KEY_code_PRIMARY"), new TableField[] { Code.CODE.ID }, true);
+    public static final UniqueKey<CompetitionRecord> KEY_COMPETITION_PRIMARY = Internal.createUniqueKey(Competition.COMPETITION, DSL.name("KEY_competition_PRIMARY"), new TableField[] { Competition.COMPETITION.ID }, true);
+    public static final UniqueKey<ContestantsRecord> KEY_CONTESTANTS_PRIMARY = Internal.createUniqueKey(Contestants.CONTESTANTS, DSL.name("KEY_contestants_PRIMARY"), new TableField[] { Contestants.CONTESTANTS.USER_ID, Contestants.CONTESTANTS.COMPETITION_ID }, true);
+    public static final UniqueKey<ProblemRecord> KEY_PROBLEM_PRIMARY = Internal.createUniqueKey(Problem.PROBLEM, DSL.name("KEY_problem_PRIMARY"), new TableField[] { Problem.PROBLEM.ID }, true);
+    public static final UniqueKey<ProblemConfigRecord> KEY_PROBLEM_CONFIG_PRIMARY = Internal.createUniqueKey(ProblemConfig.PROBLEM_CONFIG, DSL.name("KEY_problem_config_PRIMARY"), new TableField[] { ProblemConfig.PROBLEM_CONFIG.PROBLEM_ID, ProblemConfig.PROBLEM_CONFIG.LANGUAGE_ID }, true);
+    public static final UniqueKey<ProblemTagRecord> KEY_PROBLEM_TAG_PRIMARY = Internal.createUniqueKey(ProblemTag.PROBLEM_TAG, DSL.name("KEY_problem_tag_PRIMARY"), new TableField[] { ProblemTag.PROBLEM_TAG.ID }, true);
+    public static final UniqueKey<TagBelongProblemRecord> KEY_TAG_BELONG_PROBLEM_PRIMARY = Internal.createUniqueKey(TagBelongProblem.TAG_BELONG_PROBLEM, DSL.name("KEY_tag_belong_problem_PRIMARY"), new TableField[] { TagBelongProblem.TAG_BELONG_PROBLEM.PROBLEM_ID, TagBelongProblem.TAG_BELONG_PROBLEM.TAG_ID }, true);
+    public static final UniqueKey<TaskRecord> KEY_TASK_PRIMARY = Internal.createUniqueKey(Task.TASK, DSL.name("KEY_task_PRIMARY"), new TableField[] { Task.TASK.ID }, true);
     public static final UniqueKey<UidWorkerNodeRecord> KEY_UID_WORKER_NODE_PRIMARY = Internal.createUniqueKey(UidWorkerNode.UID_WORKER_NODE, DSL.name("KEY_uid_worker_node_PRIMARY"), new TableField[] { UidWorkerNode.UID_WORKER_NODE.ID }, true);
+    public static final UniqueKey<UserRecord> KEY_USER_EMAIL_UQ = Internal.createUniqueKey(User.USER, DSL.name("KEY_user_email_uq"), new TableField[] { User.USER.EMAIL }, true);
+    public static final UniqueKey<UserRecord> KEY_USER_PRIMARY = Internal.createUniqueKey(User.USER, DSL.name("KEY_user_PRIMARY"), new TableField[] { User.USER.ID }, true);
+    public static final UniqueKey<UserRecord> KEY_USER_USERNAME_UQ = Internal.createUniqueKey(User.USER, DSL.name("KEY_user_username_uq"), new TableField[] { User.USER.USERNAME }, true);
+
+    // -------------------------------------------------------------------------
+    // FOREIGN KEY definitions
+    // -------------------------------------------------------------------------
+
+    public static final ForeignKey<CodeRecord, TaskRecord> ID = Internal.createForeignKey(Code.CODE, DSL.name("id"), new TableField[] { Code.CODE.ID }, Keys.KEY_TASK_PRIMARY, new TableField[] { Task.TASK.ID }, true);
+    public static final ForeignKey<ContestantsRecord, CompetitionRecord> COMPETITION_ID_FK = Internal.createForeignKey(Contestants.CONTESTANTS, DSL.name("competition_id_fk"), new TableField[] { Contestants.CONTESTANTS.COMPETITION_ID }, Keys.KEY_COMPETITION_PRIMARY, new TableField[] { Competition.COMPETITION.ID }, true);
+    public static final ForeignKey<ContestantsRecord, UserRecord> USER_ID_FK = Internal.createForeignKey(Contestants.CONTESTANTS, DSL.name("user_id_fk"), new TableField[] { Contestants.CONTESTANTS.USER_ID }, Keys.KEY_USER_PRIMARY, new TableField[] { User.USER.ID }, true);
+    public static final ForeignKey<ProblemConfigRecord, ProblemRecord> CONFIG_PROBLEM_ID_FK = Internal.createForeignKey(ProblemConfig.PROBLEM_CONFIG, DSL.name("config_problem_id_fk"), new TableField[] { ProblemConfig.PROBLEM_CONFIG.PROBLEM_ID }, Keys.KEY_PROBLEM_PRIMARY, new TableField[] { Problem.PROBLEM.ID }, true);
+    public static final ForeignKey<TagBelongProblemRecord, ProblemRecord> PROBLEM_ID_FK = Internal.createForeignKey(TagBelongProblem.TAG_BELONG_PROBLEM, DSL.name("problem_id_fk"), new TableField[] { TagBelongProblem.TAG_BELONG_PROBLEM.PROBLEM_ID }, Keys.KEY_PROBLEM_PRIMARY, new TableField[] { Problem.PROBLEM.ID }, true);
+    public static final ForeignKey<TagBelongProblemRecord, ProblemTagRecord> TAG_ID_FK = Internal.createForeignKey(TagBelongProblem.TAG_BELONG_PROBLEM, DSL.name("tag_id_fk"), new TableField[] { TagBelongProblem.TAG_BELONG_PROBLEM.TAG_ID }, Keys.KEY_PROBLEM_TAG_PRIMARY, new TableField[] { ProblemTag.PROBLEM_TAG.ID }, true);
 }
