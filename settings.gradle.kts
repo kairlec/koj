@@ -26,7 +26,10 @@ dependencyResolutionManagement {
             version("reflections", "0.10.+")
             version("pulsar", "2.9.+")
             version("jooq-codegen", "6.+")
-            version("jackson", "2.13.+")
+            version("jackson"){
+                strictly("2.13.+")
+                reject("2.13.2.1")
+            }
 
             // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
             version("apache-common-lang3", "3.+")
