@@ -221,4 +221,18 @@ public class ProblemTagRecord extends UpdatableRecordImpl<ProblemTagRecord> impl
         setCreateTime(createTime);
         setUpdateTime(updateTime);
     }
+
+    /**
+     * Create a detached, initialised ProblemTagRecord
+     */
+    public ProblemTagRecord(com.kairlec.koj.dao.tables.pojos.ProblemTag value) {
+        super(ProblemTag.PROBLEM_TAG);
+
+        if (value != null) {
+            setId(value.getId());
+            setName(value.getName());
+            setCreateTime(value.getCreateTime());
+            setUpdateTime(value.getUpdateTime());
+        }
+    }
 }

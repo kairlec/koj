@@ -61,7 +61,7 @@ public class Code extends TableImpl<CodeRecord> {
     /**
      * The column <code>koj.code.create_time</code>. 创建时间
      */
-    public final TableField<CodeRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "创建时间");
+    public final TableField<CodeRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "创建时间");
 
     private Code(Name alias, Table<CodeRecord> aliased) {
         this(alias, aliased, null);
@@ -98,7 +98,7 @@ public class Code extends TableImpl<CodeRecord> {
 
     @Override
     public Schema getSchema() {
-        return Koj.KOJ;
+        return aliased() ? null : Koj.KOJ;
     }
 
     @Override
@@ -107,17 +107,15 @@ public class Code extends TableImpl<CodeRecord> {
     }
 
     @Override
-    public List<UniqueKey<CodeRecord>> getKeys() {
-        return Arrays.<UniqueKey<CodeRecord>>asList(Keys.KEY_CODE_PRIMARY);
-    }
-
-    @Override
     public List<ForeignKey<CodeRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<CodeRecord, ?>>asList(Keys.ID);
+        return Arrays.asList(Keys.ID);
     }
 
     private transient Task _task;
 
+    /**
+     * Get the implicit join path to the <code>koj.task</code> table.
+     */
     public Task task() {
         if (_task == null)
             _task = new Task(this, Keys.ID);

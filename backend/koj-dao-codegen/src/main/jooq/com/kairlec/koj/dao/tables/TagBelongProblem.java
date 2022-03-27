@@ -63,12 +63,12 @@ public class TagBelongProblem extends TableImpl<TagBelongProblemRecord> {
     /**
      * The column <code>koj.tag_belong_problem.create_time</code>. 创建时间
      */
-    public final TableField<TagBelongProblemRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "创建时间");
+    public final TableField<TagBelongProblemRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "创建时间");
 
     /**
      * The column <code>koj.tag_belong_problem.update_time</code>. 更新时间
      */
-    public final TableField<TagBelongProblemRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "更新时间");
+    public final TableField<TagBelongProblemRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "更新时间");
 
     private TagBelongProblem(Name alias, Table<TagBelongProblemRecord> aliased) {
         this(alias, aliased, null);
@@ -105,12 +105,12 @@ public class TagBelongProblem extends TableImpl<TagBelongProblemRecord> {
 
     @Override
     public Schema getSchema() {
-        return Koj.KOJ;
+        return aliased() ? null : Koj.KOJ;
     }
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.TAG_BELONG_PROBLEM_PROBLEM_ID_IDX, Indexes.TAG_BELONG_PROBLEM_TAG_ID_IDX);
+        return Arrays.asList(Indexes.TAG_BELONG_PROBLEM_PROBLEM_ID_IDX, Indexes.TAG_BELONG_PROBLEM_TAG_ID_IDX);
     }
 
     @Override
@@ -119,18 +119,16 @@ public class TagBelongProblem extends TableImpl<TagBelongProblemRecord> {
     }
 
     @Override
-    public List<UniqueKey<TagBelongProblemRecord>> getKeys() {
-        return Arrays.<UniqueKey<TagBelongProblemRecord>>asList(Keys.KEY_TAG_BELONG_PROBLEM_PRIMARY);
-    }
-
-    @Override
     public List<ForeignKey<TagBelongProblemRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<TagBelongProblemRecord, ?>>asList(Keys.PROBLEM_ID_FK, Keys.TAG_ID_FK);
+        return Arrays.asList(Keys.PROBLEM_ID_FK, Keys.TAG_ID_FK);
     }
 
     private transient Problem _problem;
     private transient ProblemTag _problemTag;
 
+    /**
+     * Get the implicit join path to the <code>koj.problem</code> table.
+     */
     public Problem problem() {
         if (_problem == null)
             _problem = new Problem(this, Keys.PROBLEM_ID_FK);
@@ -138,6 +136,9 @@ public class TagBelongProblem extends TableImpl<TagBelongProblemRecord> {
         return _problem;
     }
 
+    /**
+     * Get the implicit join path to the <code>koj.problem_tag</code> table.
+     */
     public ProblemTag problemTag() {
         if (_problemTag == null)
             _problemTag = new ProblemTag(this, Keys.TAG_ID_FK);

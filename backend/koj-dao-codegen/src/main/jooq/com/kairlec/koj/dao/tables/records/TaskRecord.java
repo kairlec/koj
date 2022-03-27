@@ -373,4 +373,22 @@ public class TaskRecord extends UpdatableRecordImpl<TaskRecord> implements Recor
         setCreateTime(createTime);
         setUpdateTime(updateTime);
     }
+
+    /**
+     * Create a detached, initialised TaskRecord
+     */
+    public TaskRecord(com.kairlec.koj.dao.tables.pojos.Task value) {
+        super(Task.TASK);
+
+        if (value != null) {
+            setId(value.getId());
+            setType(value.getType());
+            setState(value.getState());
+            setCastMemory(value.getCastMemory());
+            setCastTime(value.getCastTime());
+            setBelongCompetitionId(value.getBelongCompetitionId());
+            setCreateTime(value.getCreateTime());
+            setUpdateTime(value.getUpdateTime());
+        }
+    }
 }

@@ -335,4 +335,21 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
         setCreateTime(createTime);
         setUpdateTime(updateTime);
     }
+
+    /**
+     * Create a detached, initialised UserRecord
+     */
+    public UserRecord(com.kairlec.koj.dao.tables.pojos.User value) {
+        super(User.USER);
+
+        if (value != null) {
+            setId(value.getId());
+            setUsername(value.getUsername());
+            setPassword(value.getPassword());
+            setEmail(value.getEmail());
+            setType(value.getType());
+            setCreateTime(value.getCreateTime());
+            setUpdateTime(value.getUpdateTime());
+        }
+    }
 }

@@ -64,12 +64,12 @@ public class ProblemTag extends TableImpl<ProblemTagRecord> {
     /**
      * The column <code>koj.problem_tag.create_time</code>. 创建时间
      */
-    public final TableField<ProblemTagRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "创建时间");
+    public final TableField<ProblemTagRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "创建时间");
 
     /**
      * The column <code>koj.problem_tag.update_time</code>. 更新时间
      */
-    public final TableField<ProblemTagRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "更新时间");
+    public final TableField<ProblemTagRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "更新时间");
 
     private ProblemTag(Name alias, Table<ProblemTagRecord> aliased) {
         this(alias, aliased, null);
@@ -106,12 +106,12 @@ public class ProblemTag extends TableImpl<ProblemTagRecord> {
 
     @Override
     public Schema getSchema() {
-        return Koj.KOJ;
+        return aliased() ? null : Koj.KOJ;
     }
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.PROBLEM_TAG_NAME_IDX);
+        return Arrays.asList(Indexes.PROBLEM_TAG_NAME_IDX);
     }
 
     @Override
@@ -122,11 +122,6 @@ public class ProblemTag extends TableImpl<ProblemTagRecord> {
     @Override
     public UniqueKey<ProblemTagRecord> getPrimaryKey() {
         return Keys.KEY_PROBLEM_TAG_PRIMARY;
-    }
-
-    @Override
-    public List<UniqueKey<ProblemTagRecord>> getKeys() {
-        return Arrays.<UniqueKey<ProblemTagRecord>>asList(Keys.KEY_PROBLEM_TAG_PRIMARY);
     }
 
     @Override

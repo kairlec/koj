@@ -183,4 +183,17 @@ public class CodeRecord extends UpdatableRecordImpl<CodeRecord> implements Recor
         setCode(code);
         setCreateTime(createTime);
     }
+
+    /**
+     * Create a detached, initialised CodeRecord
+     */
+    public CodeRecord(com.kairlec.koj.dao.tables.pojos.Code value) {
+        super(Code.CODE);
+
+        if (value != null) {
+            setId(value.getId());
+            setCode(value.getCode());
+            setCreateTime(value.getCreateTime());
+        }
+    }
 }

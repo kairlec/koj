@@ -297,4 +297,20 @@ public class ProblemRecord extends UpdatableRecordImpl<ProblemRecord> implements
         setCreateTime(createTime);
         setUpdateTime(updateTime);
     }
+
+    /**
+     * Create a detached, initialised ProblemRecord
+     */
+    public ProblemRecord(com.kairlec.koj.dao.tables.pojos.Problem value) {
+        super(Problem.PROBLEM);
+
+        if (value != null) {
+            setId(value.getId());
+            setName(value.getName());
+            setContent(value.getContent());
+            setSpj(value.getSpj());
+            setCreateTime(value.getCreateTime());
+            setUpdateTime(value.getUpdateTime());
+        }
+    }
 }

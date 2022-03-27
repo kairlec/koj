@@ -73,12 +73,12 @@ public class ProblemConfig extends TableImpl<ProblemConfigRecord> {
     /**
      * The column <code>koj.problem_config.create_time</code>. 创建时间
      */
-    public final TableField<ProblemConfigRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "创建时间");
+    public final TableField<ProblemConfigRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "创建时间");
 
     /**
      * The column <code>koj.problem_config.update_time</code>. 更新时间
      */
-    public final TableField<ProblemConfigRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "更新时间");
+    public final TableField<ProblemConfigRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "更新时间");
 
     private ProblemConfig(Name alias, Table<ProblemConfigRecord> aliased) {
         this(alias, aliased, null);
@@ -115,12 +115,12 @@ public class ProblemConfig extends TableImpl<ProblemConfigRecord> {
 
     @Override
     public Schema getSchema() {
-        return Koj.KOJ;
+        return aliased() ? null : Koj.KOJ;
     }
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.PROBLEM_CONFIG_LANGUAGE_ID_IDX, Indexes.PROBLEM_CONFIG_PROBLEM_ID_IDX);
+        return Arrays.asList(Indexes.PROBLEM_CONFIG_LANGUAGE_ID_IDX, Indexes.PROBLEM_CONFIG_PROBLEM_ID_IDX);
     }
 
     @Override
@@ -129,17 +129,15 @@ public class ProblemConfig extends TableImpl<ProblemConfigRecord> {
     }
 
     @Override
-    public List<UniqueKey<ProblemConfigRecord>> getKeys() {
-        return Arrays.<UniqueKey<ProblemConfigRecord>>asList(Keys.KEY_PROBLEM_CONFIG_PRIMARY);
-    }
-
-    @Override
     public List<ForeignKey<ProblemConfigRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<ProblemConfigRecord, ?>>asList(Keys.CONFIG_PROBLEM_ID_FK);
+        return Arrays.asList(Keys.CONFIG_PROBLEM_ID_FK);
     }
 
     private transient Problem _problem;
 
+    /**
+     * Get the implicit join path to the <code>koj.problem</code> table.
+     */
     public Problem problem() {
         if (_problem == null)
             _problem = new Problem(this, Keys.CONFIG_PROBLEM_ID_FK);

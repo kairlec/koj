@@ -75,7 +75,8 @@ public class UidWorkerNode implements Serializable {
     }
 
     /**
-     * Getter for <code>koj.uid_worker_node.type</code>. node type: ACTUAL or CONTAINER
+     * Getter for <code>koj.uid_worker_node.type</code>. node type: ACTUAL or
+     * CONTAINER
      */
     public Integer getType() {
         return this.type;

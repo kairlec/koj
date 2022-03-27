@@ -74,12 +74,12 @@ public class Problem extends TableImpl<ProblemRecord> {
     /**
      * The column <code>koj.problem.create_time</code>. 创建时间
      */
-    public final TableField<ProblemRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "创建时间");
+    public final TableField<ProblemRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "创建时间");
 
     /**
      * The column <code>koj.problem.update_time</code>. 更新时间
      */
-    public final TableField<ProblemRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "更新时间");
+    public final TableField<ProblemRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "更新时间");
 
     private Problem(Name alias, Table<ProblemRecord> aliased) {
         this(alias, aliased, null);
@@ -116,12 +116,12 @@ public class Problem extends TableImpl<ProblemRecord> {
 
     @Override
     public Schema getSchema() {
-        return Koj.KOJ;
+        return aliased() ? null : Koj.KOJ;
     }
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.PROBLEM_NAME_IDX);
+        return Arrays.asList(Indexes.PROBLEM_NAME_IDX);
     }
 
     @Override
@@ -132,11 +132,6 @@ public class Problem extends TableImpl<ProblemRecord> {
     @Override
     public UniqueKey<ProblemRecord> getPrimaryKey() {
         return Keys.KEY_PROBLEM_PRIMARY;
-    }
-
-    @Override
-    public List<UniqueKey<ProblemRecord>> getKeys() {
-        return Arrays.<UniqueKey<ProblemRecord>>asList(Keys.KEY_PROBLEM_PRIMARY);
     }
 
     @Override

@@ -79,12 +79,12 @@ public class User extends TableImpl<UserRecord> {
     /**
      * The column <code>koj.user.create_time</code>. 创建时间
      */
-    public final TableField<UserRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "创建时间");
+    public final TableField<UserRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "创建时间");
 
     /**
      * The column <code>koj.user.update_time</code>. 更新时间
      */
-    public final TableField<UserRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "更新时间");
+    public final TableField<UserRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "更新时间");
 
     private User(Name alias, Table<UserRecord> aliased) {
         this(alias, aliased, null);
@@ -121,12 +121,12 @@ public class User extends TableImpl<UserRecord> {
 
     @Override
     public Schema getSchema() {
-        return Koj.KOJ;
+        return aliased() ? null : Koj.KOJ;
     }
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.USER_EMAIL_IDX, Indexes.USER_USERNAME_IDX);
+        return Arrays.asList(Indexes.USER_EMAIL_IDX, Indexes.USER_USERNAME_IDX);
     }
 
     @Override
@@ -140,8 +140,8 @@ public class User extends TableImpl<UserRecord> {
     }
 
     @Override
-    public List<UniqueKey<UserRecord>> getKeys() {
-        return Arrays.<UniqueKey<UserRecord>>asList(Keys.KEY_USER_PRIMARY, Keys.KEY_USER_USERNAME_UQ, Keys.KEY_USER_EMAIL_UQ);
+    public List<UniqueKey<UserRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.KEY_USER_USERNAME_UQ, Keys.KEY_USER_EMAIL_UQ);
     }
 
     @Override

@@ -10,8 +10,6 @@ import com.kairlec.koj.dao.tables.records.UidWorkerNodeRecord;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
@@ -66,7 +64,8 @@ public class UidWorkerNode extends TableImpl<UidWorkerNodeRecord> {
     public final TableField<UidWorkerNodeRecord, String> PORT = createField(DSL.name("port"), SQLDataType.VARCHAR(64).nullable(false), this, "port");
 
     /**
-     * The column <code>koj.uid_worker_node.type</code>. node type: ACTUAL or CONTAINER
+     * The column <code>koj.uid_worker_node.type</code>. node type: ACTUAL or
+     * CONTAINER
      */
     public final TableField<UidWorkerNodeRecord, Integer> TYPE = createField(DSL.name("type"), SQLDataType.INTEGER.nullable(false), this, "node type: ACTUAL or CONTAINER");
 
@@ -78,12 +77,12 @@ public class UidWorkerNode extends TableImpl<UidWorkerNodeRecord> {
     /**
      * The column <code>koj.uid_worker_node.update_time</code>. modified time
      */
-    public final TableField<UidWorkerNodeRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "modified time");
+    public final TableField<UidWorkerNodeRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "modified time");
 
     /**
      * The column <code>koj.uid_worker_node.create_time</code>. created time
      */
-    public final TableField<UidWorkerNodeRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "created time");
+    public final TableField<UidWorkerNodeRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "created time");
 
     private UidWorkerNode(Name alias, Table<UidWorkerNodeRecord> aliased) {
         this(alias, aliased, null);
@@ -120,7 +119,7 @@ public class UidWorkerNode extends TableImpl<UidWorkerNodeRecord> {
 
     @Override
     public Schema getSchema() {
-        return Koj.KOJ;
+        return aliased() ? null : Koj.KOJ;
     }
 
     @Override
@@ -131,11 +130,6 @@ public class UidWorkerNode extends TableImpl<UidWorkerNodeRecord> {
     @Override
     public UniqueKey<UidWorkerNodeRecord> getPrimaryKey() {
         return Keys.KEY_UID_WORKER_NODE_PRIMARY;
-    }
-
-    @Override
-    public List<UniqueKey<UidWorkerNodeRecord>> getKeys() {
-        return Arrays.<UniqueKey<UidWorkerNodeRecord>>asList(Keys.KEY_UID_WORKER_NODE_PRIMARY);
     }
 
     @Override

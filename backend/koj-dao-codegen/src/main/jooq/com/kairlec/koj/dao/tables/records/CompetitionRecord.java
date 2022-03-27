@@ -259,4 +259,19 @@ public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> im
         setEndTime(endTime);
         setCreateTime(createTime);
     }
+
+    /**
+     * Create a detached, initialised CompetitionRecord
+     */
+    public CompetitionRecord(com.kairlec.koj.dao.tables.pojos.Competition value) {
+        super(Competition.COMPETITION);
+
+        if (value != null) {
+            setId(value.getId());
+            setName(value.getName());
+            setStartTime(value.getStartTime());
+            setEndTime(value.getEndTime());
+            setCreateTime(value.getCreateTime());
+        }
+    }
 }

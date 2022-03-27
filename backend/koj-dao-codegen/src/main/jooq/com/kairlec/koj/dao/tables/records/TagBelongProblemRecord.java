@@ -221,4 +221,18 @@ public class TagBelongProblemRecord extends UpdatableRecordImpl<TagBelongProblem
         setCreateTime(createTime);
         setUpdateTime(updateTime);
     }
+
+    /**
+     * Create a detached, initialised TagBelongProblemRecord
+     */
+    public TagBelongProblemRecord(com.kairlec.koj.dao.tables.pojos.TagBelongProblem value) {
+        super(TagBelongProblem.TAG_BELONG_PROBLEM);
+
+        if (value != null) {
+            setProblemId(value.getProblemId());
+            setTagId(value.getTagId());
+            setCreateTime(value.getCreateTime());
+            setUpdateTime(value.getUpdateTime());
+        }
+    }
 }

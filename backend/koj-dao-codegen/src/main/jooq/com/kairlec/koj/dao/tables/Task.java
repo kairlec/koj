@@ -9,8 +9,6 @@ import com.kairlec.koj.dao.Koj;
 import com.kairlec.koj.dao.tables.records.TaskRecord;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
@@ -81,12 +79,12 @@ public class Task extends TableImpl<TaskRecord> {
     /**
      * The column <code>koj.task.create_time</code>. 创建时间
      */
-    public final TableField<TaskRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "创建时间");
+    public final TableField<TaskRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "创建时间");
 
     /**
      * The column <code>koj.task.update_time</code>. 更新时间
      */
-    public final TableField<TaskRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "更新时间");
+    public final TableField<TaskRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "更新时间");
 
     private Task(Name alias, Table<TaskRecord> aliased) {
         this(alias, aliased, null);
@@ -123,17 +121,12 @@ public class Task extends TableImpl<TaskRecord> {
 
     @Override
     public Schema getSchema() {
-        return Koj.KOJ;
+        return aliased() ? null : Koj.KOJ;
     }
 
     @Override
     public UniqueKey<TaskRecord> getPrimaryKey() {
         return Keys.KEY_TASK_PRIMARY;
-    }
-
-    @Override
-    public List<UniqueKey<TaskRecord>> getKeys() {
-        return Arrays.<UniqueKey<TaskRecord>>asList(Keys.KEY_TASK_PRIMARY);
     }
 
     @Override

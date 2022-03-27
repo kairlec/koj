@@ -18,6 +18,7 @@ package com.baidu.fsg.uid.worker.dao;
 import com.baidu.fsg.uid.worker.entity.WorkerNodeEntity;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Mono;
 
 /**
  * DAO for M_WORKER_NODE
@@ -34,12 +35,12 @@ public interface WorkerNodeDAO {
      * @param port
      * @return
      */
-    WorkerNodeEntity getWorkerNodeByHostPort(@NotNull String host, @NotNull String port);
+    Mono<WorkerNodeEntity> getWorkerNodeByHostPort(@NotNull String host, @NotNull String port);
 
     /**
      * Add {@link WorkerNodeEntity}
      *
      * @param workerNodeEntity
      */
-    void addWorkerNode(@NotNull WorkerNodeEntity workerNodeEntity);
+    Mono<Integer> addWorkerNode(@NotNull WorkerNodeEntity workerNodeEntity);
 }

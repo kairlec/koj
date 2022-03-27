@@ -297,4 +297,20 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
         setCreateTime(createTime);
         setUpdateTime(updateTime);
     }
+
+    /**
+     * Create a detached, initialised ProblemConfigRecord
+     */
+    public ProblemConfigRecord(com.kairlec.koj.dao.tables.pojos.ProblemConfig value) {
+        super(ProblemConfig.PROBLEM_CONFIG);
+
+        if (value != null) {
+            setProblemId(value.getProblemId());
+            setLanguageId(value.getLanguageId());
+            setMemory(value.getMemory());
+            setTime(value.getTime());
+            setCreateTime(value.getCreateTime());
+            setUpdateTime(value.getUpdateTime());
+        }
+    }
 }

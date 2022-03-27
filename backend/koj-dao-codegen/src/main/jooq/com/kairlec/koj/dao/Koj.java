@@ -101,7 +101,7 @@ public class Koj extends SchemaImpl {
 
     @Override
     public final List<Table<?>> getTables() {
-        return Arrays.<Table<?>>asList(
+        return Arrays.asList(
             Code.CODE,
             Competition.COMPETITION,
             Contestants.CONTESTANTS,
@@ -111,6 +111,7 @@ public class Koj extends SchemaImpl {
             TagBelongProblem.TAG_BELONG_PROBLEM,
             Task.TASK,
             UidWorkerNode.UID_WORKER_NODE,
-            User.USER);
+            User.USER
+        );
     }
 }

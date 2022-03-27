@@ -63,12 +63,12 @@ public class Contestants extends TableImpl<ContestantsRecord> {
     /**
      * The column <code>koj.contestants.create_time</code>. 创建时间
      */
-    public final TableField<ContestantsRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "创建时间");
+    public final TableField<ContestantsRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "创建时间");
 
     /**
      * The column <code>koj.contestants.update_time</code>. 更新时间
      */
-    public final TableField<ContestantsRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "更新时间");
+    public final TableField<ContestantsRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "更新时间");
 
     private Contestants(Name alias, Table<ContestantsRecord> aliased) {
         this(alias, aliased, null);
@@ -105,12 +105,12 @@ public class Contestants extends TableImpl<ContestantsRecord> {
 
     @Override
     public Schema getSchema() {
-        return Koj.KOJ;
+        return aliased() ? null : Koj.KOJ;
     }
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.CONTESTANTS_COMPETITION_ID_IDX, Indexes.CONTESTANTS_USER_ID_IDX);
+        return Arrays.asList(Indexes.CONTESTANTS_COMPETITION_ID_IDX, Indexes.CONTESTANTS_USER_ID_IDX);
     }
 
     @Override
@@ -119,18 +119,16 @@ public class Contestants extends TableImpl<ContestantsRecord> {
     }
 
     @Override
-    public List<UniqueKey<ContestantsRecord>> getKeys() {
-        return Arrays.<UniqueKey<ContestantsRecord>>asList(Keys.KEY_CONTESTANTS_PRIMARY);
-    }
-
-    @Override
     public List<ForeignKey<ContestantsRecord, ?>> getReferences() {
-        return Arrays.<ForeignKey<ContestantsRecord, ?>>asList(Keys.USER_ID_FK, Keys.COMPETITION_ID_FK);
+        return Arrays.asList(Keys.USER_ID_FK, Keys.COMPETITION_ID_FK);
     }
 
     private transient User _user;
     private transient Competition _competition;
 
+    /**
+     * Get the implicit join path to the <code>koj.user</code> table.
+     */
     public User user() {
         if (_user == null)
             _user = new User(this, Keys.USER_ID_FK);
@@ -138,6 +136,9 @@ public class Contestants extends TableImpl<ContestantsRecord> {
         return _user;
     }
 
+    /**
+     * Get the implicit join path to the <code>koj.competition</code> table.
+     */
     public Competition competition() {
         if (_competition == null)
             _competition = new Competition(this, Keys.COMPETITION_ID_FK);

@@ -221,4 +221,18 @@ public class ContestantsRecord extends UpdatableRecordImpl<ContestantsRecord> im
         setCreateTime(createTime);
         setUpdateTime(updateTime);
     }
+
+    /**
+     * Create a detached, initialised ContestantsRecord
+     */
+    public ContestantsRecord(com.kairlec.koj.dao.tables.pojos.Contestants value) {
+        super(Contestants.CONTESTANTS);
+
+        if (value != null) {
+            setUserId(value.getUserId());
+            setCompetitionId(value.getCompetitionId());
+            setCreateTime(value.getCreateTime());
+            setUpdateTime(value.getUpdateTime());
+        }
+    }
 }

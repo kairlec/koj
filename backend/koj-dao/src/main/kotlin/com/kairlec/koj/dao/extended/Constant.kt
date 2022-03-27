@@ -9,7 +9,7 @@ import kotlin.reflect.KMutableProperty0
  * @since : 2022/3/1
  **/
 @Suppress("NOTHING_TO_INLINE")
-internal inline fun <T, R : Record> T?.setNotNull(function: KMutableProperty0<T>) {
+internal inline fun <T> T?.setNotNull(function: KMutableProperty0<T>) {
     if (this != null) {
         function.set(this)
     }

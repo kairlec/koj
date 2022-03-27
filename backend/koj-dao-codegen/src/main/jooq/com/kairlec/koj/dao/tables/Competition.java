@@ -74,7 +74,7 @@ public class Competition extends TableImpl<CompetitionRecord> {
     /**
      * The column <code>koj.competition.create_time</code>. 创建时间
      */
-    public final TableField<CompetitionRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false).defaultValue(DSL.field("CURRENT_TIMESTAMP", SQLDataType.LOCALDATETIME)), this, "创建时间");
+    public final TableField<CompetitionRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "创建时间");
 
     private Competition(Name alias, Table<CompetitionRecord> aliased) {
         this(alias, aliased, null);
@@ -111,12 +111,12 @@ public class Competition extends TableImpl<CompetitionRecord> {
 
     @Override
     public Schema getSchema() {
-        return Koj.KOJ;
+        return aliased() ? null : Koj.KOJ;
     }
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.COMPETITION_NAME_IDX);
+        return Arrays.asList(Indexes.COMPETITION_NAME_IDX);
     }
 
     @Override
@@ -127,11 +127,6 @@ public class Competition extends TableImpl<CompetitionRecord> {
     @Override
     public UniqueKey<CompetitionRecord> getPrimaryKey() {
         return Keys.KEY_COMPETITION_PRIMARY;
-    }
-
-    @Override
-    public List<UniqueKey<CompetitionRecord>> getKeys() {
-        return Arrays.<UniqueKey<CompetitionRecord>>asList(Keys.KEY_COMPETITION_PRIMARY);
     }
 
     @Override

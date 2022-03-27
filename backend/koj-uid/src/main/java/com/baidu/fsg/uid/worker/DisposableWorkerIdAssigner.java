@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 /**
  * Represents an implementation of {@link WorkerIdAssigner},
@@ -45,15 +46,13 @@ public class DisposableWorkerIdAssigner implements WorkerIdAssigner {
      * @return assigned worker id
      */
     @Transactional
-    public long assignWorkerId() {
+    public Mono<Long> assignWorkerId() {
         // build worker node entity
         WorkerNodeEntity workerNodeEntity = buildWorkerNode();
 
         // add worker node for new (ignore the same IP + PORT)
-        workerNodeDAO.addWorkerNode(workerNodeEntity);
         LOGGER.info("Add worker node:" + workerNodeEntity);
-
-        return workerNodeEntity.getId();
+        return workerNodeDAO.addWorkerNode(workerNodeEntity).then(Mono.just(workerNodeEntity.getId()));
     }
 
     /**

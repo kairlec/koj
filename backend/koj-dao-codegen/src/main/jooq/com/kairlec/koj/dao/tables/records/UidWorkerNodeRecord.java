@@ -70,7 +70,8 @@ public class UidWorkerNodeRecord extends UpdatableRecordImpl<UidWorkerNodeRecord
     }
 
     /**
-     * Setter for <code>koj.uid_worker_node.type</code>. node type: ACTUAL or CONTAINER
+     * Setter for <code>koj.uid_worker_node.type</code>. node type: ACTUAL or
+     * CONTAINER
      */
     public UidWorkerNodeRecord setType(Integer value) {
         set(3, value);
@@ -78,7 +79,8 @@ public class UidWorkerNodeRecord extends UpdatableRecordImpl<UidWorkerNodeRecord
     }
 
     /**
-     * Getter for <code>koj.uid_worker_node.type</code>. node type: ACTUAL or CONTAINER
+     * Getter for <code>koj.uid_worker_node.type</code>. node type: ACTUAL or
+     * CONTAINER
      */
     public Integer getType() {
         return (Integer) get(3);
@@ -335,5 +337,22 @@ public class UidWorkerNodeRecord extends UpdatableRecordImpl<UidWorkerNodeRecord
         setLaunchDate(launchDate);
         setUpdateTime(updateTime);
         setCreateTime(createTime);
+    }
+
+    /**
+     * Create a detached, initialised UidWorkerNodeRecord
+     */
+    public UidWorkerNodeRecord(com.kairlec.koj.dao.tables.pojos.UidWorkerNode value) {
+        super(UidWorkerNode.UID_WORKER_NODE);
+
+        if (value != null) {
+            setId(value.getId());
+            setHostName(value.getHostName());
+            setPort(value.getPort());
+            setType(value.getType());
+            setLaunchDate(value.getLaunchDate());
+            setUpdateTime(value.getUpdateTime());
+            setCreateTime(value.getCreateTime());
+        }
     }
 }
