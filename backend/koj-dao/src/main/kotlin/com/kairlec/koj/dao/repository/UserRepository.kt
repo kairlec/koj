@@ -1,17 +1,14 @@
 package com.kairlec.koj.dao.repository
 
+import com.kairlec.koj.dao.DSLAccess
 import com.kairlec.koj.dao.Hasher
 import com.kairlec.koj.dao.Tables.USER
 import com.kairlec.koj.dao.extended.value
 import com.kairlec.koj.dao.tables.records.UserRecord
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.mono
-import org.jooq.DSLContext
-import org.reactivestreams.Publisher
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
 import kotlin.properties.ReadOnlyProperty
@@ -21,17 +18,10 @@ import kotlin.reflect.KProperty
  * @author : Kairlec
  * @since : 2022/2/11
  **/
-interface DSLAccess {
-    fun <T : Any> withDSLContextMany(block: (DSLContext) -> Publisher<T>): Flux<T>
 
-    fun <T : Any> withDSLContextMono(block: (DSLContext) -> Mono<T>): Mono<T>
-
-    suspend fun <T : Any> withDSLContext(block: suspend (DSLContext) -> T): T
-}
 
 @Repository
 class UserRepository(
-//    private val create: DSLContext,
     private val dslAccess: DSLAccess,
     private val hasher: Hasher,
 ) {
@@ -49,7 +39,7 @@ class UserRepository(
             create.insertInto(USER)
                 .value {
                     this[USER.USERNAME] = username
-                    this[USER.PASSWORD] = password
+                    this[USER.PASSWORD] = hasher.hash(password)
                     this[USER.EMAIL] = email
                     this[USER.TYPE] = type.value
                 }
@@ -175,20 +165,6 @@ class UserRepositoryDSL(
     suspend fun query(username: String, block: suspend UserQueryDSL.() -> Unit): Executable<Mono<UserRecord>> {
         return UserQueryDSL(username).apply { block() }.also { dslContext.add(it) }
     }
-//    operator fun Executable<Boolean>.not(): Executable<UserRecord?> {
-//        require(this is UserDSL)
-//        dslContext.remove(this)
-//        return ExecutableImpl(userRepository[username, _password.value, _type.value])
-//    }
-
-//    @InternalApi
-//    operator fun get(username: String): UserRecord? {
-//        return userRepository[username]
-//    }
-//
-//    operator fun get(username: String, password: String): UserRecord? {
-//        return userRepository[username, password]
-//    }
 
     suspend operator fun Executable<Mono<Boolean>>.unaryPlus(): Executable<Long> {
         require(this is UserDSL)

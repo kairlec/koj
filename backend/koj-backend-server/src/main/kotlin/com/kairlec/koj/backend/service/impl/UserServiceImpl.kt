@@ -30,7 +30,6 @@ class UserServiceImpl(
                 type = UserType.USER
             }
             println("c=${c.awaitSingle()}")
-            error("asd")
             // get user
             val d by query("kairlec") {}
             println("d=${d.awaitSingle()}")

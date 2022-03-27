@@ -1,8 +1,7 @@
 package com.kairlec.koj.backend.config
 
-import com.kairlec.koj.dao.repository.DSLAccess
+import com.kairlec.koj.dao.DSLAccess
 import io.r2dbc.spi.Connection
-import io.r2dbc.spi.ConnectionFactory
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.mono
 import org.jooq.DSLContext
