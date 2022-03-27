@@ -3,7 +3,6 @@ package com.baidu.fsg.uid.worker.dao;
 import com.baidu.fsg.uid.worker.entity.WorkerNodeEntity;
 import com.kairlec.koj.dao.DSLAccess;
 import org.jetbrains.annotations.NotNull;
-import org.jooq.DSLContext;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -23,7 +22,7 @@ public class WorkerNodeDAOImpl implements WorkerNodeDAO {
 
     @Override
     public Mono<WorkerNodeEntity> getWorkerNodeByHostPort(@NotNull String host, @NotNull String port) {
-        return access.withDSLContextMono(create -> Mono.from(create.select(UID_WORKER_NODE.ID, UID_WORKER_NODE.HOST_NAME, UID_WORKER_NODE.PORT, UID_WORKER_NODE.TYPE, UID_WORKER_NODE.LAUNCH_DATE, UID_WORKER_NODE.UPDATE_TIME, UID_WORKER_NODE.CREATE_TIME)
+        return access.mono(create -> Mono.from(create.select(UID_WORKER_NODE.ID, UID_WORKER_NODE.HOST_NAME, UID_WORKER_NODE.PORT, UID_WORKER_NODE.TYPE, UID_WORKER_NODE.LAUNCH_DATE, UID_WORKER_NODE.UPDATE_TIME, UID_WORKER_NODE.CREATE_TIME)
                         .from(UID_WORKER_NODE)
                         .where(UID_WORKER_NODE.HOST_NAME.eq(host))
                         .and(UID_WORKER_NODE.PORT.eq(port)))
@@ -32,7 +31,7 @@ public class WorkerNodeDAOImpl implements WorkerNodeDAO {
 
     @Override
     public Mono<Integer> addWorkerNode(@NotNull WorkerNodeEntity workerNodeEntity) {
-        return access.withDSLContextMono(create -> Mono.from(create.insertInto(UID_WORKER_NODE,
+        return access.mono(create -> Mono.from(create.insertInto(UID_WORKER_NODE,
                         UID_WORKER_NODE.HOST_NAME,
                         UID_WORKER_NODE.PORT,
                         UID_WORKER_NODE.TYPE,

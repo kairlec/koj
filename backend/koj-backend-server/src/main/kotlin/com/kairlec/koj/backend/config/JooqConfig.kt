@@ -2,8 +2,6 @@ package com.kairlec.koj.backend.config
 
 import com.kairlec.koj.dao.DSLAccess
 import io.r2dbc.spi.Connection
-import kotlinx.coroutines.reactor.awaitSingle
-import kotlinx.coroutines.reactor.mono
 import org.jooq.DSLContext
 import org.jooq.SQLDialect
 import org.jooq.conf.Settings
@@ -39,12 +37,9 @@ class DSLAccessImpl(
     private fun Connection.dsl() =
         DSL.using(this, sqlDialect, settings)
 
-    override fun <T : Any> withDSLContextMany(block: (DSLContext) -> Publisher<T>): Flux<T> =
-        databaseClient.inConnectionMany { con -> block(con.dsl()).toFlux() }
+    override fun <T : Any> flux(block: DSLContext.() -> Publisher<T>): Flux<T> =
+        databaseClient.inConnectionMany { block(it.dsl()).toFlux() }
 
-    override fun <T : Any> withDSLContextMono(block: (DSLContext) -> Mono<T>): Mono<T> =
-        databaseClient.inConnection { con -> block(con.dsl()) }
-
-    override suspend fun <T : Any> withDSLContext(block: suspend (DSLContext) -> T): T =
-        databaseClient.inConnection { con -> mono { block(con.dsl()) } }.awaitSingle()
+    override fun <T : Any> mono(block: DSLContext.() -> Mono<T>): Mono<T> =
+        databaseClient.inConnection { block(it.dsl()) }
 }

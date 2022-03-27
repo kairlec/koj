@@ -3,8 +3,13 @@ package com.kairlec.koj.dao.repository
 import com.kairlec.koj.dao.DSLAccess
 import com.kairlec.koj.dao.Hasher
 import com.kairlec.koj.dao.Tables.USER
+import com.kairlec.koj.dao.extended.ListCondition
+import com.kairlec.koj.dao.extended.list
 import com.kairlec.koj.dao.extended.value
 import com.kairlec.koj.dao.tables.records.UserRecord
+import com.kairlec.koj.dao.with
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.mono
 import org.springframework.stereotype.Repository
@@ -35,8 +40,8 @@ class UserRepository(
     }
 
     suspend fun createUser(username: String, password: String, email: String, type: UserType): Long {
-        return dslAccess.withDSLContext { create ->
-            create.insertInto(USER)
+        return dslAccess.with {
+            insertInto(USER)
                 .value {
                     this[USER.USERNAME] = username
                     this[USER.PASSWORD] = hasher.hash(password)
@@ -50,24 +55,56 @@ class UserRepository(
     }
 
     suspend fun removeUser(username: String): Boolean {
-        return dslAccess.withDSLContext { create ->
-            create.deleteFrom(USER)
+        return dslAccess.with {
+            deleteFrom(USER)
                 .where(USER.USERNAME.eq(username))
                 .awaitSingle() > 0
         }
     }
 
+    suspend fun removeUser(id: Long): Boolean {
+        return dslAccess.with {
+            deleteFrom(USER)
+                .where(USER.ID.eq(id))
+                .awaitSingle() > 0
+        }
+    }
+
+    fun gets(
+        type: UserType? = null,
+        listCondition: ListCondition,
+    ): Flow<UserRecord> {
+        return dslAccess.flux {
+            if (type == null) {
+                selectFrom(USER)
+                    .list(USER, listCondition)
+            } else {
+                selectFrom(USER)
+                    .where(USER.TYPE.eq(type.value))
+                    .list(USER, listCondition)
+            }
+        }.asFlow()
+    }
+
     suspend fun get(
-        username: String,
+        username: String? = null,
         password: String? = null,
         email: String? = null,
         type: UserType? = null
     ): UserRecord? {
+        require(username != null || email != null) {
+            "username or email must be not null"
+        }
         val record =
-            dslAccess.withDSLContext { create ->
-                create.selectFrom(USER)
-                    .where(USER.USERNAME.eq(username))
-                    .let { if (email != null) it.and(USER.EMAIL.eq(email)) else it }
+            dslAccess.with {
+                selectFrom(USER)
+                    .let {
+                        if (username != null) {
+                            it.where(USER.USERNAME.eq(username))
+                        } else {
+                            it.where(USER.EMAIL.eq(email))
+                        }
+                    }
                     .let { if (type != null) it.and(USER.TYPE.eq(type.value)) else it }
                     .awaitSingle()
             }
@@ -79,18 +116,28 @@ class UserRepository(
         return record
     }
 
-    suspend fun updateUser(username: String, password: String?, email: String?, type: UserType?): Boolean {
-        if (password == null && email == null && type == null) {
+    suspend fun get(
+        id: Long
+    ): UserRecord? {
+        return dslAccess.with {
+            selectFrom(USER)
+                .where(USER.ID.eq(id))
+                .awaitSingle()
+        }
+    }
+
+    suspend fun updateUser(id: Long, username: String?, password: String?, email: String?, type: UserType?): Boolean {
+        if (username == null && password == null && email == null && type == null) {
             return false
         }
-        return dslAccess.withDSLContext { create ->
-            val next = create.update(USER)
+        return dslAccess.with {
+            val next = update(USER)
                 .let { if (password != null) it.set(USER.PASSWORD, hasher.hash(password)) else it }
+                .let { if (username != null) it.set(USER.USERNAME, username) else it }
                 .let { if (email != null) it.set(USER.EMAIL, email) else it }
                 .let { if (type != null) it.set(USER.TYPE, type.value) else it }
-
             (next as org.jooq.UpdateSetMoreStep<UserRecord>)
-                .where(USER.USERNAME.eq(username))
+                .where(USER.ID.eq(id))
                 .awaitSingle() > 0
         }
     }
@@ -119,6 +166,8 @@ class UserRepositoryDSL(
     private val dslContext = LinkedList<Executable<*>>()
 
     inner class UserDSL : Executable<Mono<Boolean>> {
+        internal var _id = InitNeedProperty<Long>()
+        var id by _id
         internal var _username = InitNeedProperty<String>()
         var username by _username
         internal var _password = InitNeedProperty<String>()
@@ -130,7 +179,7 @@ class UserRepositoryDSL(
 
         override operator fun getValue(thisRef: Any?, property: KProperty<*>): Mono<Boolean> {
             dslContext.remove(this)
-            return mono { userRepository.updateUser(username, _password.value, _email.value, _type.value) }
+            return mono { userRepository.updateUser(id, _username.value, _password.value, _email.value, _type.value) }
         }
     }
 
@@ -170,7 +219,13 @@ class UserRepositoryDSL(
         require(this is UserDSL)
         dslContext.forEach {
             if (it != this && it is UserDSL) {
-                userRepository.updateUser(it.username, it._password.value, it._email.value, it._type.value)
+                userRepository.updateUser(
+                    it.id,
+                    it._username.value,
+                    it._password.value,
+                    it._email.value,
+                    it._type.value
+                )
             }
         }
         dslContext.clear()
@@ -181,7 +236,13 @@ class UserRepositoryDSL(
         require(this is UserDSL)
         dslContext.forEach {
             if (it != this && it is UserDSL) {
-                userRepository.updateUser(it.username, it._password.value, it._email.value, it._type.value)
+                userRepository.updateUser(
+                    it.id,
+                    it._username.value,
+                    it._password.value,
+                    it._email.value,
+                    it._type.value
+                )
             }
         }
         dslContext.clear()
