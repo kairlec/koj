@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.kairlec.koj.dao.extended
 
 import org.jooq.*
@@ -14,7 +16,7 @@ data class ListCondition(
     val search: String? = null,
 )
 
-fun <R : Record> SelectWhereStep<R>.list(
+inline fun <R : Record> SelectWhereStep<R>.list(
     table: Table<R>,
     listCondition: ListCondition
 ): SelectForUpdateStep<R> {
@@ -23,7 +25,13 @@ fun <R : Record> SelectWhereStep<R>.list(
         .seekLimit(listCondition.limit, listCondition.seek)
 }
 
-fun <R : Record> SelectConditionStep<R>.list(
+inline fun SelectWhereStep<Record1<Int>>.list(
+    listCondition: ListCondition
+): SelectForUpdateStep<Record1<Int>> {
+    return where(listCondition.search)
+}
+
+inline fun <R : Record> SelectConditionStep<R>.list(
     table: Table<R>,
     listCondition: ListCondition
 ): SelectForUpdateStep<R> {
@@ -32,7 +40,13 @@ fun <R : Record> SelectConditionStep<R>.list(
         .seekLimit(listCondition.limit, listCondition.seek)
 }
 
-fun <R : Record> SelectConditionStep<R>.listFinal(
+inline fun SelectConditionStep<Record1<Int>>.list(
+    listCondition: ListCondition
+): SelectForUpdateStep<Record1<Int>> {
+    return and(listCondition.search)
+}
+
+inline fun <R : Record> SelectConditionStep<R>.listFinal(
     table: Table<R>,
     listCondition: ListCondition?
 ): ResultQuery<R> {
@@ -40,5 +54,15 @@ fun <R : Record> SelectConditionStep<R>.listFinal(
         this
     } else {
         list(table, listCondition)
+    }
+}
+
+inline fun SelectConditionStep<Record1<Int>>.listFinal(
+    listCondition: ListCondition?
+): ResultQuery<Record1<Int>> {
+    return if (listCondition == null) {
+        this
+    } else {
+        list(listCondition)
     }
 }

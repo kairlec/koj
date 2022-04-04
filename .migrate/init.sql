@@ -28,28 +28,6 @@ CREATE TABLE IF NOT EXISTS koj.user
     CONSTRAINT username_uq UNIQUE (username)
 ) COMMENT ='用户表';
 
-CREATE TABLE IF NOT EXISTS koj.task
-(
-    id                    BIGINT                                 NOT NULL COMMENT '任务id',
-    type                  BIGINT                                 NOT NULL COMMENT '任务类型',
-    state                 TINYINT                                NOT NULL COMMENT '任务状态',
-    cast_memory           INT                                    NULL COMMENT '任务内存',
-    cast_time             INT                                    NULL COMMENT '耗时',
-    belong_competition_id BIGINT                                 NULL COMMENT '所属比赛id',
-    create_time           DATETIME DEFAULT NOW()                 NOT NULL COMMENT '创建时间',
-    update_time           DATETIME DEFAULT NOW() ON UPDATE NOW() NOT NULL COMMENT '更新时间',
-    PRIMARY KEY (id)
-) COMMENT ='任务表';
-
-CREATE TABLE IF NOT EXISTS koj.code
-(
-    id          BIGINT                 NOT NULL COMMENT '代码id(和任务id一致)',
-    code        TEXT                   NOT NULL COMMENT '代码',
-    create_time DATETIME DEFAULT NOW() NOT NULL COMMENT '创建时间',
-    PRIMARY KEY (id),
-    CONSTRAINT id FOREIGN KEY (id) REFERENCES koj.task (id) ON DELETE CASCADE
-) COMMENT ='代码表';
-
 CREATE TABLE IF NOT EXISTS koj.competition
 (
     id          BIGINT                 NOT NULL AUTO_INCREMENT COMMENT '比赛id',
@@ -60,6 +38,31 @@ CREATE TABLE IF NOT EXISTS koj.competition
     PRIMARY KEY (id),
     INDEX name_idx (name)
 ) COMMENT ='比赛表';
+
+CREATE TABLE IF NOT EXISTS koj.submit
+(
+    id                    BIGINT                                 NOT NULL COMMENT '任务id',
+    state                 TINYINT                                NOT NULL COMMENT '任务状态',
+    language_id           VARCHAR(64)                            NOT NULL COMMENT '语言id',
+    cast_memory           INT                                    NULL COMMENT '任务内存',
+    cast_time             INT                                    NULL COMMENT '耗时',
+    belong_competition_id BIGINT                                 NULL COMMENT '所属比赛id',
+    belong_user_id        BIGINT                                 NOT NULL COMMENT '所属用户id',
+    create_time           DATETIME DEFAULT NOW()                 NOT NULL COMMENT '创建时间',
+    update_time           DATETIME DEFAULT NOW() ON UPDATE NOW() NOT NULL COMMENT '更新时间',
+    PRIMARY KEY (id),
+    FOREIGN KEY (belong_competition_id) REFERENCES koj.competition (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (belong_user_id) REFERENCES koj.user (id) ON DELETE CASCADE ON UPDATE CASCADE
+) COMMENT ='任务表';
+
+CREATE TABLE IF NOT EXISTS koj.code
+(
+    id          BIGINT                 NOT NULL COMMENT '代码id(和任务id一致)',
+    code        TEXT                   NOT NULL COMMENT '代码',
+    create_time DATETIME DEFAULT NOW() NOT NULL COMMENT '创建时间',
+    PRIMARY KEY (id),
+    CONSTRAINT id FOREIGN KEY (id) REFERENCES koj.submit (id) ON DELETE CASCADE
+) COMMENT ='代码表';
 
 CREATE TABLE IF NOT EXISTS koj.contestants
 (

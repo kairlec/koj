@@ -111,16 +111,16 @@ public class Code extends TableImpl<CodeRecord> {
         return Arrays.asList(Keys.ID);
     }
 
-    private transient Task _task;
+    private transient Submit _submit;
 
     /**
-     * Get the implicit join path to the <code>koj.task</code> table.
+     * Get the implicit join path to the <code>koj.submit</code> table.
      */
-    public Task task() {
-        if (_task == null)
-            _task = new Task(this, Keys.ID);
+    public Submit submit() {
+        if (_submit == null)
+            _submit = new Submit(this, Keys.ID);
 
-        return _task;
+        return _submit;
     }
 
     @Override

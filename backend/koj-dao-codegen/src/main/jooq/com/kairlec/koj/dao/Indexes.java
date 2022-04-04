@@ -9,6 +9,7 @@ import com.kairlec.koj.dao.tables.Contestants;
 import com.kairlec.koj.dao.tables.Problem;
 import com.kairlec.koj.dao.tables.ProblemConfig;
 import com.kairlec.koj.dao.tables.ProblemTag;
+import com.kairlec.koj.dao.tables.Submit;
 import com.kairlec.koj.dao.tables.TagBelongProblem;
 import com.kairlec.koj.dao.tables.User;
 
@@ -28,6 +29,8 @@ public class Indexes {
     // INDEX definitions
     // -------------------------------------------------------------------------
 
+    public static final Index SUBMIT_BELONG_COMPETITION_ID = Internal.createIndex(DSL.name("belong_competition_id"), Submit.SUBMIT, new OrderField[] { Submit.SUBMIT.BELONG_COMPETITION_ID }, false);
+    public static final Index SUBMIT_BELONG_USER_ID = Internal.createIndex(DSL.name("belong_user_id"), Submit.SUBMIT, new OrderField[] { Submit.SUBMIT.BELONG_USER_ID }, false);
     public static final Index CONTESTANTS_COMPETITION_ID_IDX = Internal.createIndex(DSL.name("competition_id_idx"), Contestants.CONTESTANTS, new OrderField[] { Contestants.CONTESTANTS.COMPETITION_ID }, false);
     public static final Index USER_EMAIL_IDX = Internal.createIndex(DSL.name("email_idx"), User.USER, new OrderField[] { User.USER.EMAIL }, false);
     public static final Index PROBLEM_CONFIG_LANGUAGE_ID_IDX = Internal.createIndex(DSL.name("language_id_idx"), ProblemConfig.PROBLEM_CONFIG, new OrderField[] { ProblemConfig.PROBLEM_CONFIG.LANGUAGE_ID }, false);

@@ -1,5 +1,7 @@
 package com.kairlec.koj.dao.extended
 
+import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
 import org.jooq.*
 import org.jooq.impl.DSL
 import kotlin.reflect.KMutableProperty0
@@ -8,16 +10,6 @@ import kotlin.reflect.KMutableProperty0
  * @author : Kairlec
  * @since : 2022/3/1
  **/
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun <T> T?.setNotNull(function: KMutableProperty0<T>) {
-    if (this != null) {
-        function.set(this)
-    }
-}
-
-typealias RecordUpdateDSL<T> = T.() -> Unit
-
-
 @RequiresOptIn("这个接口很危险,你要确定你在做什么", level = RequiresOptIn.Level.ERROR)
 annotation class HazardousAPI
 
@@ -36,8 +28,7 @@ fun <T> InsertOnDuplicateSetStep<out Record>.ref(vararg fields: TableField<out R
     } as InsertOnDuplicateSetMoreStep<out Record>
 }
 
-fun Query.executeBool() = execute() > 0
+suspend fun Publisher<Int>.awaitBool() = awaitSingle() > 0
 
-fun UpdatableRecord<*>.updateBool() = update() > 0
-
-fun <T> ResultQuery<Record1<T>>.fetchOrNull() = fetchOne()?.value1()
+suspend fun <T> ResultQuery<Record1<T>>.awaitOrNull() = awaitFirstOrNull()?.value1()
+suspend fun <T> ResultQuery<Record1<T>>.awaitOrNull(default: T) = awaitFirstOrNull()?.value1() ?: default

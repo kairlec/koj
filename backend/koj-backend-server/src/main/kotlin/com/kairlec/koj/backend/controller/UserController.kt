@@ -28,7 +28,7 @@ class UserController(
     }
 
     @DeleteMapping("")
-    suspend fun destory(
+    suspend fun destroy(
         @RequestParam id: Long,
     ) {
         if (!userService.removeUser(id)) {
@@ -36,4 +36,8 @@ class UserController(
         }
     }
 
+    @GetMapping("stat")
+    suspend fun stat(@RequestParam id: Long) {
+
+    }
 }

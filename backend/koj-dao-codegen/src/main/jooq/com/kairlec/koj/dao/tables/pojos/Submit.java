@@ -12,101 +12,112 @@ import java.time.LocalDateTime;
  * 任务表
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class Task implements Serializable {
+public class Submit implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private final Long          id;
-    private final Long          type;
     private final Byte          state;
+    private final String        languageId;
     private final Integer       castMemory;
     private final Integer       castTime;
     private final Long          belongCompetitionId;
+    private final Long          belongUserId;
     private final LocalDateTime createTime;
     private final LocalDateTime updateTime;
 
-    public Task(Task value) {
+    public Submit(Submit value) {
         this.id = value.id;
-        this.type = value.type;
         this.state = value.state;
+        this.languageId = value.languageId;
         this.castMemory = value.castMemory;
         this.castTime = value.castTime;
         this.belongCompetitionId = value.belongCompetitionId;
+        this.belongUserId = value.belongUserId;
         this.createTime = value.createTime;
         this.updateTime = value.updateTime;
     }
 
-    public Task(
+    public Submit(
         Long          id,
-        Long          type,
         Byte          state,
+        String        languageId,
         Integer       castMemory,
         Integer       castTime,
         Long          belongCompetitionId,
+        Long          belongUserId,
         LocalDateTime createTime,
         LocalDateTime updateTime
     ) {
         this.id = id;
-        this.type = type;
         this.state = state;
+        this.languageId = languageId;
         this.castMemory = castMemory;
         this.castTime = castTime;
         this.belongCompetitionId = belongCompetitionId;
+        this.belongUserId = belongUserId;
         this.createTime = createTime;
         this.updateTime = updateTime;
     }
 
     /**
-     * Getter for <code>koj.task.id</code>. 任务id
+     * Getter for <code>koj.submit.id</code>. 任务id
      */
     public Long getId() {
         return this.id;
     }
 
     /**
-     * Getter for <code>koj.task.type</code>. 任务类型
-     */
-    public Long getType() {
-        return this.type;
-    }
-
-    /**
-     * Getter for <code>koj.task.state</code>. 任务状态
+     * Getter for <code>koj.submit.state</code>. 任务状态
      */
     public Byte getState() {
         return this.state;
     }
 
     /**
-     * Getter for <code>koj.task.cast_memory</code>. 任务内存
+     * Getter for <code>koj.submit.language_id</code>. 语言id
+     */
+    public String getLanguageId() {
+        return this.languageId;
+    }
+
+    /**
+     * Getter for <code>koj.submit.cast_memory</code>. 任务内存
      */
     public Integer getCastMemory() {
         return this.castMemory;
     }
 
     /**
-     * Getter for <code>koj.task.cast_time</code>. 耗时
+     * Getter for <code>koj.submit.cast_time</code>. 耗时
      */
     public Integer getCastTime() {
         return this.castTime;
     }
 
     /**
-     * Getter for <code>koj.task.belong_competition_id</code>. 所属比赛id
+     * Getter for <code>koj.submit.belong_competition_id</code>. 所属比赛id
      */
     public Long getBelongCompetitionId() {
         return this.belongCompetitionId;
     }
 
     /**
-     * Getter for <code>koj.task.create_time</code>. 创建时间
+     * Getter for <code>koj.submit.belong_user_id</code>. 所属用户id
+     */
+    public Long getBelongUserId() {
+        return this.belongUserId;
+    }
+
+    /**
+     * Getter for <code>koj.submit.create_time</code>. 创建时间
      */
     public LocalDateTime getCreateTime() {
         return this.createTime;
     }
 
     /**
-     * Getter for <code>koj.task.update_time</code>. 更新时间
+     * Getter for <code>koj.submit.update_time</code>. 更新时间
      */
     public LocalDateTime getUpdateTime() {
         return this.updateTime;
@@ -114,14 +125,15 @@ public class Task implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Task (");
+        StringBuilder sb = new StringBuilder("Submit (");
 
         sb.append(id);
-        sb.append(", ").append(type);
         sb.append(", ").append(state);
+        sb.append(", ").append(languageId);
         sb.append(", ").append(castMemory);
         sb.append(", ").append(castTime);
         sb.append(", ").append(belongCompetitionId);
+        sb.append(", ").append(belongUserId);
         sb.append(", ").append(createTime);
         sb.append(", ").append(updateTime);
 

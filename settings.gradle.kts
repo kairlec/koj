@@ -7,7 +7,7 @@ dependencyResolutionManagement {
                 strictly("[3.19, 3.20[")
                 prefer("3.19.4")
             }
-            version("kotlin", "1.6.20-RC2")
+            version("kotlin", "1.6.20")
             version("spring", "2.6.+")
             version("pulsar-starter") {
                 strictly("[1, 2[")

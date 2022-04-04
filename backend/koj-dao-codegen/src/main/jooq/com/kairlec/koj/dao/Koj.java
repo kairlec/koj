@@ -10,8 +10,8 @@ import com.kairlec.koj.dao.tables.Contestants;
 import com.kairlec.koj.dao.tables.Problem;
 import com.kairlec.koj.dao.tables.ProblemConfig;
 import com.kairlec.koj.dao.tables.ProblemTag;
+import com.kairlec.koj.dao.tables.Submit;
 import com.kairlec.koj.dao.tables.TagBelongProblem;
-import com.kairlec.koj.dao.tables.Task;
 import com.kairlec.koj.dao.tables.UidWorkerNode;
 import com.kairlec.koj.dao.tables.User;
 
@@ -67,14 +67,14 @@ public class Koj extends SchemaImpl {
     public final ProblemTag PROBLEM_TAG = ProblemTag.PROBLEM_TAG;
 
     /**
+     * 任务表
+     */
+    public final Submit SUBMIT = Submit.SUBMIT;
+
+    /**
      * 题目标签关系表
      */
     public final TagBelongProblem TAG_BELONG_PROBLEM = TagBelongProblem.TAG_BELONG_PROBLEM;
-
-    /**
-     * 任务表
-     */
-    public final Task TASK = Task.TASK;
 
     /**
      * DB WorkerID Assigner for UID Generator
@@ -108,8 +108,8 @@ public class Koj extends SchemaImpl {
             Problem.PROBLEM,
             ProblemConfig.PROBLEM_CONFIG,
             ProblemTag.PROBLEM_TAG,
+            Submit.SUBMIT,
             TagBelongProblem.TAG_BELONG_PROBLEM,
-            Task.TASK,
             UidWorkerNode.UID_WORKER_NODE,
             User.USER
         );
