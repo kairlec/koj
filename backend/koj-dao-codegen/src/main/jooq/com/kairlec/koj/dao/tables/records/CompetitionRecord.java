@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record5;
-import org.jooq.Row5;
+import org.jooq.Record6;
+import org.jooq.Row6;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
  * 比赛表
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> implements Record5<Long, String, LocalDateTime, LocalDateTime, LocalDateTime> {
+public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> implements Record6<Long, String, String, LocalDateTime, LocalDateTime, LocalDateTime> {
 
     private static final long serialVersionUID = 1L;
 
@@ -54,10 +54,25 @@ public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> im
     }
 
     /**
+     * Setter for <code>koj.competition.pwd</code>. 比赛密码(脱敏后)
+     */
+    public CompetitionRecord setPwd(String value) {
+        set(2, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>koj.competition.pwd</code>. 比赛密码(脱敏后)
+     */
+    public String getPwd() {
+        return (String) get(2);
+    }
+
+    /**
      * Setter for <code>koj.competition.start_time</code>. 比赛开始时间
      */
     public CompetitionRecord setStartTime(LocalDateTime value) {
-        set(2, value);
+        set(3, value);
         return this;
     }
 
@@ -65,14 +80,14 @@ public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> im
      * Getter for <code>koj.competition.start_time</code>. 比赛开始时间
      */
     public LocalDateTime getStartTime() {
-        return (LocalDateTime) get(2);
+        return (LocalDateTime) get(3);
     }
 
     /**
      * Setter for <code>koj.competition.end_time</code>. 比赛结束时间
      */
     public CompetitionRecord setEndTime(LocalDateTime value) {
-        set(3, value);
+        set(4, value);
         return this;
     }
 
@@ -80,14 +95,14 @@ public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> im
      * Getter for <code>koj.competition.end_time</code>. 比赛结束时间
      */
     public LocalDateTime getEndTime() {
-        return (LocalDateTime) get(3);
+        return (LocalDateTime) get(4);
     }
 
     /**
      * Setter for <code>koj.competition.create_time</code>. 创建时间
      */
     public CompetitionRecord setCreateTime(LocalDateTime value) {
-        set(4, value);
+        set(5, value);
         return this;
     }
 
@@ -95,7 +110,7 @@ public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> im
      * Getter for <code>koj.competition.create_time</code>. 创建时间
      */
     public LocalDateTime getCreateTime() {
-        return (LocalDateTime) get(4);
+        return (LocalDateTime) get(5);
     }
 
     // -------------------------------------------------------------------------
@@ -108,17 +123,17 @@ public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> im
     }
 
     // -------------------------------------------------------------------------
-    // Record5 type implementation
+    // Record6 type implementation
     // -------------------------------------------------------------------------
 
     @Override
-    public Row5<Long, String, LocalDateTime, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row5) super.fieldsRow();
+    public Row6<Long, String, String, LocalDateTime, LocalDateTime, LocalDateTime> fieldsRow() {
+        return (Row6) super.fieldsRow();
     }
 
     @Override
-    public Row5<Long, String, LocalDateTime, LocalDateTime, LocalDateTime> valuesRow() {
-        return (Row5) super.valuesRow();
+    public Row6<Long, String, String, LocalDateTime, LocalDateTime, LocalDateTime> valuesRow() {
+        return (Row6) super.valuesRow();
     }
 
     @Override
@@ -132,17 +147,22 @@ public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> im
     }
 
     @Override
-    public Field<LocalDateTime> field3() {
-        return Competition.COMPETITION.START_TIME;
+    public Field<String> field3() {
+        return Competition.COMPETITION.PWD;
     }
 
     @Override
     public Field<LocalDateTime> field4() {
-        return Competition.COMPETITION.END_TIME;
+        return Competition.COMPETITION.START_TIME;
     }
 
     @Override
     public Field<LocalDateTime> field5() {
+        return Competition.COMPETITION.END_TIME;
+    }
+
+    @Override
+    public Field<LocalDateTime> field6() {
         return Competition.COMPETITION.CREATE_TIME;
     }
 
@@ -157,17 +177,22 @@ public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> im
     }
 
     @Override
-    public LocalDateTime component3() {
-        return getStartTime();
+    public String component3() {
+        return getPwd();
     }
 
     @Override
     public LocalDateTime component4() {
-        return getEndTime();
+        return getStartTime();
     }
 
     @Override
     public LocalDateTime component5() {
+        return getEndTime();
+    }
+
+    @Override
+    public LocalDateTime component6() {
         return getCreateTime();
     }
 
@@ -182,17 +207,22 @@ public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> im
     }
 
     @Override
-    public LocalDateTime value3() {
-        return getStartTime();
+    public String value3() {
+        return getPwd();
     }
 
     @Override
     public LocalDateTime value4() {
-        return getEndTime();
+        return getStartTime();
     }
 
     @Override
     public LocalDateTime value5() {
+        return getEndTime();
+    }
+
+    @Override
+    public LocalDateTime value6() {
         return getCreateTime();
     }
 
@@ -209,30 +239,37 @@ public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> im
     }
 
     @Override
-    public CompetitionRecord value3(LocalDateTime value) {
-        setStartTime(value);
+    public CompetitionRecord value3(String value) {
+        setPwd(value);
         return this;
     }
 
     @Override
     public CompetitionRecord value4(LocalDateTime value) {
-        setEndTime(value);
+        setStartTime(value);
         return this;
     }
 
     @Override
     public CompetitionRecord value5(LocalDateTime value) {
+        setEndTime(value);
+        return this;
+    }
+
+    @Override
+    public CompetitionRecord value6(LocalDateTime value) {
         setCreateTime(value);
         return this;
     }
 
     @Override
-    public CompetitionRecord values(Long value1, String value2, LocalDateTime value3, LocalDateTime value4, LocalDateTime value5) {
+    public CompetitionRecord values(Long value1, String value2, String value3, LocalDateTime value4, LocalDateTime value5, LocalDateTime value6) {
         value1(value1);
         value2(value2);
         value3(value3);
         value4(value4);
         value5(value5);
+        value6(value6);
         return this;
     }
 
@@ -250,11 +287,12 @@ public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> im
     /**
      * Create a detached, initialised CompetitionRecord
      */
-    public CompetitionRecord(Long id, String name, LocalDateTime startTime, LocalDateTime endTime, LocalDateTime createTime) {
+    public CompetitionRecord(Long id, String name, String pwd, LocalDateTime startTime, LocalDateTime endTime, LocalDateTime createTime) {
         super(Competition.COMPETITION);
 
         setId(id);
         setName(name);
+        setPwd(pwd);
         setStartTime(startTime);
         setEndTime(endTime);
         setCreateTime(createTime);
@@ -269,6 +307,7 @@ public class CompetitionRecord extends UpdatableRecordImpl<CompetitionRecord> im
         if (value != null) {
             setId(value.getId());
             setName(value.getName());
+            setPwd(value.getPwd());
             setStartTime(value.getStartTime());
             setEndTime(value.getEndTime());
             setCreateTime(value.getCreateTime());

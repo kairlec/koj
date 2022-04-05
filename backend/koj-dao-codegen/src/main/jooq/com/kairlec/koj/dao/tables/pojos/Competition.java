@@ -18,6 +18,7 @@ public class Competition implements Serializable {
 
     private final Long          id;
     private final String        name;
+    private final String        pwd;
     private final LocalDateTime startTime;
     private final LocalDateTime endTime;
     private final LocalDateTime createTime;
@@ -25,6 +26,7 @@ public class Competition implements Serializable {
     public Competition(Competition value) {
         this.id = value.id;
         this.name = value.name;
+        this.pwd = value.pwd;
         this.startTime = value.startTime;
         this.endTime = value.endTime;
         this.createTime = value.createTime;
@@ -33,12 +35,14 @@ public class Competition implements Serializable {
     public Competition(
         Long          id,
         String        name,
+        String        pwd,
         LocalDateTime startTime,
         LocalDateTime endTime,
         LocalDateTime createTime
     ) {
         this.id = id;
         this.name = name;
+        this.pwd = pwd;
         this.startTime = startTime;
         this.endTime = endTime;
         this.createTime = createTime;
@@ -56,6 +60,13 @@ public class Competition implements Serializable {
      */
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * Getter for <code>koj.competition.pwd</code>. 比赛密码(脱敏后)
+     */
+    public String getPwd() {
+        return this.pwd;
     }
 
     /**
@@ -85,6 +96,7 @@ public class Competition implements Serializable {
 
         sb.append(id);
         sb.append(", ").append(name);
+        sb.append(", ").append(pwd);
         sb.append(", ").append(startTime);
         sb.append(", ").append(endTime);
         sb.append(", ").append(createTime);

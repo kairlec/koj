@@ -2,6 +2,8 @@ package com.kairlec.koj.dao.repository
 
 import com.kairlec.koj.dao.Tables.CODE
 import com.kairlec.koj.dao.Tables.SUBMIT
+import com.kairlec.koj.dao.exception.CreateCodeRecordException
+import com.kairlec.koj.dao.exception.CreateSubmitException
 import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.extended.awaitBool
 import com.kairlec.koj.dao.extended.awaitOrNull
@@ -9,15 +11,22 @@ import com.kairlec.koj.dao.extended.list
 import com.kairlec.koj.dao.model.SubmitDetail
 import com.kairlec.koj.dao.model.SubmitState
 import com.kairlec.koj.dao.tables.records.SubmitRecord
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.jooq.DSLContext
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
-@Service
+@Repository
 class SubmitRepository(
     val create: DSLContext
 ) {
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+
     suspend fun getSubmitRank(
         competition: Long? = null,
         listCondition: ListCondition
@@ -64,5 +73,40 @@ class SubmitRepository(
             .set(SUBMIT.STATE, state.value)
             .where(SUBMIT.STATE.le(state.lessThan))
             .awaitBool()
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
+    suspend fun createSubmit(id: Long, userId: Long, competition: Long?, languageId: String, code: String) {
+        val submitResult = coroutineScope.async {
+            create.insertInto(SUBMIT)
+                .columns(
+                    SUBMIT.ID,
+                    SUBMIT.BELONG_USER_ID,
+                    SUBMIT.BELONG_COMPETITION_ID,
+                    SUBMIT.STATE,
+                    SUBMIT.LANGUAGE_ID
+                )
+                .values(id, userId, competition, SubmitState.IN_QUEUE.value, languageId)
+                .awaitBool()
+        }
+        val codeResult = coroutineScope.async {
+            create.insertInto(SUBMIT)
+                .columns(
+                    SUBMIT.ID,
+                    SUBMIT.BELONG_USER_ID,
+                    SUBMIT.BELONG_COMPETITION_ID,
+                    SUBMIT.STATE,
+                    SUBMIT.LANGUAGE_ID
+                )
+                .values(id, userId, competition, SubmitState.IN_QUEUE.value, languageId)
+                .awaitBool()
+        }
+        val (submitOk, codeOk) = awaitAll(submitResult, codeResult)
+        if (!submitOk) {
+            throw CreateSubmitException()
+        }
+        if (!codeOk) {
+            throw CreateCodeRecordException()
+        }
     }
 }

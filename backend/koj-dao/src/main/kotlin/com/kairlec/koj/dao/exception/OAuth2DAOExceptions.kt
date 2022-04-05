@@ -38,3 +38,23 @@ class UserCreateException @JvmOverloads constructor(
         private const val serialVersionUID: Long = -6002555278072796945L
     }
 }
+
+class CreateSubmitException(
+    override val message: String = "submit create failed",
+    override val cause: Throwable? = null
+) : KOJDAOException(GlobalErrorCode.CREATE_SUBMIT_FAILED, message, cause)
+
+class CreateCodeRecordException(
+    override val message: String = "code record create failed",
+    override val cause: Throwable? = null
+) : KOJDAOException(GlobalErrorCode.CREATE_CODE_RECORD_FAILED, message, cause)
+
+class NoSuchContentException(
+    override val message: String,
+    override val cause: Throwable? = null
+) : KOJDAOException(GlobalErrorCode.CONTENT_NOT_FOUND, message, cause)
+
+class CompetitionPwdWrongException(
+    override val message: String = "competition password is wrong",
+    override val cause: Throwable? = null
+) : KOJDAOException(GlobalErrorCode.COMPETITION_PWD_ERROR, message, cause)

@@ -31,10 +31,13 @@ enum class GlobalErrorCode(
     CONTENT_NOT_FOUND(20004, "无法找到相应的内容", HttpStatusCode.Companion.ClientError.NotFound),
     REQUEST_CONFLICT(20007, "请求冲突", HttpStatusCode.Companion.ClientError.Conflict),
     DATA_TOO_LONG(20008, "数据过长", HttpStatusCode.Companion.ClientError.RequestEntityTooLarge),
+    COMPETITION_PWD_ERROR(20009, "竞赛密码错误", HttpStatusCode.Companion.ClientError.Forbidden),
 
     // 业务问题
     USERNAME_EXISTS(30000, "用户名已存在", HttpStatusCode.Companion.ClientError.Conflict),
     USER_CREATE_FAILED(30003, "用户创建失败", HttpStatusCode.Companion.ServerError.InternalServerError),
+    CREATE_SUBMIT_FAILED(30004, "创建提交失败", HttpStatusCode.Companion.ServerError.InternalServerError),
+    CREATE_CODE_RECORD_FAILED(30005, "创建代码记录失败", HttpStatusCode.Companion.ServerError.InternalServerError),
 
     // 服务器方面错误或未知的错误,9开头
     DATA_ERROR(90001, "数据错误", HttpStatusCode.Companion.ServerError.InternalServerError),

@@ -17,7 +17,7 @@ public class ProblemConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final Long          problemId;
-    private final Long          languageId;
+    private final String        languageId;
     private final Integer       memory;
     private final Integer       time;
     private final LocalDateTime createTime;
@@ -34,7 +34,7 @@ public class ProblemConfig implements Serializable {
 
     public ProblemConfig(
         Long          problemId,
-        Long          languageId,
+        String        languageId,
         Integer       memory,
         Integer       time,
         LocalDateTime createTime,
@@ -58,7 +58,7 @@ public class ProblemConfig implements Serializable {
     /**
      * Getter for <code>koj.problem_config.language_id</code>. 语言id
      */
-    public Long getLanguageId() {
+    public String getLanguageId() {
         return this.languageId;
     }
 

@@ -19,7 +19,7 @@ import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row5;
+import org.jooq.Row6;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -60,6 +60,11 @@ public class Competition extends TableImpl<CompetitionRecord> {
      * The column <code>koj.competition.name</code>. 比赛名称
      */
     public final TableField<CompetitionRecord, String> NAME = createField(DSL.name("name"), SQLDataType.VARCHAR(64).nullable(false), this, "比赛名称");
+
+    /**
+     * The column <code>koj.competition.pwd</code>. 比赛密码(脱敏后)
+     */
+    public final TableField<CompetitionRecord, String> PWD = createField(DSL.name("pwd"), SQLDataType.CHAR(64).nullable(false), this, "比赛密码(脱敏后)");
 
     /**
      * The column <code>koj.competition.start_time</code>. 比赛开始时间
@@ -156,11 +161,11 @@ public class Competition extends TableImpl<CompetitionRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row5 type methods
+    // Row6 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row5<Long, String, LocalDateTime, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row5) super.fieldsRow();
+    public Row6<Long, String, String, LocalDateTime, LocalDateTime, LocalDateTime> fieldsRow() {
+        return (Row6) super.fieldsRow();
     }
 }

@@ -17,7 +17,7 @@ data class ListCondition(
 )
 
 inline fun <R : Record> SelectWhereStep<R>.list(
-    table: Table<R>,
+    table: Table<out Record>,
     listCondition: ListCondition
 ): SelectForUpdateStep<R> {
     return where(table.search(listCondition.search))
@@ -32,7 +32,7 @@ inline fun SelectWhereStep<Record1<Int>>.list(
 }
 
 inline fun <R : Record> SelectConditionStep<R>.list(
-    table: Table<R>,
+    table: Table<out Record>,
     listCondition: ListCondition
 ): SelectForUpdateStep<R> {
     return and(table.search(listCondition.search))
@@ -47,7 +47,7 @@ inline fun SelectConditionStep<Record1<Int>>.list(
 }
 
 inline fun <R : Record> SelectConditionStep<R>.listFinal(
-    table: Table<R>,
+    table: Table<out Record>,
     listCondition: ListCondition?
 ): ResultQuery<R> {
     return if (listCondition == null) {

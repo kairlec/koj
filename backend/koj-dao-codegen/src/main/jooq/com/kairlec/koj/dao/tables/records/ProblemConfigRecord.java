@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
  * 题目语言配置表
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord> implements Record6<Long, Long, Integer, Integer, LocalDateTime, LocalDateTime> {
+public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord> implements Record6<Long, String, Integer, Integer, LocalDateTime, LocalDateTime> {
 
     private static final long serialVersionUID = 1L;
 
@@ -41,7 +41,7 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     /**
      * Setter for <code>koj.problem_config.language_id</code>. 语言id
      */
-    public ProblemConfigRecord setLanguageId(Long value) {
+    public ProblemConfigRecord setLanguageId(String value) {
         set(1, value);
         return this;
     }
@@ -49,8 +49,8 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     /**
      * Getter for <code>koj.problem_config.language_id</code>. 语言id
      */
-    public Long getLanguageId() {
-        return (Long) get(1);
+    public String getLanguageId() {
+        return (String) get(1);
     }
 
     /**
@@ -118,7 +118,7 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     // -------------------------------------------------------------------------
 
     @Override
-    public Record2<Long, Long> key() {
+    public Record2<Long, String> key() {
         return (Record2) super.key();
     }
 
@@ -127,12 +127,12 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     // -------------------------------------------------------------------------
 
     @Override
-    public Row6<Long, Long, Integer, Integer, LocalDateTime, LocalDateTime> fieldsRow() {
+    public Row6<Long, String, Integer, Integer, LocalDateTime, LocalDateTime> fieldsRow() {
         return (Row6) super.fieldsRow();
     }
 
     @Override
-    public Row6<Long, Long, Integer, Integer, LocalDateTime, LocalDateTime> valuesRow() {
+    public Row6<Long, String, Integer, Integer, LocalDateTime, LocalDateTime> valuesRow() {
         return (Row6) super.valuesRow();
     }
 
@@ -142,7 +142,7 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     }
 
     @Override
-    public Field<Long> field2() {
+    public Field<String> field2() {
         return ProblemConfig.PROBLEM_CONFIG.LANGUAGE_ID;
     }
 
@@ -172,7 +172,7 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     }
 
     @Override
-    public Long component2() {
+    public String component2() {
         return getLanguageId();
     }
 
@@ -202,7 +202,7 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     }
 
     @Override
-    public Long value2() {
+    public String value2() {
         return getLanguageId();
     }
 
@@ -233,7 +233,7 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     }
 
     @Override
-    public ProblemConfigRecord value2(Long value) {
+    public ProblemConfigRecord value2(String value) {
         setLanguageId(value);
         return this;
     }
@@ -263,7 +263,7 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     }
 
     @Override
-    public ProblemConfigRecord values(Long value1, Long value2, Integer value3, Integer value4, LocalDateTime value5, LocalDateTime value6) {
+    public ProblemConfigRecord values(Long value1, String value2, Integer value3, Integer value4, LocalDateTime value5, LocalDateTime value6) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -287,7 +287,7 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     /**
      * Create a detached, initialised ProblemConfigRecord
      */
-    public ProblemConfigRecord(Long problemId, Long languageId, Integer memory, Integer time, LocalDateTime createTime, LocalDateTime updateTime) {
+    public ProblemConfigRecord(Long problemId, String languageId, Integer memory, Integer time, LocalDateTime createTime, LocalDateTime updateTime) {
         super(ProblemConfig.PROBLEM_CONFIG);
 
         setProblemId(problemId);

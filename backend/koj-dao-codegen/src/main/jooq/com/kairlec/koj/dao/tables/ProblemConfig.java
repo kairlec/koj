@@ -58,7 +58,7 @@ public class ProblemConfig extends TableImpl<ProblemConfigRecord> {
     /**
      * The column <code>koj.problem_config.language_id</code>. 语言id
      */
-    public final TableField<ProblemConfigRecord, Long> LANGUAGE_ID = createField(DSL.name("language_id"), SQLDataType.BIGINT.nullable(false), this, "语言id");
+    public final TableField<ProblemConfigRecord, String> LANGUAGE_ID = createField(DSL.name("language_id"), SQLDataType.VARCHAR(64).nullable(false), this, "语言id");
 
     /**
      * The column <code>koj.problem_config.memory</code>. 内存限制
@@ -176,7 +176,7 @@ public class ProblemConfig extends TableImpl<ProblemConfigRecord> {
     // -------------------------------------------------------------------------
 
     @Override
-    public Row6<Long, Long, Integer, Integer, LocalDateTime, LocalDateTime> fieldsRow() {
+    public Row6<Long, String, Integer, Integer, LocalDateTime, LocalDateTime> fieldsRow() {
         return (Row6) super.fieldsRow();
     }
 }

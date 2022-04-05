@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS koj.competition
 (
     id          BIGINT                 NOT NULL AUTO_INCREMENT COMMENT '比赛id',
     name        VARCHAR(64)            NOT NULL COMMENT '比赛名称',
+    pwd         CHAR(64)               NOT NULL COMMENT '比赛密码(脱敏后)',
     start_time  DATETIME               NOT NULL COMMENT '比赛开始时间',
     end_time    DATETIME               NOT NULL COMMENT '比赛结束时间',
     create_time DATETIME DEFAULT NOW() NOT NULL COMMENT '创建时间',
@@ -99,6 +100,20 @@ CREATE TABLE IF NOT EXISTS koj.problem
     INDEX name_idx (name)
 ) COMMENT ='题目表';
 
+CREATE TABLE IF NOT EXISTS koj.problem_belong_competition
+(
+    idx            TINYINT                                NOT NULL COMMENT '题目在比赛中的序号',
+    problem_id     BIGINT                                 NOT NULL COMMENT '题目id',
+    competition_id BIGINT                                 NOT NULL COMMENT '比赛id',
+    PRIMARY KEY (problem_id, competition_id),
+    create_time    DATETIME DEFAULT NOW()                 NOT NULL COMMENT '创建时间',
+    update_time    DATETIME DEFAULT NOW() ON UPDATE NOW() NOT NULL COMMENT '更新时间',
+    INDEX problem_id_idx (problem_id),
+    INDEX competition_id_idx (competition_id),
+    FOREIGN KEY (problem_id) REFERENCES koj.problem (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (competition_id) REFERENCES koj.competition (id) ON DELETE CASCADE ON UPDATE CASCADE
+) COMMENT ='题目和比赛关系表';
+
 CREATE TABLE IF NOT EXISTS koj.tag_belong_problem
 (
     problem_id  BIGINT                                 NOT NULL COMMENT '题目id',
@@ -115,7 +130,7 @@ CREATE TABLE IF NOT EXISTS koj.tag_belong_problem
 CREATE TABLE IF NOT EXISTS koj.problem_config
 (
     problem_id  BIGINT                                 NOT NULL COMMENT '题目id',
-    language_id BIGINT                                 NOT NULL COMMENT '语言id',
+    language_id VARCHAR(64)                            NOT NULL COMMENT '语言id',
 #     spj_content TEXT                                   NULL COMMENT 'spj内容',
     memory      INT                                    NOT NULL COMMENT '内存限制',
     time        INT                                    NOT NULL COMMENT '时间限制',

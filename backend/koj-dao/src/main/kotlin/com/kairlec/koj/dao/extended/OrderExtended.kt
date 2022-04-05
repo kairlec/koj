@@ -11,12 +11,8 @@ private const val DESC_CHAR = '~'
 private const val ASC_CHAR = '-'
 
 
-fun <R : Record> SelectOrderByStep<R>.sort(table: Table<R>, vararg fields: String): SelectSeekStepN<R> {
+fun <R : Record> SelectOrderByStep<R>.sort(table: Table<out Record>, vararg fields: String): SelectSeekStepN<R> {
     return sort(table, fields.toList())
-}
-
-fun <R : Record> SelectOrderByStep<R>.sortUnsafe(table: Table<*>, vararg fields: String): SelectSeekStepN<R> {
-    return sortUnsafe(table, fields.toList())
 }
 
 fun <R : Record> FieldSet<R>.sortFields(fields: List<String>): List<SortField<out Any>> {
@@ -30,11 +26,7 @@ fun <R : Record> FieldSet<R>.sortFields(fields: List<String>): List<SortField<ou
         }
 }
 
-fun <R : Record> SelectOrderByStep<R>.sort(table: Table<R>, fields: List<String>): SelectSeekStepN<R> {
-    return orderBy(table.fieldsSet().sortFields(fields))
-}
-
-fun <R : Record> SelectOrderByStep<R>.sortUnsafe(table: Table<*>, fields: List<String>): SelectSeekStepN<R> {
+fun <R : Record> SelectOrderByStep<R>.sort(table: Table<out Record>, fields: List<String>): SelectSeekStepN<R> {
     return orderBy(table.fieldsSet().sortFields(fields))
 }
 

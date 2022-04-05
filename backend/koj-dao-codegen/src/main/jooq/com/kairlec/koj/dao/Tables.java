@@ -8,6 +8,7 @@ import com.kairlec.koj.dao.tables.Code;
 import com.kairlec.koj.dao.tables.Competition;
 import com.kairlec.koj.dao.tables.Contestants;
 import com.kairlec.koj.dao.tables.Problem;
+import com.kairlec.koj.dao.tables.ProblemBelongCompetition;
 import com.kairlec.koj.dao.tables.ProblemConfig;
 import com.kairlec.koj.dao.tables.ProblemTag;
 import com.kairlec.koj.dao.tables.Submit;
@@ -41,6 +42,11 @@ public class Tables {
      * 题目表
      */
     public static final Problem PROBLEM = Problem.PROBLEM;
+
+    /**
+     * 题目和比赛关系表
+     */
+    public static final ProblemBelongCompetition PROBLEM_BELONG_COMPETITION = ProblemBelongCompetition.PROBLEM_BELONG_COMPETITION;
 
     /**
      * 题目语言配置表

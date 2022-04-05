@@ -8,6 +8,7 @@ import com.kairlec.koj.dao.tables.Code;
 import com.kairlec.koj.dao.tables.Competition;
 import com.kairlec.koj.dao.tables.Contestants;
 import com.kairlec.koj.dao.tables.Problem;
+import com.kairlec.koj.dao.tables.ProblemBelongCompetition;
 import com.kairlec.koj.dao.tables.ProblemConfig;
 import com.kairlec.koj.dao.tables.ProblemTag;
 import com.kairlec.koj.dao.tables.Submit;
@@ -55,6 +56,11 @@ public class Koj extends SchemaImpl {
      * 题目表
      */
     public final Problem PROBLEM = Problem.PROBLEM;
+
+    /**
+     * 题目和比赛关系表
+     */
+    public final ProblemBelongCompetition PROBLEM_BELONG_COMPETITION = ProblemBelongCompetition.PROBLEM_BELONG_COMPETITION;
 
     /**
      * 题目语言配置表
@@ -106,6 +112,7 @@ public class Koj extends SchemaImpl {
             Competition.COMPETITION,
             Contestants.CONTESTANTS,
             Problem.PROBLEM,
+            ProblemBelongCompetition.PROBLEM_BELONG_COMPETITION,
             ProblemConfig.PROBLEM_CONFIG,
             ProblemTag.PROBLEM_TAG,
             Submit.SUBMIT,
