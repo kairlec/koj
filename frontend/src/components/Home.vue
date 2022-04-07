@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
+import MenuBar from "./MenuBar.vue";
 defineProps({
   msg: String
 })
-
-const count = ref(0)
 </script>
 
 <template>
+  <MenuBar></MenuBar>
 <!--  <h1>{{ msg }}</h1>-->
 
 <!--  <p>-->
@@ -29,7 +27,7 @@ const count = ref(0)
 <!--  <button type="button" @click="count++">count is: {{ count }}</button>-->
 <!--  <p>-->
 <!--    Edit-->
-<!--    <code>components/HelloWorld.vue</code> to test hot module replacement.-->
+<!--    <code>components/Home.vue</code> to test hot module replacement.-->
 <!--  </p>-->
 </template>
 

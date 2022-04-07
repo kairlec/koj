@@ -1,15 +1,9 @@
 <script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-import HelloWorld from './components/HelloWorld.vue'
-import MenuBar from "./components/MenuBar.vue";
+import Home from "./components/Home.vue"
 </script>
 
 <template>
-  <el-config-provider :size="size" :z-index="zIndex">
-    <MenuBar></MenuBar>
-<!--    <HelloWorld msg="Hello Vue 3 + Vite"/>-->
-  </el-config-provider>
+  <Home></Home>
 </template>
 
 <style>
@@ -23,16 +17,14 @@ import MenuBar from "./components/MenuBar.vue";
 </style>
 <script lang="ts">
 import {defineComponent} from 'vue'
-import {ElConfigProvider} from 'element-plus'
+import {useRouter} from 'vue-router';
 
 export default defineComponent({
-  components: {
-    ElConfigProvider,
-  },
   setup() {
     return {
-      zIndex: 3000,
-      size: 'small',
+      goto() {
+        useRouter().push("/home");
+      },
     }
   },
 })
