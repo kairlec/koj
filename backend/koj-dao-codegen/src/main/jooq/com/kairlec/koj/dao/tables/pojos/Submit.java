@@ -18,6 +18,7 @@ public class Submit implements Serializable {
 
     private final Long          id;
     private final Byte          state;
+    private final Long          problemId;
     private final String        languageId;
     private final Integer       castMemory;
     private final Integer       castTime;
@@ -29,6 +30,7 @@ public class Submit implements Serializable {
     public Submit(Submit value) {
         this.id = value.id;
         this.state = value.state;
+        this.problemId = value.problemId;
         this.languageId = value.languageId;
         this.castMemory = value.castMemory;
         this.castTime = value.castTime;
@@ -41,6 +43,7 @@ public class Submit implements Serializable {
     public Submit(
         Long          id,
         Byte          state,
+        Long          problemId,
         String        languageId,
         Integer       castMemory,
         Integer       castTime,
@@ -51,6 +54,7 @@ public class Submit implements Serializable {
     ) {
         this.id = id;
         this.state = state;
+        this.problemId = problemId;
         this.languageId = languageId;
         this.castMemory = castMemory;
         this.castTime = castTime;
@@ -72,6 +76,13 @@ public class Submit implements Serializable {
      */
     public Byte getState() {
         return this.state;
+    }
+
+    /**
+     * Getter for <code>koj.submit.problem_id</code>. 题目id
+     */
+    public Long getProblemId() {
+        return this.problemId;
     }
 
     /**
@@ -129,6 +140,7 @@ public class Submit implements Serializable {
 
         sb.append(id);
         sb.append(", ").append(state);
+        sb.append(", ").append(problemId);
         sb.append(", ").append(languageId);
         sb.append(", ").append(castMemory);
         sb.append(", ").append(castTime);

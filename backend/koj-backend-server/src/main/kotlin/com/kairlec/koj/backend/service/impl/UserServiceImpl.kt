@@ -2,6 +2,7 @@ package com.kairlec.koj.backend.service.impl
 
 import com.kairlec.koj.backend.service.UserService
 import com.kairlec.koj.dao.extended.ListCondition
+import com.kairlec.koj.dao.model.UserStat
 import com.kairlec.koj.dao.repository.UserRepository
 import com.kairlec.koj.dao.repository.UserType
 import com.kairlec.koj.dao.tables.records.UserRecord
@@ -44,6 +45,14 @@ class UserServiceImpl(
         type: UserType?,
     ): Boolean {
         return userRepository.updateUser(id, username, password, email, type)
+    }
+
+    override suspend fun stat(username: String): UserStat? {
+        return userRepository.stat(username)
+    }
+
+    override suspend fun exists(usernameOrEmail: String): Boolean {
+        return userRepository.exists(usernameOrEmail)
     }
 
 //    override suspend fun userService() {

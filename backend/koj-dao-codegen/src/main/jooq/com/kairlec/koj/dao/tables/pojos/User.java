@@ -23,6 +23,7 @@ public class User implements Serializable {
     private final Byte          type;
     private final LocalDateTime createTime;
     private final LocalDateTime updateTime;
+    private final Byte          blocked;
 
     public User(User value) {
         this.id = value.id;
@@ -32,6 +33,7 @@ public class User implements Serializable {
         this.type = value.type;
         this.createTime = value.createTime;
         this.updateTime = value.updateTime;
+        this.blocked = value.blocked;
     }
 
     public User(
@@ -41,7 +43,8 @@ public class User implements Serializable {
         String        email,
         Byte          type,
         LocalDateTime createTime,
-        LocalDateTime updateTime
+        LocalDateTime updateTime,
+        Byte          blocked
     ) {
         this.id = id;
         this.username = username;
@@ -50,6 +53,7 @@ public class User implements Serializable {
         this.type = type;
         this.createTime = createTime;
         this.updateTime = updateTime;
+        this.blocked = blocked;
     }
 
     /**
@@ -101,6 +105,13 @@ public class User implements Serializable {
         return this.updateTime;
     }
 
+    /**
+     * Getter for <code>koj.user.blocked</code>. 是否被禁用: 0-未禁用, 1-禁用
+     */
+    public Byte getBlocked() {
+        return this.blocked;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("User (");
@@ -112,6 +123,7 @@ public class User implements Serializable {
         sb.append(", ").append(type);
         sb.append(", ").append(createTime);
         sb.append(", ").append(updateTime);
+        sb.append(", ").append(blocked);
 
         sb.append(")");
         return sb.toString();

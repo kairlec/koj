@@ -2,14 +2,21 @@ package com.kairlec.koj.dao.repository
 
 import com.kairlec.koj.dao.DSLAccess
 import com.kairlec.koj.dao.Hasher
+import com.kairlec.koj.dao.Tables.SUBMIT
 import com.kairlec.koj.dao.Tables.USER
 import com.kairlec.koj.dao.extended.ListCondition
+import com.kairlec.koj.dao.extended.awaitOrNull
 import com.kairlec.koj.dao.extended.list
 import com.kairlec.koj.dao.extended.value
+import com.kairlec.koj.dao.model.SubmitState
+import com.kairlec.koj.dao.model.UserStat
 import com.kairlec.koj.dao.tables.records.UserRecord
 import com.kairlec.koj.dao.with
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.mono
 import org.springframework.stereotype.Repository
@@ -37,6 +44,45 @@ class UserRepository(
     @Transactional
     suspend fun <T> transaction(block: suspend UserRepositoryDSL.() -> T): T {
         return UserRepositoryDSL(this).block()
+    }
+
+    suspend fun exists(usernameOrEmail: String): Boolean {
+        return dslAccess.with {
+            selectCount()
+                .from(USER)
+                .where(USER.USERNAME.eq(usernameOrEmail))
+                .or(USER.EMAIL.eq(usernameOrEmail))
+                .awaitOrNull(0) > 0
+        }
+    }
+
+    suspend fun stat(username: String): UserStat? {
+        return dslAccess.with {
+            val stat = select(USER.ID, USER.USERNAME, USER.CREATE_TIME)
+                .from(USER)
+                .where(USER.USERNAME.eq(username))
+                .and(USER.TYPE.eq(UserType.USER.value))
+                .awaitFirstOrNull() ?: return@with null
+            val userId = stat[USER.ID]
+            UserStat(
+                id = userId,
+                username = stat[USER.USERNAME],
+                createTime = stat[USER.CREATE_TIME],
+                submitted = selectCount()
+                    .from(SUBMIT)
+                    .where(SUBMIT.BELONG_USER_ID.eq(userId))
+                    .and(SUBMIT.BELONG_COMPETITION_ID.isNull)
+                    .awaitOrNull(0),
+                ac = select(SUBMIT.PROBLEM_ID)
+                    .from(SUBMIT)
+                    .where(SUBMIT.BELONG_USER_ID.eq(userId))
+                    .and(SUBMIT.BELONG_COMPETITION_ID.isNull)
+                    .and(SUBMIT.STATE.eq(SubmitState.ACCEPTED.value))
+                    .asFlow()
+                    .map { it.value1() }
+                    .toList()
+            )
+        }
     }
 
     suspend fun createUser(username: String, password: String, email: String, type: UserType): Long {
@@ -106,7 +152,7 @@ class UserRepository(
                         }
                     }
                     .let { if (type != null) it.and(USER.TYPE.eq(type.value)) else it }
-                    .awaitSingle()
+                    .awaitFirstOrNull()
             }
         if (record != null && password != null) {
             if (!hasher.check(password, record.password)) {
@@ -122,7 +168,7 @@ class UserRepository(
         return dslAccess.with {
             selectFrom(USER)
                 .where(USER.ID.eq(id))
-                .awaitSingle()
+                .awaitFirstOrNull()
         }
     }
 
@@ -146,6 +192,13 @@ class UserRepository(
 enum class UserType(val value: Byte) {
     ADMIN(0),
     USER(1),
+    ;
+
+    companion object {
+        fun valueOf(value: Byte): UserType {
+            return values().first { it.value == value }
+        }
+    }
 }
 
 class InitNeedProperty<T>(var value: T? = null) {

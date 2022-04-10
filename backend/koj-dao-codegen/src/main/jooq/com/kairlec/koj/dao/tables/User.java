@@ -19,7 +19,7 @@ import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row7;
+import org.jooq.Row8;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -85,6 +85,11 @@ public class User extends TableImpl<UserRecord> {
      * The column <code>koj.user.update_time</code>. 更新时间
      */
     public final TableField<UserRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "更新时间");
+
+    /**
+     * The column <code>koj.user.blocked</code>. 是否被禁用: 0-未禁用, 1-禁用
+     */
+    public final TableField<UserRecord, Byte> BLOCKED = createField(DSL.name("blocked"), SQLDataType.TINYINT.nullable(false), this, "是否被禁用: 0-未禁用, 1-禁用");
 
     private User(Name alias, Table<UserRecord> aliased) {
         this(alias, aliased, null);
@@ -171,11 +176,11 @@ public class User extends TableImpl<UserRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row7 type methods
+    // Row8 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row7<Long, String, String, String, Byte, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row7) super.fieldsRow();
+    public Row8<Long, String, String, String, Byte, LocalDateTime, LocalDateTime, Byte> fieldsRow() {
+        return (Row8) super.fieldsRow();
     }
 }

@@ -18,7 +18,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row9;
+import org.jooq.Row10;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -59,6 +59,11 @@ public class Submit extends TableImpl<SubmitRecord> {
      * The column <code>koj.submit.state</code>. 任务状态
      */
     public final TableField<SubmitRecord, Byte> STATE = createField(DSL.name("state"), SQLDataType.TINYINT.nullable(false), this, "任务状态");
+
+    /**
+     * The column <code>koj.submit.problem_id</code>. 题目id
+     */
+    public final TableField<SubmitRecord, Long> PROBLEM_ID = createField(DSL.name("problem_id"), SQLDataType.BIGINT.nullable(false), this, "题目id");
 
     /**
      * The column <code>koj.submit.language_id</code>. 语言id
@@ -135,7 +140,7 @@ public class Submit extends TableImpl<SubmitRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.SUBMIT_BELONG_COMPETITION_ID, Indexes.SUBMIT_BELONG_USER_ID);
+        return Arrays.asList(Indexes.SUBMIT_BELONG_COMPETITION_ID, Indexes.SUBMIT_BELONG_USER_ID, Indexes.SUBMIT_PROBLEM_ID);
     }
 
     @Override
@@ -145,11 +150,22 @@ public class Submit extends TableImpl<SubmitRecord> {
 
     @Override
     public List<ForeignKey<SubmitRecord, ?>> getReferences() {
-        return Arrays.asList(Keys.SUBMIT_IBFK_1, Keys.SUBMIT_IBFK_2);
+        return Arrays.asList(Keys.SUBMIT_IBFK_3, Keys.SUBMIT_IBFK_1, Keys.SUBMIT_IBFK_2);
     }
 
+    private transient Problem _problem;
     private transient Competition _competition;
     private transient User _user;
+
+    /**
+     * Get the implicit join path to the <code>koj.problem</code> table.
+     */
+    public Problem problem() {
+        if (_problem == null)
+            _problem = new Problem(this, Keys.SUBMIT_IBFK_3);
+
+        return _problem;
+    }
 
     /**
      * Get the implicit join path to the <code>koj.competition</code> table.
@@ -198,11 +214,11 @@ public class Submit extends TableImpl<SubmitRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row9 type methods
+    // Row10 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row9<Long, Byte, String, Integer, Integer, Long, Long, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row9) super.fieldsRow();
+    public Row10<Long, Byte, Long, String, Integer, Integer, Long, Long, LocalDateTime, LocalDateTime> fieldsRow() {
+        return (Row10) super.fieldsRow();
     }
 }

@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS koj.user
     type        TINYINT                                NOT NULL COMMENT '用户类型: 0-普通用户, 1-管理员',
     create_time DATETIME DEFAULT NOW()                 NOT NULL COMMENT '创建时间',
     update_time DATETIME DEFAULT NOW() ON UPDATE NOW() NOT NULL COMMENT '更新时间',
+    blocked     TINYINT                                NOT NULL COMMENT '是否被禁用: 0-未禁用, 1-禁用',
     PRIMARY KEY (id),
     INDEX username_idx (username),
     INDEX email_idx (email),
@@ -40,10 +41,23 @@ CREATE TABLE IF NOT EXISTS koj.competition
     INDEX name_idx (name)
 ) COMMENT ='比赛表';
 
+CREATE TABLE IF NOT EXISTS koj.problem
+(
+    id          BIGINT                 NOT NULL AUTO_INCREMENT COMMENT '题目id',
+    name        VARCHAR(64)            NOT NULL COMMENT '题目名称',
+    content     TEXT                   NOT NULL COMMENT '题目内容(压缩过)',
+    spj         BOOLEAN  DEFAULT FALSE NOT NULL COMMENT '是否为spj',
+    create_time DATETIME DEFAULT NOW() NOT NULL COMMENT '创建时间',
+    update_time DATETIME DEFAULT NOW() NOT NULL COMMENT '更新时间',
+    PRIMARY KEY (id),
+    INDEX name_idx (name)
+) COMMENT ='题目表';
+
 CREATE TABLE IF NOT EXISTS koj.submit
 (
     id                    BIGINT                                 NOT NULL COMMENT '任务id',
     state                 TINYINT                                NOT NULL COMMENT '任务状态',
+    problem_id            BIGINT                                 NOT NULL COMMENT '题目id',
     language_id           VARCHAR(64)                            NOT NULL COMMENT '语言id',
     cast_memory           INT                                    NULL COMMENT '任务内存',
     cast_time             INT                                    NULL COMMENT '耗时',
@@ -53,7 +67,8 @@ CREATE TABLE IF NOT EXISTS koj.submit
     update_time           DATETIME DEFAULT NOW() ON UPDATE NOW() NOT NULL COMMENT '更新时间',
     PRIMARY KEY (id),
     FOREIGN KEY (belong_competition_id) REFERENCES koj.competition (id) ON DELETE SET NULL ON UPDATE CASCADE,
-    FOREIGN KEY (belong_user_id) REFERENCES koj.user (id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (belong_user_id) REFERENCES koj.user (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (problem_id) REFERENCES koj.problem (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) COMMENT ='任务表';
 
 CREATE TABLE IF NOT EXISTS koj.code
@@ -87,18 +102,6 @@ CREATE TABLE IF NOT EXISTS koj.problem_tag
     PRIMARY KEY (id),
     INDEX name_idx (name)
 ) COMMENT ='题目标签表';
-
-CREATE TABLE IF NOT EXISTS koj.problem
-(
-    id          BIGINT                 NOT NULL AUTO_INCREMENT COMMENT '题目id',
-    name        VARCHAR(64)            NOT NULL COMMENT '题目名称',
-    content     TEXT                   NOT NULL COMMENT '题目内容(压缩过)',
-    spj         BOOLEAN  DEFAULT FALSE NOT NULL COMMENT '是否为spj',
-    create_time DATETIME DEFAULT NOW() NOT NULL COMMENT '创建时间',
-    update_time DATETIME DEFAULT NOW() NOT NULL COMMENT '更新时间',
-    PRIMARY KEY (id),
-    INDEX name_idx (name)
-) COMMENT ='题目表';
 
 CREATE TABLE IF NOT EXISTS koj.problem_belong_competition
 (

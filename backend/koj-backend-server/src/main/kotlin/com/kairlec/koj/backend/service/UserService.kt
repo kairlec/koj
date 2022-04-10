@@ -1,6 +1,7 @@
 package com.kairlec.koj.backend.service
 
 import com.kairlec.koj.dao.extended.ListCondition
+import com.kairlec.koj.dao.model.UserStat
 import com.kairlec.koj.dao.repository.UserType
 import com.kairlec.koj.dao.tables.records.UserRecord
 import kotlinx.coroutines.flow.Flow
@@ -17,4 +18,8 @@ interface UserService {
     suspend fun addUser(username: String, password: String, email: String, type: UserType): Long
 
     suspend fun updateUser(id: Long, username: String?, password: String?, email: String?, type: UserType?): Boolean
+
+    suspend fun stat(username: String): UserStat?
+
+    suspend fun exists(usernameOrEmail: String): Boolean
 }

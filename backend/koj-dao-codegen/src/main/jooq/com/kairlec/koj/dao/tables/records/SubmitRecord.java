@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record9;
-import org.jooq.Row9;
+import org.jooq.Record10;
+import org.jooq.Row10;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
  * 任务表
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements Record9<Long, Byte, String, Integer, Integer, Long, Long, LocalDateTime, LocalDateTime> {
+public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements Record10<Long, Byte, Long, String, Integer, Integer, Long, Long, LocalDateTime, LocalDateTime> {
 
     private static final long serialVersionUID = 1L;
 
@@ -54,10 +54,25 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     }
 
     /**
+     * Setter for <code>koj.submit.problem_id</code>. 题目id
+     */
+    public SubmitRecord setProblemId(Long value) {
+        set(2, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>koj.submit.problem_id</code>. 题目id
+     */
+    public Long getProblemId() {
+        return (Long) get(2);
+    }
+
+    /**
      * Setter for <code>koj.submit.language_id</code>. 语言id
      */
     public SubmitRecord setLanguageId(String value) {
-        set(2, value);
+        set(3, value);
         return this;
     }
 
@@ -65,14 +80,14 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
      * Getter for <code>koj.submit.language_id</code>. 语言id
      */
     public String getLanguageId() {
-        return (String) get(2);
+        return (String) get(3);
     }
 
     /**
      * Setter for <code>koj.submit.cast_memory</code>. 任务内存
      */
     public SubmitRecord setCastMemory(Integer value) {
-        set(3, value);
+        set(4, value);
         return this;
     }
 
@@ -80,14 +95,14 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
      * Getter for <code>koj.submit.cast_memory</code>. 任务内存
      */
     public Integer getCastMemory() {
-        return (Integer) get(3);
+        return (Integer) get(4);
     }
 
     /**
      * Setter for <code>koj.submit.cast_time</code>. 耗时
      */
     public SubmitRecord setCastTime(Integer value) {
-        set(4, value);
+        set(5, value);
         return this;
     }
 
@@ -95,14 +110,14 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
      * Getter for <code>koj.submit.cast_time</code>. 耗时
      */
     public Integer getCastTime() {
-        return (Integer) get(4);
+        return (Integer) get(5);
     }
 
     /**
      * Setter for <code>koj.submit.belong_competition_id</code>. 所属比赛id
      */
     public SubmitRecord setBelongCompetitionId(Long value) {
-        set(5, value);
+        set(6, value);
         return this;
     }
 
@@ -110,14 +125,14 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
      * Getter for <code>koj.submit.belong_competition_id</code>. 所属比赛id
      */
     public Long getBelongCompetitionId() {
-        return (Long) get(5);
+        return (Long) get(6);
     }
 
     /**
      * Setter for <code>koj.submit.belong_user_id</code>. 所属用户id
      */
     public SubmitRecord setBelongUserId(Long value) {
-        set(6, value);
+        set(7, value);
         return this;
     }
 
@@ -125,14 +140,14 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
      * Getter for <code>koj.submit.belong_user_id</code>. 所属用户id
      */
     public Long getBelongUserId() {
-        return (Long) get(6);
+        return (Long) get(7);
     }
 
     /**
      * Setter for <code>koj.submit.create_time</code>. 创建时间
      */
     public SubmitRecord setCreateTime(LocalDateTime value) {
-        set(7, value);
+        set(8, value);
         return this;
     }
 
@@ -140,14 +155,14 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
      * Getter for <code>koj.submit.create_time</code>. 创建时间
      */
     public LocalDateTime getCreateTime() {
-        return (LocalDateTime) get(7);
+        return (LocalDateTime) get(8);
     }
 
     /**
      * Setter for <code>koj.submit.update_time</code>. 更新时间
      */
     public SubmitRecord setUpdateTime(LocalDateTime value) {
-        set(8, value);
+        set(9, value);
         return this;
     }
 
@@ -155,7 +170,7 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
      * Getter for <code>koj.submit.update_time</code>. 更新时间
      */
     public LocalDateTime getUpdateTime() {
-        return (LocalDateTime) get(8);
+        return (LocalDateTime) get(9);
     }
 
     // -------------------------------------------------------------------------
@@ -168,17 +183,17 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     }
 
     // -------------------------------------------------------------------------
-    // Record9 type implementation
+    // Record10 type implementation
     // -------------------------------------------------------------------------
 
     @Override
-    public Row9<Long, Byte, String, Integer, Integer, Long, Long, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row9) super.fieldsRow();
+    public Row10<Long, Byte, Long, String, Integer, Integer, Long, Long, LocalDateTime, LocalDateTime> fieldsRow() {
+        return (Row10) super.fieldsRow();
     }
 
     @Override
-    public Row9<Long, Byte, String, Integer, Integer, Long, Long, LocalDateTime, LocalDateTime> valuesRow() {
-        return (Row9) super.valuesRow();
+    public Row10<Long, Byte, Long, String, Integer, Integer, Long, Long, LocalDateTime, LocalDateTime> valuesRow() {
+        return (Row10) super.valuesRow();
     }
 
     @Override
@@ -192,37 +207,42 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     }
 
     @Override
-    public Field<String> field3() {
+    public Field<Long> field3() {
+        return Submit.SUBMIT.PROBLEM_ID;
+    }
+
+    @Override
+    public Field<String> field4() {
         return Submit.SUBMIT.LANGUAGE_ID;
     }
 
     @Override
-    public Field<Integer> field4() {
+    public Field<Integer> field5() {
         return Submit.SUBMIT.CAST_MEMORY;
     }
 
     @Override
-    public Field<Integer> field5() {
+    public Field<Integer> field6() {
         return Submit.SUBMIT.CAST_TIME;
     }
 
     @Override
-    public Field<Long> field6() {
+    public Field<Long> field7() {
         return Submit.SUBMIT.BELONG_COMPETITION_ID;
     }
 
     @Override
-    public Field<Long> field7() {
+    public Field<Long> field8() {
         return Submit.SUBMIT.BELONG_USER_ID;
     }
 
     @Override
-    public Field<LocalDateTime> field8() {
+    public Field<LocalDateTime> field9() {
         return Submit.SUBMIT.CREATE_TIME;
     }
 
     @Override
-    public Field<LocalDateTime> field9() {
+    public Field<LocalDateTime> field10() {
         return Submit.SUBMIT.UPDATE_TIME;
     }
 
@@ -237,37 +257,42 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     }
 
     @Override
-    public String component3() {
+    public Long component3() {
+        return getProblemId();
+    }
+
+    @Override
+    public String component4() {
         return getLanguageId();
     }
 
     @Override
-    public Integer component4() {
+    public Integer component5() {
         return getCastMemory();
     }
 
     @Override
-    public Integer component5() {
+    public Integer component6() {
         return getCastTime();
     }
 
     @Override
-    public Long component6() {
+    public Long component7() {
         return getBelongCompetitionId();
     }
 
     @Override
-    public Long component7() {
+    public Long component8() {
         return getBelongUserId();
     }
 
     @Override
-    public LocalDateTime component8() {
+    public LocalDateTime component9() {
         return getCreateTime();
     }
 
     @Override
-    public LocalDateTime component9() {
+    public LocalDateTime component10() {
         return getUpdateTime();
     }
 
@@ -282,37 +307,42 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     }
 
     @Override
-    public String value3() {
+    public Long value3() {
+        return getProblemId();
+    }
+
+    @Override
+    public String value4() {
         return getLanguageId();
     }
 
     @Override
-    public Integer value4() {
+    public Integer value5() {
         return getCastMemory();
     }
 
     @Override
-    public Integer value5() {
+    public Integer value6() {
         return getCastTime();
     }
 
     @Override
-    public Long value6() {
+    public Long value7() {
         return getBelongCompetitionId();
     }
 
     @Override
-    public Long value7() {
+    public Long value8() {
         return getBelongUserId();
     }
 
     @Override
-    public LocalDateTime value8() {
+    public LocalDateTime value9() {
         return getCreateTime();
     }
 
     @Override
-    public LocalDateTime value9() {
+    public LocalDateTime value10() {
         return getUpdateTime();
     }
 
@@ -329,49 +359,55 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     }
 
     @Override
-    public SubmitRecord value3(String value) {
+    public SubmitRecord value3(Long value) {
+        setProblemId(value);
+        return this;
+    }
+
+    @Override
+    public SubmitRecord value4(String value) {
         setLanguageId(value);
         return this;
     }
 
     @Override
-    public SubmitRecord value4(Integer value) {
+    public SubmitRecord value5(Integer value) {
         setCastMemory(value);
         return this;
     }
 
     @Override
-    public SubmitRecord value5(Integer value) {
+    public SubmitRecord value6(Integer value) {
         setCastTime(value);
         return this;
     }
 
     @Override
-    public SubmitRecord value6(Long value) {
+    public SubmitRecord value7(Long value) {
         setBelongCompetitionId(value);
         return this;
     }
 
     @Override
-    public SubmitRecord value7(Long value) {
+    public SubmitRecord value8(Long value) {
         setBelongUserId(value);
         return this;
     }
 
     @Override
-    public SubmitRecord value8(LocalDateTime value) {
+    public SubmitRecord value9(LocalDateTime value) {
         setCreateTime(value);
         return this;
     }
 
     @Override
-    public SubmitRecord value9(LocalDateTime value) {
+    public SubmitRecord value10(LocalDateTime value) {
         setUpdateTime(value);
         return this;
     }
 
     @Override
-    public SubmitRecord values(Long value1, Byte value2, String value3, Integer value4, Integer value5, Long value6, Long value7, LocalDateTime value8, LocalDateTime value9) {
+    public SubmitRecord values(Long value1, Byte value2, Long value3, String value4, Integer value5, Integer value6, Long value7, Long value8, LocalDateTime value9, LocalDateTime value10) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -381,6 +417,7 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
         value7(value7);
         value8(value8);
         value9(value9);
+        value10(value10);
         return this;
     }
 
@@ -398,11 +435,12 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     /**
      * Create a detached, initialised SubmitRecord
      */
-    public SubmitRecord(Long id, Byte state, String languageId, Integer castMemory, Integer castTime, Long belongCompetitionId, Long belongUserId, LocalDateTime createTime, LocalDateTime updateTime) {
+    public SubmitRecord(Long id, Byte state, Long problemId, String languageId, Integer castMemory, Integer castTime, Long belongCompetitionId, Long belongUserId, LocalDateTime createTime, LocalDateTime updateTime) {
         super(Submit.SUBMIT);
 
         setId(id);
         setState(state);
+        setProblemId(problemId);
         setLanguageId(languageId);
         setCastMemory(castMemory);
         setCastTime(castTime);
@@ -421,6 +459,7 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
         if (value != null) {
             setId(value.getId());
             setState(value.getState());
+            setProblemId(value.getProblemId());
             setLanguageId(value.getLanguageId());
             setCastMemory(value.getCastMemory());
             setCastTime(value.getCastTime());

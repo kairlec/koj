@@ -17,7 +17,7 @@ import Home from "./components/Home.vue"
 </style>
 <script lang="ts">
 import {defineComponent} from 'vue'
-import {useRouter} from 'vue-router';
+import {useRouter} from 'vue-router'
 
 export default defineComponent({
   setup() {

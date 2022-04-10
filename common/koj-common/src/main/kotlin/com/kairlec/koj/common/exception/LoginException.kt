@@ -26,3 +26,7 @@ class UsernameOrPasswordWrongException(override val cause: Throwable? = null) :
         private const val serialVersionUID: Long = 717238600410775125L
     }
 }
+
+class UserHasBeBlockedException(override val cause: Throwable? = null) :
+    GlobalException(GlobalErrorCode.USER_HAS_BE_BLOCKED, cause = cause) {
+}

@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 
 import org.jooq.Field;
 import org.jooq.Record1;
-import org.jooq.Record7;
-import org.jooq.Row7;
+import org.jooq.Record8;
+import org.jooq.Row8;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
  * 用户表
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Record7<Long, String, String, String, Byte, LocalDateTime, LocalDateTime> {
+public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Record8<Long, String, String, String, Byte, LocalDateTime, LocalDateTime, Byte> {
 
     private static final long serialVersionUID = 1L;
 
@@ -128,6 +128,21 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
         return (LocalDateTime) get(6);
     }
 
+    /**
+     * Setter for <code>koj.user.blocked</code>. 是否被禁用: 0-未禁用, 1-禁用
+     */
+    public UserRecord setBlocked(Byte value) {
+        set(7, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>koj.user.blocked</code>. 是否被禁用: 0-未禁用, 1-禁用
+     */
+    public Byte getBlocked() {
+        return (Byte) get(7);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -138,17 +153,17 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     }
 
     // -------------------------------------------------------------------------
-    // Record7 type implementation
+    // Record8 type implementation
     // -------------------------------------------------------------------------
 
     @Override
-    public Row7<Long, String, String, String, Byte, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row7) super.fieldsRow();
+    public Row8<Long, String, String, String, Byte, LocalDateTime, LocalDateTime, Byte> fieldsRow() {
+        return (Row8) super.fieldsRow();
     }
 
     @Override
-    public Row7<Long, String, String, String, Byte, LocalDateTime, LocalDateTime> valuesRow() {
-        return (Row7) super.valuesRow();
+    public Row8<Long, String, String, String, Byte, LocalDateTime, LocalDateTime, Byte> valuesRow() {
+        return (Row8) super.valuesRow();
     }
 
     @Override
@@ -187,6 +202,11 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     }
 
     @Override
+    public Field<Byte> field8() {
+        return User.USER.BLOCKED;
+    }
+
+    @Override
     public Long component1() {
         return getId();
     }
@@ -222,6 +242,11 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     }
 
     @Override
+    public Byte component8() {
+        return getBlocked();
+    }
+
+    @Override
     public Long value1() {
         return getId();
     }
@@ -254,6 +279,11 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     @Override
     public LocalDateTime value7() {
         return getUpdateTime();
+    }
+
+    @Override
+    public Byte value8() {
+        return getBlocked();
     }
 
     @Override
@@ -299,7 +329,13 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     }
 
     @Override
-    public UserRecord values(Long value1, String value2, String value3, String value4, Byte value5, LocalDateTime value6, LocalDateTime value7) {
+    public UserRecord value8(Byte value) {
+        setBlocked(value);
+        return this;
+    }
+
+    @Override
+    public UserRecord values(Long value1, String value2, String value3, String value4, Byte value5, LocalDateTime value6, LocalDateTime value7, Byte value8) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -307,6 +343,7 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
         value5(value5);
         value6(value6);
         value7(value7);
+        value8(value8);
         return this;
     }
 
@@ -324,7 +361,7 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     /**
      * Create a detached, initialised UserRecord
      */
-    public UserRecord(Long id, String username, String password, String email, Byte type, LocalDateTime createTime, LocalDateTime updateTime) {
+    public UserRecord(Long id, String username, String password, String email, Byte type, LocalDateTime createTime, LocalDateTime updateTime, Byte blocked) {
         super(User.USER);
 
         setId(id);
@@ -334,6 +371,7 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
         setType(type);
         setCreateTime(createTime);
         setUpdateTime(updateTime);
+        setBlocked(blocked);
     }
 
     /**
@@ -350,6 +388,7 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
             setType(value.getType());
             setCreateTime(value.getCreateTime());
             setUpdateTime(value.getUpdateTime());
+            setBlocked(value.getBlocked());
         }
     }
 }

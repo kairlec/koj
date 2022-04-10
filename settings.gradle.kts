@@ -170,6 +170,11 @@ dependencyResolutionManagement {
             library("jooq-kotlin", "org.jooq", "jooq-kotlin").versionRef("jooq")
 
             bundle("jooq", listOf("jooq", "jooq-kotlin"))
+            library("jwt", "com.auth0", "java-jwt").version("latest.release")
+
+            library("bouncyCastele", "org.bouncycastle", "bcprov-jdk15on").version("1.+")
+            library("apache-commons-lang3", "org.apache.commons", "commons-lang3").version("3.+")
+            library("apache-commons-codec", "commons-codec", "commons-codec").version("1.+")
 
             plugin("protobuf", "com.google.protobuf").versionRef("pb-plugin")
             plugin("kotlin-spring", "org.jetbrains.kotlin.plugin.spring").versionRef("kotlin")
@@ -198,6 +203,7 @@ include("sandbox:koj-sandbox-server")
 include("backend")
 include("backend:koj-backend-server")
 include("backend:koj-judger")
+include("backend:koj-cryptor")
 include("backend:koj-uid")
 include("backend:koj-dao-codegen")
 include("backend:koj-dao")

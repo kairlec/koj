@@ -18,6 +18,7 @@ enum class GlobalErrorCode(
     // 登录认证相关
     ACCOUNT_NOT_LOGIN(10001, "账户未登录", HttpStatusCode.Companion.ClientError.Unauthorized),
     USERNAME_PASSWORD_WRONG(10002, "用户名或密码错误", HttpStatusCode.Companion.ClientError.Unauthorized),
+    USER_HAS_BE_BLOCKED(10003, "用户被禁用", HttpStatusCode.Companion.ClientError.Forbidden),
 
     //10004
     ILLEGAL_REQUEST(10007, "非法请求", HttpStatusCode.Companion.ClientError.Forbidden),
@@ -32,6 +33,9 @@ enum class GlobalErrorCode(
     REQUEST_CONFLICT(20007, "请求冲突", HttpStatusCode.Companion.ClientError.Conflict),
     DATA_TOO_LONG(20008, "数据过长", HttpStatusCode.Companion.ClientError.RequestEntityTooLarge),
     COMPETITION_PWD_ERROR(20009, "竞赛密码错误", HttpStatusCode.Companion.ClientError.Forbidden),
+    TOKEN_VERIFY_FAILED(20010, "token验证失败", HttpStatusCode.Companion.ClientError.Forbidden),
+    TOKEN_EXPIRED(20011, "token已过期", HttpStatusCode.Companion.ClientError.Forbidden),
+    TOKEN_INVALID(20012, "token无效", HttpStatusCode.Companion.ClientError.Forbidden),
 
     // 业务问题
     USERNAME_EXISTS(30000, "用户名已存在", HttpStatusCode.Companion.ClientError.Conflict),
@@ -43,5 +47,9 @@ enum class GlobalErrorCode(
     DATA_ERROR(90001, "数据错误", HttpStatusCode.Companion.ServerError.InternalServerError),
     UNKNOWN_ERROR(90002, "未知错误", HttpStatusCode.Companion.ServerError.InternalServerError),
     AN_EXCEPTION_OCCURRED(90003, "发生了一个异常", HttpStatusCode.Companion.ServerError.InternalServerError),
-    MISSING_REQUIRE_ATTRIBUTE(90005, "缺少所需的属性", HttpStatusCode.Companion.ServerError.InternalServerError);
+    MISSING_REQUIRE_ATTRIBUTE(90005, "缺少所需的属性", HttpStatusCode.Companion.ServerError.InternalServerError),
+    GENERATE_TOKEN_FAILED(90006, "生成token失败", HttpStatusCode.Companion.ServerError.InternalServerError),
+    TOKEN_ERROR(90007, "token操作异常", HttpStatusCode.Companion.ServerError.InternalServerError),
+
+    ;
 }

@@ -19,8 +19,9 @@ import java.time.temporal.TemporalAccessor
  **/
 
 
-inline val X_TOTAL_COUNT get() = "x-total-count"
-inline val X_LAST_LOGIN_TIME get() = "x-last-login-time"
+const val X_TOTAL_COUNT = "x-total-count"
+const val X_LAST_LOGIN_TIME = "x-last-login-time"
+const val X_IDENTITY = "x-identity"
 
 typealias RE<T> = ResponseEntity<T>
 typealias REHB = ResponseEntity.HeadersBuilder<*>
@@ -40,6 +41,10 @@ inline fun REHB.cookie(cookie: HttpCookie) {
 
 inline fun REHB.header(name: String, value: Any) {
     this.header(name, value.toString())
+}
+
+inline fun REHB.identity(value: String) {
+    this.header(X_IDENTITY, value)
 }
 
 inline fun REHB.xCount(value: Int) {

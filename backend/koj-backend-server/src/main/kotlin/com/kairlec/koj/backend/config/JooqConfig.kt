@@ -40,6 +40,6 @@ class DSLAccessImpl(
     override fun <T : Any> flux(block: DSLContext.() -> Publisher<T>): Flux<T> =
         databaseClient.inConnectionMany { block(it.dsl()).toFlux() }
 
-    override fun <T : Any> mono(block: DSLContext.() -> Mono<T>): Mono<T> =
+    override fun <T> mono(block: DSLContext.() -> Mono<T>): Mono<T> =
         databaseClient.inConnection { block(it.dsl()) }
 }

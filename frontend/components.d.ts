@@ -4,16 +4,23 @@
 
 declare module 'vue' {
   export interface GlobalComponents {
+    ChangeUserInfo: typeof import('./src/components/ChangeUserInfo.vue')['default']
+    ElButton: typeof import('element-plus/es')['ElButton']
     ElConfigProvider: typeof import('element-plus/es')['ElConfigProvider']
+    ElDialog: typeof import('element-plus/es')['ElDialog']
+    ElForm: typeof import('element-plus/es')['ElForm']
+    ElFormItem: typeof import('element-plus/es')['ElFormItem']
     ElImage: typeof import('element-plus/es')['ElImage']
-    ElImageViewer: typeof import('element-plus/es')['ElImageViewer']
+    ElInput: typeof import('element-plus/es')['ElInput']
     ElMenu: typeof import('element-plus/es')['ElMenu']
     ElMenuItem: typeof import('element-plus/es')['ElMenuItem']
+    ElMessage: typeof import('element-plus')['ElMessage']
     ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     Home: typeof import('./src/components/Home.vue')['default']
+    LoginDialog: typeof import('./src/components/LoginDialog.vue')['default']
     MenuBar: typeof import('./src/components/MenuBar.vue')['default']
     Problem: typeof import('./src/components/Problem.vue')['default']
+    RegisterDialog: typeof import('./src/components/RegisterDialog.vue')['default']
   }
 }
 
