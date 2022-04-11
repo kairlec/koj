@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/public")
-class PublicController(
+class PublicUserController(
     private val userService: UserService,
     private val jwtService: JwtService,
 ) {

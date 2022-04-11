@@ -17,6 +17,7 @@ import org.springframework.web.server.WebFilterChain
 import reactor.core.publisher.Mono
 
 const val userIdAttributes = "__user_id"
+const val userTypeAttributes = "__user_type"
 
 @Component
 class LoginWebFilter(
@@ -41,7 +42,7 @@ class LoginWebFilter(
                         resp.setComplete()
                     } else {
                         exchange.attributes[userIdAttributes] = userId
-                        exchange.attributes[userIdAttributes] = userType
+                        exchange.attributes[userTypeAttributes] = userType
                         chain.filter(exchange)
                     }
                 } catch (e: GlobalException) {
