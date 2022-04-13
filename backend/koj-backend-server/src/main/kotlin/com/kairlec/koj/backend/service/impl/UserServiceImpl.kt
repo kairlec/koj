@@ -1,6 +1,7 @@
 package com.kairlec.koj.backend.service.impl
 
 import com.kairlec.koj.backend.service.UserService
+import com.kairlec.koj.common.InternalApi
 import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.model.UserStat
 import com.kairlec.koj.dao.repository.UserRepository
@@ -15,6 +16,11 @@ class UserServiceImpl(
 ) : UserService {
     override fun getUsers(type: UserType?, listCondition: ListCondition): Flow<UserRecord> {
         return userRepository.gets(type, listCondition)
+    }
+
+    @InternalApi
+    override suspend fun existAdminUsers(): Boolean {
+        return userRepository.existAdminUser()
     }
 
     override suspend fun addUser(username: String, password: String, email: String, type: UserType): Long {

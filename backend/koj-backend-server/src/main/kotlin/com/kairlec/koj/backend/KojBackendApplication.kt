@@ -5,7 +5,6 @@ import com.kairlec.koj.backend.config.SandboxConfig
 import io.github.majusko.pulsar.producer.ProducerCollector
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -24,6 +23,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 @EnableScheduling
 @EnableTransactionManagement
 class KojBackendApplication
+
 
 fun main(args: Array<String>) {
     runApplication<KojBackendApplication>(*args)

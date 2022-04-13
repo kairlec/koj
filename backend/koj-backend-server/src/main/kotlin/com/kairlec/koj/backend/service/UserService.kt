@@ -1,5 +1,6 @@
 package com.kairlec.koj.backend.service
 
+import com.kairlec.koj.common.InternalApi
 import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.model.UserStat
 import com.kairlec.koj.dao.repository.UserType
@@ -8,6 +9,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface UserService {
     fun getUsers(type: UserType? = null, listCondition: ListCondition): Flow<UserRecord>
+
+    @InternalApi
+    suspend fun existAdminUsers(): Boolean
 
     suspend fun matchUser(usernameOrEmail: String, password: String): UserRecord?
 

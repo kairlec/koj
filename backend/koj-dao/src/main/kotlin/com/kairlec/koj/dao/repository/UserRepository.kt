@@ -132,6 +132,16 @@ class UserRepository(
         }.asFlow()
     }
 
+    suspend fun existAdminUser(): Boolean {
+        return dslAccess.with {
+            selectCount()
+                .from(USER)
+                .where(USER.TYPE.eq(UserType.ADMIN.value))
+                .limit(1)
+                .awaitOrNull(0) > 0
+        }
+    }
+
     suspend fun get(
         username: String? = null,
         password: String? = null,
