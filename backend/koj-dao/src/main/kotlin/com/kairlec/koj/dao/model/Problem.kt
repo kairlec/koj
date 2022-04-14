@@ -6,7 +6,8 @@ data class SimpleProblem(
     val id: Long,
     val name: String,
     val spj: Boolean,
-    val idx: Byte?
+    val idx: Byte?,
+    val tags: List<String>
 )
 
 data class ProblemConfig(
@@ -26,4 +27,5 @@ data class Problem(
     val updateTime: LocalDateTime,
     val config: List<ProblemConfig>,
     val idx: Byte?,
+    val tags: List<String>
 )

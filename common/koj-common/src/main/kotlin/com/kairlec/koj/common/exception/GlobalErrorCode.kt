@@ -30,6 +30,7 @@ enum class GlobalErrorCode(
     UNKOWN_REQUEST(20001, "未知的请求", HttpStatusCode.Companion.ClientError.NotFound),
     METHOD_NOT_ALLOW(20002, "无效的请求方法", HttpStatusCode.Companion.ClientError.MethodNotAllowed),
     CONTENT_NOT_FOUND(20004, "无法找到相应的内容", HttpStatusCode.Companion.ClientError.NotFound),
+    CONTENT_NOT_MODIFIED(20005, "内容未修改", HttpStatusCode.Companion.Redirection.NotModified),
     REQUEST_CONFLICT(20007, "请求冲突", HttpStatusCode.Companion.ClientError.Conflict),
     DATA_TOO_LONG(20008, "数据过长", HttpStatusCode.Companion.ClientError.RequestEntityTooLarge),
     COMPETITION_PWD_ERROR(20009, "竞赛密码错误", HttpStatusCode.Companion.ClientError.Forbidden),
