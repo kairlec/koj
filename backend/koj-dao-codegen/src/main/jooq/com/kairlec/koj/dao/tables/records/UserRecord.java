@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
  * 用户表
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Record8<Long, String, String, String, Byte, LocalDateTime, LocalDateTime, Byte> {
+public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Record8<Long, String, String, String, Byte, LocalDateTime, LocalDateTime, Boolean> {
 
     private static final long serialVersionUID = 1L;
 
@@ -131,7 +131,7 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     /**
      * Setter for <code>koj.user.blocked</code>. 是否被禁用: 0-未禁用, 1-禁用
      */
-    public UserRecord setBlocked(Byte value) {
+    public UserRecord setBlocked(Boolean value) {
         set(7, value);
         return this;
     }
@@ -139,8 +139,8 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     /**
      * Getter for <code>koj.user.blocked</code>. 是否被禁用: 0-未禁用, 1-禁用
      */
-    public Byte getBlocked() {
-        return (Byte) get(7);
+    public Boolean getBlocked() {
+        return (Boolean) get(7);
     }
 
     // -------------------------------------------------------------------------
@@ -157,12 +157,12 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     // -------------------------------------------------------------------------
 
     @Override
-    public Row8<Long, String, String, String, Byte, LocalDateTime, LocalDateTime, Byte> fieldsRow() {
+    public Row8<Long, String, String, String, Byte, LocalDateTime, LocalDateTime, Boolean> fieldsRow() {
         return (Row8) super.fieldsRow();
     }
 
     @Override
-    public Row8<Long, String, String, String, Byte, LocalDateTime, LocalDateTime, Byte> valuesRow() {
+    public Row8<Long, String, String, String, Byte, LocalDateTime, LocalDateTime, Boolean> valuesRow() {
         return (Row8) super.valuesRow();
     }
 
@@ -202,7 +202,7 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     }
 
     @Override
-    public Field<Byte> field8() {
+    public Field<Boolean> field8() {
         return User.USER.BLOCKED;
     }
 
@@ -242,7 +242,7 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     }
 
     @Override
-    public Byte component8() {
+    public Boolean component8() {
         return getBlocked();
     }
 
@@ -282,7 +282,7 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     }
 
     @Override
-    public Byte value8() {
+    public Boolean value8() {
         return getBlocked();
     }
 
@@ -329,13 +329,13 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     }
 
     @Override
-    public UserRecord value8(Byte value) {
+    public UserRecord value8(Boolean value) {
         setBlocked(value);
         return this;
     }
 
     @Override
-    public UserRecord values(Long value1, String value2, String value3, String value4, Byte value5, LocalDateTime value6, LocalDateTime value7, Byte value8) {
+    public UserRecord values(Long value1, String value2, String value3, String value4, Byte value5, LocalDateTime value6, LocalDateTime value7, Boolean value8) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -361,7 +361,7 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> implements Recor
     /**
      * Create a detached, initialised UserRecord
      */
-    public UserRecord(Long id, String username, String password, String email, Byte type, LocalDateTime createTime, LocalDateTime updateTime, Byte blocked) {
+    public UserRecord(Long id, String username, String password, String email, Byte type, LocalDateTime createTime, LocalDateTime updateTime, Boolean blocked) {
         super(User.USER);
 
         setId(id);

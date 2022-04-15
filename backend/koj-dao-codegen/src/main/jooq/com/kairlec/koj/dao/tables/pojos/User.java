@@ -23,7 +23,7 @@ public class User implements Serializable {
     private final Byte          type;
     private final LocalDateTime createTime;
     private final LocalDateTime updateTime;
-    private final Byte          blocked;
+    private final Boolean       blocked;
 
     public User(User value) {
         this.id = value.id;
@@ -44,7 +44,7 @@ public class User implements Serializable {
         Byte          type,
         LocalDateTime createTime,
         LocalDateTime updateTime,
-        Byte          blocked
+        Boolean       blocked
     ) {
         this.id = id;
         this.username = username;
@@ -108,7 +108,7 @@ public class User implements Serializable {
     /**
      * Getter for <code>koj.user.blocked</code>. 是否被禁用: 0-未禁用, 1-禁用
      */
-    public Byte getBlocked() {
+    public Boolean getBlocked() {
         return this.blocked;
     }
 

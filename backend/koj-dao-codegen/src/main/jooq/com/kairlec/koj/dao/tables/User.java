@@ -89,7 +89,7 @@ public class User extends TableImpl<UserRecord> {
     /**
      * The column <code>koj.user.blocked</code>. 是否被禁用: 0-未禁用, 1-禁用
      */
-    public final TableField<UserRecord, Byte> BLOCKED = createField(DSL.name("blocked"), SQLDataType.TINYINT.nullable(false), this, "是否被禁用: 0-未禁用, 1-禁用");
+    public final TableField<UserRecord, Boolean> BLOCKED = createField(DSL.name("blocked"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.inline("0", SQLDataType.BOOLEAN)), this, "是否被禁用: 0-未禁用, 1-禁用");
 
     private User(Name alias, Table<UserRecord> aliased) {
         this(alias, aliased, null);
@@ -180,7 +180,7 @@ public class User extends TableImpl<UserRecord> {
     // -------------------------------------------------------------------------
 
     @Override
-    public Row8<Long, String, String, String, Byte, LocalDateTime, LocalDateTime, Byte> fieldsRow() {
+    public Row8<Long, String, String, String, Byte, LocalDateTime, LocalDateTime, Boolean> fieldsRow() {
         return (Row8) super.fieldsRow();
     }
 }

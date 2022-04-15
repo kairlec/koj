@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS koj.user
     type        TINYINT                                NOT NULL COMMENT '用户类型: 0-普通用户, 1-管理员',
     create_time DATETIME DEFAULT NOW()                 NOT NULL COMMENT '创建时间',
     update_time DATETIME DEFAULT NOW() ON UPDATE NOW() NOT NULL COMMENT '更新时间',
-    blocked     TINYINT                                NOT NULL COMMENT '是否被禁用: 0-未禁用, 1-禁用',
+    blocked     BOOLEAN  DEFAULT FALSE                 NOT NULL COMMENT '是否被禁用: 0-未禁用, 1-禁用',
     PRIMARY KEY (id),
     INDEX username_idx (username),
     INDEX email_idx (email),
