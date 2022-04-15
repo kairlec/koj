@@ -10,9 +10,9 @@ import org.springframework.boot.test.context.SpringBootTest
 class UserTest(
     private val userService: UserService
 ) : StringSpec({
-    "user service"{
-        userService.userService()
-    }
+//    "user service"{
+//        userService.userService()
+//    }
 }) {
     override fun extensions() = listOf(SpringExtension)
 }

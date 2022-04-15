@@ -34,7 +34,7 @@ class PublicUserController(
         @ModelAttribute model: LoginModel
     ): RE<UserVO> {
         val user = userService.matchUser(model.usernameOrEmail, model.password)?.let {
-            if (it.blocked > 0) {
+            if (it.blocked) {
                 throw UserHasBeBlockedException()
             }
             UserVO(it.id, it.username, it.email, it.type, it.createTime)
@@ -58,8 +58,8 @@ class PublicUserController(
     }
 
     @GetMapping("/users/{username}")
-    suspend fun stat(@PathVariable username: String): UserStat? {
-        return userService.stat(username)
+    suspend fun stat(@PathVariable username: String): UserStat {
+        return userService.stat(username).sureFound("User<${username}> not found")
     }
 
     @RequestMapping("/users/{usernameOrEmail}", method = [RequestMethod.HEAD])

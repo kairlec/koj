@@ -239,6 +239,7 @@ class ProblemRepository(
         return dslAccess.with {
             insertInto(TAG_BELONG_PROBLEM, TAG_BELONG_PROBLEM.PROBLEM_ID, TAG_BELONG_PROBLEM.TAG_ID)
                 .values(problemId, tagId)
+                .onDuplicateKeyIgnore()
                 .awaitBool()
         }
     }

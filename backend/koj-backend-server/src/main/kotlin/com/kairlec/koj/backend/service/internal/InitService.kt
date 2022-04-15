@@ -18,15 +18,14 @@ class InitService {
     fun init(event: ApplicationReadyEvent) {
         val userService = event.applicationContext.getBean<UserService>()
         runBlocking {
-            NoSuchMethodError
-            if (userService.existAdminUsers()) {
-                println(userService.addUser("admin", "admin", "admin@admin.com", UserType.ADMIN))
+            if (!userService.existAdminUsers()) {
+                val adminUserId = userService.addUser("admin", "admin", "admin@admin.com", UserType.ADMIN)
+                log.info { "Add admin user: $adminUserId" }
             }
-
         }
     }
 
-    companion object{
-        private val log = KotlinLogging.logger {  }
+    companion object {
+        private val log = KotlinLogging.logger { }
     }
 }

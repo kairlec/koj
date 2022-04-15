@@ -2,6 +2,7 @@ package com.kairlec.koj.backend.controller.admin
 
 import com.kairlec.koj.backend.service.UserService
 import com.kairlec.koj.backend.util.RE
+import com.kairlec.koj.backend.util.sureEffect
 import com.kairlec.koj.backend.util.voidNotMidified
 import com.kairlec.koj.backend.util.voidOk
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -17,10 +18,7 @@ class UserManagerController(
     @DeleteMapping("/{userId}")
     suspend fun destroy(
         @PathVariable userId: Long
-    ): RE<Void> {
-        if (!userService.removeUser(userId)) {
-            return voidNotMidified()
-        }
-        return voidOk()
+    ) {
+        userService.removeUser(userId).sureEffect("delete user failed")
     }
 }
