@@ -19,7 +19,7 @@ class PublicProblemController(
 ) {
     @GetMapping("/problems/-")
     suspend fun getProblems(
-        @RequestParam(defaultValue = "[]") tags: List<String>
+        @RequestParam(defaultValue = "") tags: List<String>
     ): RE<Flow<SimpleProblem>> {
         return problemService.getProblems(tags, currentListCondition()).re()
     }

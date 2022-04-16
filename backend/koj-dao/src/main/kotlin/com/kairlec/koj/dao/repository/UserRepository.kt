@@ -37,18 +37,15 @@ class UserRepository(
     private val dslAccess: DSLAccess,
     private val hasher: Hasher,
 ) {
+    @Transactional(rollbackFor = [Exception::class])
     suspend operator fun invoke(block: suspend UserRepositoryDSL.() -> Unit) {
         return UserRepositoryDSL(this).block()
     }
 
-    @Transactional
-    suspend fun <T> transaction(block: suspend UserRepositoryDSL.() -> T): T {
-        return UserRepositoryDSL(this).block()
-    }
-
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun exists(usernameOrEmail: String): Boolean {
-        return dslAccess.with {
-            selectCount()
+        return dslAccess.with { create ->
+            create.selectCount()
                 .from(USER)
                 .where(USER.USERNAME.eq(usernameOrEmail))
                 .or(USER.EMAIL.eq(usernameOrEmail))
@@ -56,9 +53,10 @@ class UserRepository(
         }
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun stat(username: String): UserStat? {
-        return dslAccess.with {
-            val stat = select(USER.ID, USER.USERNAME, USER.CREATE_TIME)
+        return dslAccess.with { create ->
+            val stat = create.select(USER.ID, USER.USERNAME, USER.CREATE_TIME)
                 .from(USER)
                 .where(USER.USERNAME.eq(username))
                 .and(USER.TYPE.eq(UserType.USER.value))
@@ -68,12 +66,12 @@ class UserRepository(
                 id = userId,
                 username = stat[USER.USERNAME],
                 createTime = stat[USER.CREATE_TIME],
-                submitted = selectCount()
+                submitted = create.selectCount()
                     .from(SUBMIT)
                     .where(SUBMIT.BELONG_USER_ID.eq(userId))
                     .and(SUBMIT.BELONG_COMPETITION_ID.isNull)
                     .awaitOrNull(0),
-                ac = select(SUBMIT.PROBLEM_ID)
+                ac = create.select(SUBMIT.PROBLEM_ID)
                     .from(SUBMIT)
                     .where(SUBMIT.BELONG_USER_ID.eq(userId))
                     .and(SUBMIT.BELONG_COMPETITION_ID.isNull)
@@ -85,9 +83,10 @@ class UserRepository(
         }
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun createUser(username: String, password: String, email: String, type: UserType): Long {
-        return dslAccess.with {
-            insertInto(USER)
+        return dslAccess.with { create ->
+            create.insertInto(USER)
                 .value {
                     this[USER.USERNAME] = username
                     this[USER.PASSWORD] = hasher.hash(password)
@@ -100,41 +99,45 @@ class UserRepository(
         }
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun removeUser(username: String): Boolean {
-        return dslAccess.with {
-            deleteFrom(USER)
+        return dslAccess.with { create ->
+            create.deleteFrom(USER)
                 .where(USER.USERNAME.eq(username))
                 .awaitSingle() > 0
         }
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun removeUser(id: Long): Boolean {
-        return dslAccess.with {
-            deleteFrom(USER)
+        return dslAccess.with { create ->
+            create.deleteFrom(USER)
                 .where(USER.ID.eq(id))
                 .awaitSingle() > 0
         }
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     fun gets(
         type: UserType? = null,
         listCondition: ListCondition,
     ): Flow<UserRecord> {
-        return dslAccess.flux {
+        return dslAccess.flux { create ->
             if (type == null) {
-                selectFrom(USER)
+                create.selectFrom(USER)
                     .list(USER, listCondition)
             } else {
-                selectFrom(USER)
+                create.selectFrom(USER)
                     .where(USER.TYPE.eq(type.value))
                     .list(USER, listCondition)
             }
         }.asFlow()
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun existAdminUser(): Boolean {
-        return dslAccess.with {
-            selectCount()
+        return dslAccess.with { create ->
+            create.selectCount()
                 .from(USER)
                 .where(USER.TYPE.eq(UserType.ADMIN.value))
                 .limit(1)
@@ -142,6 +145,7 @@ class UserRepository(
         }
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun get(
         username: String? = null,
         password: String? = null,
@@ -152,8 +156,8 @@ class UserRepository(
             "username or email must be not null"
         }
         val record =
-            dslAccess.with {
-                selectFrom(USER)
+            dslAccess.with { create ->
+                create.selectFrom(USER)
                     .let {
                         if (username != null) {
                             it.where(USER.USERNAME.eq(username))
@@ -172,22 +176,24 @@ class UserRepository(
         return record
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun get(
         id: Long
     ): UserRecord? {
-        return dslAccess.with {
-            selectFrom(USER)
+        return dslAccess.with { create ->
+            create.selectFrom(USER)
                 .where(USER.ID.eq(id))
                 .awaitFirstOrNull()
         }
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun updateUser(id: Long, username: String?, password: String?, email: String?, type: UserType?): Boolean {
         if (username == null && password == null && email == null && type == null) {
             return false
         }
-        return dslAccess.with {
-            val next = update(USER)
+        return dslAccess.with { create ->
+            val next = create.update(USER)
                 .let { if (password != null) it.set(USER.PASSWORD, hasher.hash(password)) else it }
                 .let { if (username != null) it.set(USER.USERNAME, username) else it }
                 .let { if (email != null) it.set(USER.EMAIL, email) else it }

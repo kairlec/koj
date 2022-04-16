@@ -6,43 +6,43 @@ import com.kairlec.koj.dao.Tables.COMPETITION
 import com.kairlec.koj.dao.Tables.CONTESTANTS
 import com.kairlec.koj.dao.exception.CompetitionPwdWrongException
 import com.kairlec.koj.dao.exception.NoSuchContentException
-import com.kairlec.koj.dao.extended.ListCondition
-import com.kairlec.koj.dao.extended.awaitBool
-import com.kairlec.koj.dao.extended.awaitOrNull
-import com.kairlec.koj.dao.extended.list
+import com.kairlec.koj.dao.extended.*
 import com.kairlec.koj.dao.tables.records.CompetitionRecord
 import com.kairlec.koj.dao.with
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 @Repository
 class CompetitionRepository(
     private val dslAccess: DSLAccess,
     private val hasher: Hasher,
 ) {
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun getCompetitions(
         listCondition: ListCondition
     ): PageData<CompetitionRecord> {
-        return dslAccess.with {
-            val data = selectFrom(COMPETITION)
+        return dslAccess.with { create ->
+            val data = create.selectFrom(COMPETITION)
                 .list(COMPETITION, listCondition)
                 .asFlow()
-            val count = selectCount()
+            val count = create.selectCount()
                 .from(COMPETITION)
-                .list(listCondition)
+                .listCount(COMPETITION, listCondition)
                 .awaitOrNull(0)
             data pg count
         }
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun joinCompetition(
         userId: Long,
         competitionId: Long,
         pwd: String?
     ) {
-        return dslAccess.with {
-            val competition = selectFrom(COMPETITION)
+        return dslAccess.with { create ->
+            val competition = create.selectFrom(COMPETITION)
                 .where(COMPETITION.ID.eq(competitionId))
                 .awaitFirstOrNull() ?: throw NoSuchContentException("cannot found competition:${competitionId}")
             if (competition.pwd != null) {
@@ -53,30 +53,32 @@ class CompetitionRepository(
                     throw CompetitionPwdWrongException()
                 }
             }
-            insertInto(CONTESTANTS, CONTESTANTS.USER_ID, CONTESTANTS.COMPETITION_ID)
+            create.insertInto(CONTESTANTS, CONTESTANTS.USER_ID, CONTESTANTS.COMPETITION_ID)
                 .values(userId, competitionId)
                 .onDuplicateKeyIgnore()
                 .awaitBool()
         }
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun createCompetition(
         name: String,
         pwd: String?
     ): Boolean {
-        return dslAccess.with {
-            insertInto(COMPETITION, COMPETITION.NAME, COMPETITION.PWD)
+        return dslAccess.with { create ->
+            create.insertInto(COMPETITION, COMPETITION.NAME, COMPETITION.PWD)
                 .values(name, pwd?.let { hasher.hash(it) })
                 .awaitBool()
         }
     }
 
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun isInCompetition(
         userId: Long,
         competitionId: Long
     ): Boolean {
-        return dslAccess.with {
-            selectCount()
+        return dslAccess.with { create ->
+            create.selectCount()
                 .from(CONTESTANTS)
                 .where(CONTESTANTS.USER_ID.eq(userId))
                 .and(CONTESTANTS.COMPETITION_ID.eq(competitionId))

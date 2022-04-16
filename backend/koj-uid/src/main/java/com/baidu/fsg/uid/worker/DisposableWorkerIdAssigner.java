@@ -45,7 +45,7 @@ public class DisposableWorkerIdAssigner implements WorkerIdAssigner {
      *
      * @return assigned worker id
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Mono<Long> assignWorkerId() {
         // build worker node entity
         WorkerNodeEntity workerNodeEntity = buildWorkerNode();

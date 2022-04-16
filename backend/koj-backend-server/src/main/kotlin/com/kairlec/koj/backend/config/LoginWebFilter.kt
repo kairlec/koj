@@ -26,7 +26,9 @@ class LoginWebFilter(
 ) : WebFilter {
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
         return if (antPathMatcher.match(publicPath, exchange.request.uri.path)) {
-            chain.filter(exchange)
+            chain.filter(exchange).contextWrite {
+                it.put(ServerWebExchange::class.java, exchange)
+            }
         } else {
             val token = exchange.request.headers.getFirst(X_IDENTITY)
             if (token == null) {
@@ -43,7 +45,9 @@ class LoginWebFilter(
                     } else {
                         exchange.attributes[userIdAttributes] = userId
                         exchange.attributes[userTypeAttributes] = userType
-                        chain.filter(exchange)
+                        chain.filter(exchange).contextWrite {
+                            it.put(ServerWebExchange::class.java, exchange)
+                        }
                     }
                 } catch (e: GlobalException) {
                     val resp = exchange.response

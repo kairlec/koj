@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.kairlec.koj.backend.util
 
 import com.kairlec.koj.backend.exp.DataNotFoundException

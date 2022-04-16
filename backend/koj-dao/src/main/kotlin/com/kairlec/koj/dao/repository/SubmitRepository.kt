@@ -5,10 +5,7 @@ import com.kairlec.koj.dao.Tables.CODE
 import com.kairlec.koj.dao.Tables.SUBMIT
 import com.kairlec.koj.dao.exception.CreateCodeRecordException
 import com.kairlec.koj.dao.exception.CreateSubmitException
-import com.kairlec.koj.dao.extended.ListCondition
-import com.kairlec.koj.dao.extended.awaitBool
-import com.kairlec.koj.dao.extended.awaitOrNull
-import com.kairlec.koj.dao.extended.list
+import com.kairlec.koj.dao.extended.*
 import com.kairlec.koj.dao.model.SubmitDetail
 import com.kairlec.koj.dao.model.SubmitState
 import com.kairlec.koj.dao.tables.records.SubmitRecord
@@ -28,17 +25,18 @@ class SubmitRepository(
 ) {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
+   @Transactional(rollbackFor = [Exception::class])
     suspend fun getSubmitRank(
         competition: Long? = null,
         listCondition: ListCondition
     ): PageData<SubmitRecord> {
-        return dslAccess.with {
-            val size = selectCount()
+        return dslAccess.with { create ->
+            val size = create.selectCount()
                 .from(SUBMIT)
                 .where(SUBMIT.BELONG_COMPETITION_ID.eq(competition))
-                .list(listCondition)
+                .listCount(SUBMIT, listCondition)
                 .awaitOrNull(0)
-            val data = selectFrom(SUBMIT)
+            val data = create.selectFrom(SUBMIT)
                 .where(SUBMIT.BELONG_COMPETITION_ID.eq(competition))
                 .list(SUBMIT, listCondition)
                 .asFlow()
@@ -46,12 +44,13 @@ class SubmitRepository(
         }
     }
 
+   @Transactional(rollbackFor = [Exception::class])
     suspend fun getSubmitDetail(
         userId: Long,
         id: Long
     ): SubmitDetail? {
-        return dslAccess.with {
-            val submit = select()
+        return dslAccess.with { create ->
+            val submit = create.select()
                 .from(SUBMIT)
                 .join(CODE)
                 .on(SUBMIT.ID.eq(CODE.ID))
@@ -73,20 +72,21 @@ class SubmitRepository(
         }
     }
 
+   @Transactional(rollbackFor = [Exception::class])
     suspend fun updateSubmit(id: Long, state: SubmitState): Boolean {
-        return dslAccess.with {
-            update(SUBMIT)
+        return dslAccess.with { create ->
+            create.update(SUBMIT)
                 .set(SUBMIT.STATE, state.value)
                 .where(SUBMIT.STATE.le(state.lessThan))
                 .awaitBool()
         }
     }
 
-    @Transactional(rollbackFor = [Exception::class])
+   @Transactional(rollbackFor = [Exception::class])
     suspend fun createSubmit(id: Long, userId: Long, competition: Long?, languageId: String, code: String) {
-        return dslAccess.with {
+        return dslAccess.with { create ->
             val submitResult = coroutineScope.async {
-                insertInto(SUBMIT)
+                create.insertInto(SUBMIT)
                     .columns(
                         SUBMIT.ID,
                         SUBMIT.BELONG_USER_ID,
@@ -98,7 +98,7 @@ class SubmitRepository(
                     .awaitBool()
             }
             val codeResult = coroutineScope.async {
-                insertInto(SUBMIT)
+                create.insertInto(SUBMIT)
                     .columns(
                         SUBMIT.ID,
                         SUBMIT.BELONG_USER_ID,

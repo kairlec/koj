@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package com.kairlec.koj.dao.repository
 
 import kotlinx.coroutines.flow.Flow

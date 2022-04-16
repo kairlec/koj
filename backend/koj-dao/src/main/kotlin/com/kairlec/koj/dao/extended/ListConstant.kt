@@ -25,10 +25,11 @@ inline fun <R : Record> SelectWhereStep<R>.list(
         .seekLimit(listCondition.limit, listCondition.seek)
 }
 
-inline fun SelectWhereStep<Record1<Int>>.list(
+inline fun SelectWhereStep<Record1<Int>>.listCount(
+    table: Table<out Record>,
     listCondition: ListCondition
 ): SelectForUpdateStep<Record1<Int>> {
-    return where(listCondition.search)
+    return where(table.search(listCondition.search))
 }
 
 inline fun <R : Record> SelectConditionStep<R>.list(
@@ -40,10 +41,11 @@ inline fun <R : Record> SelectConditionStep<R>.list(
         .seekLimit(listCondition.limit, listCondition.seek)
 }
 
-inline fun SelectConditionStep<Record1<Int>>.list(
+inline fun SelectConditionStep<Record1<Int>>.listCount(
+    table: Table<out Record>,
     listCondition: ListCondition
 ): SelectForUpdateStep<Record1<Int>> {
-    return and(listCondition.search)
+    return and(table.search(listCondition.search))
 }
 
 inline fun <R : Record> SelectConditionStep<R>.listFinal(
@@ -57,12 +59,13 @@ inline fun <R : Record> SelectConditionStep<R>.listFinal(
     }
 }
 
-inline fun SelectConditionStep<Record1<Int>>.listFinal(
+inline fun SelectConditionStep<Record1<Int>>.listCountFinal(
+    table: Table<out Record>,
     listCondition: ListCondition?
 ): ResultQuery<Record1<Int>> {
     return if (listCondition == null) {
         this
     } else {
-        list(listCondition)
+        list(table, listCondition)
     }
 }

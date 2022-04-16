@@ -10,17 +10,18 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 interface DSLAccess {
-    fun <T : Any> flux(block: DSLContext.() -> Publisher<T>): Flux<T>
+    fun <T : Any> flux(block: (create: DSLContext) -> Publisher<T>): Flux<T>
 
-    fun <T> mono(block: DSLContext.() -> Mono<T>): Mono<T>
+    fun <T> mono(block: (create: DSLContext) -> Mono<T>): Mono<T>
 }
 
+@Suppress("UNCHECKED_CAST")
 @OptIn(ExperimentalContracts::class)
-suspend inline fun <T> DSLAccess.with(crossinline block: suspend DSLContext.() -> T): T {
+suspend inline fun <T> DSLAccess.with(crossinline block: suspend (create: DSLContext) -> T): T {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     return mono context@{
         kotlinx.coroutines.reactor.mono {
-            block(this@context)
+            block(it)
         }
     }.awaitFirstOrNull() as T
 }
