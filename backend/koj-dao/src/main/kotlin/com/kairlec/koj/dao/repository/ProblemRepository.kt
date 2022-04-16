@@ -3,6 +3,7 @@ package com.kairlec.koj.dao.repository
 import com.kairlec.koj.dao.DSLAccess
 import com.kairlec.koj.dao.Tables.*
 import com.kairlec.koj.dao.extended.*
+import com.kairlec.koj.dao.flow
 import com.kairlec.koj.dao.model.Problem
 import com.kairlec.koj.dao.model.ProblemConfig
 import com.kairlec.koj.dao.model.SimpleProblem
@@ -27,51 +28,52 @@ class ProblemRepository(
         tags: List<String> = emptyList(),
         listCondition: ListCondition
     ): PageData<SimpleProblem> {
-        return dslAccess.with { create ->
-//            val count = create.selectCount()
-//                .from(PROBLEM)
-//                .listCount(PROBLEM, listCondition)
-//                .awaitOrNull(0)
-            val data =
-                create.select(PROBLEM.ID, PROBLEM.NAME, PROBLEM.SPJ, DSL.field("tr.tag_names"))
-                    .from(PROBLEM)
-                    .innerJoin(
-                        DSL.select(
-                            TAG_BELONG_PROBLEM.PROBLEM_ID.`as`("pi"),
-                            DSL.groupConcat(PROBLEM_TAG.NAME).separator(",").`as`("tag_names")
-                        )
-                            .from(PROBLEM_TAG)
-                            .join(TAG_BELONG_PROBLEM)
-                            .on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
-                            .let {
-                                if (tags.isEmpty()) {
-                                    it
-                                } else {
-                                    it.where(PROBLEM_TAG.NAME.`in`(tags))
-                                }
-                            }
-                            .asTable("tr")
-                    )
-                    .on(DSL.field("pi").eq(PROBLEM.ID))
-                    .list(PROBLEM, listCondition)
-                    .asFlow().map {
-                        SimpleProblem(
-                            id = it[PROBLEM.ID],
-                            name = it[PROBLEM.NAME],
-                            spj = it[PROBLEM.SPJ],
-                            idx = null,
-                            tags = it["tag_names"].toString().split(",")
-                        )
-                    }
-            data pg 0
+        val count = dslAccess.with { create ->
+            create.selectCount()
+                .from(PROBLEM)
+                .listCount(PROBLEM, listCondition)
+                .awaitOrNull(0)
         }
+        return dslAccess.flow { create ->
+            create.select(PROBLEM.ID, PROBLEM.NAME, PROBLEM.SPJ, DSL.field("tr.tag_names"))
+                .from(PROBLEM)
+                .innerJoin(
+                    create.select(
+                        TAG_BELONG_PROBLEM.PROBLEM_ID.`as`("pi"),
+                        DSL.groupConcat(PROBLEM_TAG.NAME).separator(",").`as`("tag_names")
+                    )
+                        .from(PROBLEM_TAG)
+                        .join(TAG_BELONG_PROBLEM)
+                        .on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
+                        .let {
+                            if (tags.isEmpty()) {
+                                it
+                            } else {
+                                it.where(PROBLEM_TAG.NAME.`in`(tags))
+                            }
+                        }
+                        .asTable("tr")
+                )
+                .on(DSL.field("pi").eq(PROBLEM.ID))
+                .list(PROBLEM, listCondition)
+                .asFlow()
+                .map {
+                    SimpleProblem(
+                        id = it[PROBLEM.ID],
+                        name = it[PROBLEM.NAME],
+                        spj = it[PROBLEM.SPJ],
+                        idx = null,
+                        tags = it["tr.tag_names"].toString().split(",")
+                    )
+                }
+        } pg count
     }
 
     @Transactional(rollbackFor = [Exception::class])
     fun getProblems(
         competitionId: Long,
     ): Flow<SimpleProblem> {
-        return dslAccess.flux { create ->
+        return dslAccess.flow { create ->
             create.select(
                 PROBLEM.ID,
                 PROBLEM.NAME,
@@ -79,6 +81,40 @@ class ProblemRepository(
                 PROBLEM_BELONG_COMPETITION.IDX,
                 DSL.field("tr.tag_names")
             )
+                .from(PROBLEM)
+                .leftJoin(PROBLEM_BELONG_COMPETITION)
+                .on(PROBLEM.ID.eq(PROBLEM_BELONG_COMPETITION.PROBLEM_ID))
+                .innerJoin(
+                    create.select(
+                        TAG_BELONG_PROBLEM.PROBLEM_ID.`as`("pi"),
+                        DSL.groupConcat(PROBLEM_TAG.NAME).separator(",").`as`("tag_names")
+                    )
+                        .from(PROBLEM_TAG)
+                        .join(TAG_BELONG_PROBLEM)
+                        .on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
+                        .asTable("tr")
+                )
+                .on(DSL.field("pi").eq(PROBLEM.ID))
+                .where(PROBLEM_BELONG_COMPETITION.COMPETITION_ID.eq(competitionId))
+                .orderBy(PROBLEM_BELONG_COMPETITION.CREATE_TIME)
+                .asFlow().map {
+                    SimpleProblem(
+                        id = it[PROBLEM.ID],
+                        name = it[PROBLEM.NAME],
+                        spj = it[PROBLEM.SPJ],
+                        idx = it[PROBLEM_BELONG_COMPETITION.IDX],
+                        tags = it["tr.tag_names"].toString().split(",")
+                    )
+                }
+        }
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
+    suspend fun getProblem(
+        id: Long
+    ): Problem? {
+        val record = dslAccess.with { create ->
+            create.select(*PROBLEM.fields(), *PROBLEM_BELONG_COMPETITION.fields(), DSL.field("tr.tag_names"))
                 .from(PROBLEM)
                 .leftJoin(PROBLEM_BELONG_COMPETITION)
                 .on(PROBLEM.ID.eq(PROBLEM_BELONG_COMPETITION.PROBLEM_ID))
@@ -93,43 +129,11 @@ class ProblemRepository(
                         .asTable("tr")
                 )
                 .on(TAG_BELONG_PROBLEM.PROBLEM_ID.eq(PROBLEM.ID))
-                .where(PROBLEM_BELONG_COMPETITION.COMPETITION_ID.eq(competitionId))
+                .where(PROBLEM.ID.eq(id))
                 .orderBy(PROBLEM_BELONG_COMPETITION.CREATE_TIME)
-        }.asFlow().map {
-            SimpleProblem(
-                id = it[PROBLEM.ID],
-                name = it[PROBLEM.NAME],
-                spj = it[PROBLEM.SPJ],
-                idx = it[PROBLEM_BELONG_COMPETITION.IDX],
-                tags = it["tag_names"].toString().split(",")
-            )
-        }
-    }
-
-    @Transactional(rollbackFor = [Exception::class])
-    suspend fun getProblem(
-        id: Long
-    ): Problem? {
+                .awaitFirstOrNull()
+        } ?: return null
         return dslAccess.with { create ->
-            val record =
-                create.select(*PROBLEM.fields(), *PROBLEM_BELONG_COMPETITION.fields(), DSL.field("tr.tag_names"))
-                    .from(PROBLEM)
-                    .leftJoin(PROBLEM_BELONG_COMPETITION)
-                    .on(PROBLEM.ID.eq(PROBLEM_BELONG_COMPETITION.PROBLEM_ID))
-                    .innerJoin(
-                        create.select(
-                            TAG_BELONG_PROBLEM.PROBLEM_ID,
-                            DSL.groupConcat(PROBLEM_TAG.NAME).separator(",").`as`("tag_names")
-                        )
-                            .from(PROBLEM_TAG)
-                            .join(TAG_BELONG_PROBLEM)
-                            .on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
-                            .asTable("tr")
-                    )
-                    .on(TAG_BELONG_PROBLEM.PROBLEM_ID.eq(PROBLEM.ID))
-                    .where(PROBLEM.ID.eq(id))
-                    .orderBy(PROBLEM_BELONG_COMPETITION.CREATE_TIME)
-                    .awaitFirstOrNull() ?: return@with null
             Problem(
                 id = record[PROBLEM.ID],
                 name = record[PROBLEM.NAME],
@@ -158,7 +162,7 @@ class ProblemRepository(
 
     @Transactional(rollbackFor = [Exception::class])
     suspend fun getTags(listCondition: ListCondition): PageData<ProblemTagRecord> {
-        val data = dslAccess.with { create ->
+        val data = dslAccess.flow { create ->
             create.selectFrom(PROBLEM_TAG)
                 .list(PROBLEM_TAG, listCondition)
                 .asFlow()

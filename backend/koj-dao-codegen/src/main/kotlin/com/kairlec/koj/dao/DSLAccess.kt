@@ -1,5 +1,8 @@
 package com.kairlec.koj.dao
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.asPublisher
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.jooq.DSLContext
 import org.reactivestreams.Publisher
@@ -24,4 +27,8 @@ suspend inline fun <T> DSLAccess.with(crossinline block: suspend (create: DSLCon
             block(it)
         }
     }.awaitFirstOrNull() as T
+}
+
+inline fun <T : Any> DSLAccess.flow(crossinline block: (create: DSLContext) -> Flow<T>): Flow<T> {
+    return flux { block(it).asPublisher() }.asFlow()
 }

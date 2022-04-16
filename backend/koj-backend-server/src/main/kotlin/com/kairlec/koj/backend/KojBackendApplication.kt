@@ -10,6 +10,7 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.transaction.annotation.EnableTransactionManagement
+import reactor.core.publisher.Hooks
 
 @SpringBootApplication(exclude = [DataSourceAutoConfiguration::class])
 @ComponentScan(
@@ -27,5 +28,6 @@ class KojBackendApplication
 
 
 fun main(args: Array<String>) {
+    Hooks.onOperatorDebug()
     runApplication<KojBackendApplication>(*args)
 }

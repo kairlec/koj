@@ -7,6 +7,7 @@ import com.kairlec.koj.dao.Tables.CONTESTANTS
 import com.kairlec.koj.dao.exception.CompetitionPwdWrongException
 import com.kairlec.koj.dao.exception.NoSuchContentException
 import com.kairlec.koj.dao.extended.*
+import com.kairlec.koj.dao.flow
 import com.kairlec.koj.dao.tables.records.CompetitionRecord
 import com.kairlec.koj.dao.with
 import kotlinx.coroutines.flow.asFlow
@@ -23,16 +24,18 @@ class CompetitionRepository(
     suspend fun getCompetitions(
         listCondition: ListCondition
     ): PageData<CompetitionRecord> {
-        return dslAccess.with { create ->
-            val data = create.selectFrom(COMPETITION)
-                .list(COMPETITION, listCondition)
-                .asFlow()
-            val count = create.selectCount()
+        val count = dslAccess.with { create ->
+            create.selectCount()
                 .from(COMPETITION)
                 .listCount(COMPETITION, listCondition)
                 .awaitOrNull(0)
-            data pg count
         }
+        val data = dslAccess.flow { create ->
+            create.selectFrom(COMPETITION)
+                .list(COMPETITION, listCondition)
+                .asFlow()
+        }
+        return data pg count
     }
 
     @Transactional(rollbackFor = [Exception::class])
@@ -41,18 +44,20 @@ class CompetitionRepository(
         competitionId: Long,
         pwd: String?
     ) {
-        return dslAccess.with { create ->
-            val competition = create.selectFrom(COMPETITION)
+        val competition = dslAccess.with { create ->
+            create.selectFrom(COMPETITION)
                 .where(COMPETITION.ID.eq(competitionId))
                 .awaitFirstOrNull() ?: throw NoSuchContentException("cannot found competition:${competitionId}")
-            if (competition.pwd != null) {
-                if (pwd == null) {
-                    throw CompetitionPwdWrongException()
-                }
-                if (!hasher.check(pwd, competition.pwd)) {
-                    throw CompetitionPwdWrongException()
-                }
+        }
+        if (competition.pwd != null) {
+            if (pwd == null) {
+                throw CompetitionPwdWrongException()
             }
+            if (!hasher.check(pwd, competition.pwd)) {
+                throw CompetitionPwdWrongException()
+            }
+        }
+        return dslAccess.with { create ->
             create.insertInto(CONTESTANTS, CONTESTANTS.USER_ID, CONTESTANTS.COMPETITION_ID)
                 .values(userId, competitionId)
                 .onDuplicateKeyIgnore()

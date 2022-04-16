@@ -4,10 +4,8 @@ import com.kairlec.koj.dao.DSLAccess
 import com.kairlec.koj.dao.Hasher
 import com.kairlec.koj.dao.Tables.SUBMIT
 import com.kairlec.koj.dao.Tables.USER
-import com.kairlec.koj.dao.extended.ListCondition
-import com.kairlec.koj.dao.extended.awaitOrNull
-import com.kairlec.koj.dao.extended.list
-import com.kairlec.koj.dao.extended.value
+import com.kairlec.koj.dao.extended.*
+import com.kairlec.koj.dao.flow
 import com.kairlec.koj.dao.model.SubmitState
 import com.kairlec.koj.dao.model.UserStat
 import com.kairlec.koj.dao.tables.records.UserRecord
@@ -55,32 +53,35 @@ class UserRepository(
 
     @Transactional(rollbackFor = [Exception::class])
     suspend fun stat(username: String): UserStat? {
-        return dslAccess.with { create ->
-            val stat = create.select(USER.ID, USER.USERNAME, USER.CREATE_TIME)
+        val stat = dslAccess.with { create ->
+            create.select(USER.ID, USER.USERNAME, USER.CREATE_TIME)
                 .from(USER)
                 .where(USER.USERNAME.eq(username))
                 .and(USER.TYPE.eq(UserType.USER.value))
-                .awaitFirstOrNull() ?: return@with null
-            val userId = stat[USER.ID]
-            UserStat(
-                id = userId,
-                username = stat[USER.USERNAME],
-                createTime = stat[USER.CREATE_TIME],
-                submitted = create.selectCount()
+                .awaitFirstOrNull()
+        } ?: return null
+        val userId = stat[USER.ID]
+        return UserStat(
+            id = userId,
+            username = stat[USER.USERNAME],
+            createTime = stat[USER.CREATE_TIME],
+            submitted = dslAccess.with { create ->
+                create.selectCount()
                     .from(SUBMIT)
                     .where(SUBMIT.BELONG_USER_ID.eq(userId))
                     .and(SUBMIT.BELONG_COMPETITION_ID.isNull)
-                    .awaitOrNull(0),
-                ac = create.select(SUBMIT.PROBLEM_ID)
+                    .awaitOrNull(0)
+            },
+            ac = dslAccess.flow { create ->
+                create.select(SUBMIT.PROBLEM_ID)
                     .from(SUBMIT)
                     .where(SUBMIT.BELONG_USER_ID.eq(userId))
                     .and(SUBMIT.BELONG_COMPETITION_ID.isNull)
                     .and(SUBMIT.STATE.eq(SubmitState.ACCEPTED.value))
                     .asFlow()
                     .map { it.value1() }
-                    .toList()
-            )
-        }
+            }.toList()
+        )
     }
 
     @Transactional(rollbackFor = [Exception::class])
@@ -104,7 +105,7 @@ class UserRepository(
         return dslAccess.with { create ->
             create.deleteFrom(USER)
                 .where(USER.USERNAME.eq(username))
-                .awaitSingle() > 0
+                .awaitBool()
         }
     }
 
@@ -113,7 +114,7 @@ class UserRepository(
         return dslAccess.with { create ->
             create.deleteFrom(USER)
                 .where(USER.ID.eq(id))
-                .awaitSingle() > 0
+                .awaitBool()
         }
     }
 
