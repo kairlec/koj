@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitSingle
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
@@ -113,26 +113,30 @@ class ProblemRepository(
     suspend fun getProblem(
         id: Long
     ): Problem? {
-        val record = dslAccess.with { create ->
-            create.select(*PROBLEM.fields(), *PROBLEM_BELONG_COMPETITION.fields(), DSL.field("tr.tag_names"))
-                .from(PROBLEM)
-                .leftJoin(PROBLEM_BELONG_COMPETITION)
-                .on(PROBLEM.ID.eq(PROBLEM_BELONG_COMPETITION.PROBLEM_ID))
-                .innerJoin(
-                    create.select(
-                        TAG_BELONG_PROBLEM.PROBLEM_ID,
-                        DSL.groupConcat(PROBLEM_TAG.NAME).separator(",").`as`("tag_names")
+        val record = try {
+            dslAccess.with { create ->
+                create.select(*PROBLEM.fields(), *PROBLEM_BELONG_COMPETITION.fields(), DSL.field("tr.tag_names"))
+                    .from(PROBLEM)
+                    .leftJoin(PROBLEM_BELONG_COMPETITION)
+                    .on(PROBLEM.ID.eq(PROBLEM_BELONG_COMPETITION.PROBLEM_ID))
+                    .innerJoin(
+                        create.select(
+                            TAG_BELONG_PROBLEM.PROBLEM_ID.`as`("pi"),
+                            DSL.groupConcat(PROBLEM_TAG.NAME).separator(",").`as`("tag_names")
+                        )
+                            .from(PROBLEM_TAG)
+                            .join(TAG_BELONG_PROBLEM)
+                            .on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
+                            .asTable("tr")
                     )
-                        .from(PROBLEM_TAG)
-                        .join(TAG_BELONG_PROBLEM)
-                        .on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
-                        .asTable("tr")
-                )
-                .on(TAG_BELONG_PROBLEM.PROBLEM_ID.eq(PROBLEM.ID))
-                .where(PROBLEM.ID.eq(id))
-                .orderBy(PROBLEM_BELONG_COMPETITION.CREATE_TIME)
-                .awaitFirstOrNull()
-        } ?: return null
+                    .on(DSL.field("pi").eq(PROBLEM.ID))
+                    .where(PROBLEM.ID.eq(id))
+                    .orderBy(PROBLEM_BELONG_COMPETITION.CREATE_TIME)
+                    .awaitSingle()
+            }
+        } catch (e: NoSuchElementException) {
+            return null
+        }
         return dslAccess.with { create ->
             Problem(
                 id = record[PROBLEM.ID],
@@ -141,7 +145,16 @@ class ProblemRepository(
                 spj = record[PROBLEM.SPJ],
                 createTime = record[PROBLEM.CREATE_TIME],
                 updateTime = record[PROBLEM.UPDATE_TIME],
-                config = dslAccess.with {
+//            config = listOf(
+//                ProblemConfig(
+//                    languageId = "it[PROBLEM_CONFIG.LANGUAGE_ID]",
+//                    memoryLimit = 0,
+//                    timeLimit = 0,
+//                    createTime = LocalDateTime.now(),
+//                    updateTime = LocalDateTime.now()
+//                )
+//            ),
+                config = dslAccess.flow {
                     create.selectFrom(PROBLEM_CONFIG)
                         .where(PROBLEM_CONFIG.PROBLEM_ID.eq(id))
                         .asFlow().map {
@@ -152,10 +165,10 @@ class ProblemRepository(
                                 createTime = it[PROBLEM_CONFIG.CREATE_TIME],
                                 updateTime = it[PROBLEM_CONFIG.UPDATE_TIME]
                             )
-                        }.toList()
-                },
+                        }
+                }.toList(),
                 idx = record[PROBLEM_BELONG_COMPETITION.IDX],
-                tags = record["tag_names"].toString().split(",")
+                tags = record["tr.tag_names"].toString().split(",")
             )
         }
     }
