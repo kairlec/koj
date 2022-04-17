@@ -90,6 +90,10 @@ class ResponseWrapper(writers: List<HttpMessageWriter<*>>, resolver: RequestedCo
             }
             return writeBody(b, result.returnTypeSource, exchange)
         }
+        if (returnValue is Unit) {
+            exchange.response.statusCode = HttpStatus.NO_CONTENT
+            return super.handleResult(exchange, result)
+        }
         if (returnValue is String) {
             if (returnValue.isEmpty()) {
                 exchange.response.statusCode = HttpStatus.NO_CONTENT
