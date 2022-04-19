@@ -1,5 +1,6 @@
 package com.kairlec.koj.dao.repository
 
+import com.kairlec.koj.common.InternalApi
 import com.kairlec.koj.dao.DSLAccess
 import com.kairlec.koj.dao.Tables.CODE
 import com.kairlec.koj.dao.Tables.SUBMIT
@@ -75,6 +76,10 @@ class SubmitRepository(
         }
     }
 
+    /**
+     * 这个接口只能被由来自消息队列的状态机所更新
+     */
+    @InternalApi
     @Transactional(rollbackFor = [Exception::class])
     suspend fun updateSubmit(id: Long, state: SubmitState): Boolean {
         return dslAccess.with { create ->
@@ -103,15 +108,12 @@ class SubmitRepository(
         }
         val codeResult = dslAccess.with { create ->
             coroutineScope.async {
-                create.insertInto(SUBMIT)
+                create.insertInto(CODE)
                     .columns(
-                        SUBMIT.ID,
-                        SUBMIT.BELONG_USER_ID,
-                        SUBMIT.BELONG_COMPETITION_ID,
-                        SUBMIT.STATE,
-                        SUBMIT.LANGUAGE_ID
+                        CODE.ID,
+                        CODE.CODE_,
                     )
-                    .values(id, userId, competition, SubmitState.IN_QUEUE.value, languageId)
+                    .values(id, code)
                     .awaitBool()
             }
         }
