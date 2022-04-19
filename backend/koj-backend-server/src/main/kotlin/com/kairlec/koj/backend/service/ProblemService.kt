@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 interface ProblemService {
     suspend fun getProblems(tags: List<String>, listCondition: ListCondition): PageData<SimpleProblem>
     suspend fun getTags(listCondition: ListCondition): PageData<ProblemTagRecord>
-    fun getProblems(competitionId: Long): Flow<SimpleProblem>
+    suspend fun getProblems(userId: Long, competitionId: Long): Flow<SimpleProblem>
     suspend fun getProblem(id: Long): Problem?
 
     suspend fun newProblem(

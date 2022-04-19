@@ -39,6 +39,17 @@ class CompetitionRepository(
     }
 
     @Transactional(rollbackFor = [Exception::class])
+    suspend fun getCompetition(
+        competitionId: Long
+    ): CompetitionRecord? {
+        return dslAccess.with { create ->
+            create.selectFrom(COMPETITION)
+                .where(COMPETITION.ID.eq(competitionId))
+                .awaitFirstOrNull()
+        }
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun joinCompetition(
         userId: Long,
         competitionId: Long,

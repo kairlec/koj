@@ -37,6 +37,10 @@ enum class GlobalErrorCode(
     TOKEN_VERIFY_FAILED(20010, "token验证失败", HttpStatusCode.Companion.ClientError.Forbidden),
     TOKEN_EXPIRED(20011, "token已过期", HttpStatusCode.Companion.ClientError.Forbidden),
     TOKEN_INVALID(20012, "token无效", HttpStatusCode.Companion.ClientError.Forbidden),
+    PERMISSION_DENIED(20013, "权限不足", HttpStatusCode.Companion.ClientError.Forbidden),
+    COMPETITION_OVER(20014, "比赛已结束", HttpStatusCode.Companion.ClientError.BadRequest),
+    COMPETITION_FROZEN(20015, "比赛已冻结", HttpStatusCode.Companion.ClientError.BadRequest),
+    COMPETITION_NOT_STARTED_YET(20016, "比赛未开始", HttpStatusCode.Companion.ClientError.BadRequest),
 
     // 业务问题
     USERNAME_EXISTS(30000, "用户名已存在", HttpStatusCode.Companion.ClientError.Conflict),

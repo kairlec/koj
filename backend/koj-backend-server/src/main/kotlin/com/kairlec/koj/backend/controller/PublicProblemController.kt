@@ -24,13 +24,6 @@ class PublicProblemController(
         return problemService.getProblems(tags, currentListCondition()).re()
     }
 
-    @GetMapping("/competitions/{competitionId}/problems/-")
-    fun getProblems(
-        @PathVariable competitionId: Long
-    ): Flow<SimpleProblem> {
-        return problemService.getProblems(competitionId)
-    }
-
     @GetMapping("/tags/-")
     suspend fun getTags(): RE<Flow<ProblemTagRecord>> {
         return problemService.getTags(currentListCondition()).re()
