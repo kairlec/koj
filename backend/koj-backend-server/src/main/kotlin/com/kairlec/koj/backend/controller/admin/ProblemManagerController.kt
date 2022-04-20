@@ -34,7 +34,7 @@ class ProblemManagerController(
 
     @PutMapping("/tags")
     suspend fun addTag(
-        @RequestBody name: String
+        @ModelAttribute name: String
     ): Long {
         return problemService.newTag(name).sureEffect()
     }
@@ -42,7 +42,7 @@ class ProblemManagerController(
     @PatchMapping("/tags/{tagId}")
     suspend fun updateTag(
         @PathVariable tagId: Long,
-        @RequestBody name: String
+        @ModelAttribute name: String
     ): Boolean {
         return problemService.updateTag(tagId, name).sureEffect("update tag failed")
     }
@@ -60,6 +60,20 @@ class ProblemManagerController(
     ): Boolean {
         return problemService.updateProblem(problemId, updateModel.name, updateModel.content, updateModel.spj)
             .sureEffect("update problem failed")
+    }
+
+    data class ProblemModel(
+        val name: String,
+        val content: String,
+        val spj: Boolean,
+        val tags: List<Long>
+    )
+
+    @PutMapping("/problems")
+    suspend fun addProblem(
+        @RequestBody problem: ProblemModel
+    ): Long {
+        return problemService.newProblem(problem.name, problem.content, problem.spj, problem.tags).sureEffect()
     }
 
 }

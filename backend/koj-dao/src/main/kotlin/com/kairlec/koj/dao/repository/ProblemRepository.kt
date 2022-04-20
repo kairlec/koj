@@ -250,10 +250,17 @@ class ProblemRepository(
         name: String
     ): Long? {
         return dslAccess.with { create ->
-            create.insertInto(PROBLEM_TAG, PROBLEM_TAG.NAME)
+            val id = create.insertInto(PROBLEM_TAG, PROBLEM_TAG.NAME)
                 .values(name)
+                .onDuplicateKeyIgnore()
                 .returningResult(PROBLEM_TAG.ID)
                 .awaitOrNull()
+            // 自增的,如果返回0就是冲突,自增失败
+            if (id == 0L) {
+                null
+            } else {
+                id
+            }
         }
     }
 
@@ -276,6 +283,21 @@ class ProblemRepository(
         return dslAccess.with { create ->
             create.insertInto(TAG_BELONG_PROBLEM, TAG_BELONG_PROBLEM.PROBLEM_ID, TAG_BELONG_PROBLEM.TAG_ID)
                 .values(problemId, tagId)
+                .onDuplicateKeyIgnore()
+                .awaitBool()
+        }
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
+    suspend fun addProblemTags(
+        problemId: Long,
+        tagIds: List<Long>
+    ): Boolean {
+        return dslAccess.with { create ->
+            create.insertInto(TAG_BELONG_PROBLEM, TAG_BELONG_PROBLEM.PROBLEM_ID, TAG_BELONG_PROBLEM.TAG_ID)
+                .fold(tagIds) {
+                    values(problemId, it)
+                }
                 .onDuplicateKeyIgnore()
                 .awaitBool()
         }

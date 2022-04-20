@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
@@ -49,8 +50,13 @@ class ProblemServiceImpl(
         return problemRepository.getProblem(id)
     }
 
-    override suspend fun newProblem(name: String, content: String, spj: Boolean): Long? {
-        return problemRepository.newProblem(name, content, spj)
+    @Transactional(rollbackFor = [Exception::class])
+    override suspend fun newProblem(name: String, content: String, spj: Boolean, tags: List<Long>): Long? {
+        return problemRepository.newProblem(name, content, spj).also {
+            if(it != null) {
+                problemRepository.addProblemTags(it, tags)
+            }
+        }
     }
 
     override suspend fun newTag(name: String): Long? {
