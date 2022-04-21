@@ -20,6 +20,7 @@ import {onBeforeMount, onMounted} from "vue";
 import {ref} from 'vue'
 import LoginDialog from "./LoginDialog.vue";
 import RegisterDialog from "./RegisterDialog.vue";
+import api from "~/api";
 
 export default {
   name: "MenuBar",
@@ -32,12 +33,13 @@ export default {
     const username = ref('')
 
     onBeforeMount(() => {
-// todo 如果已经有cookie
-      //   api.loginUser("kairlec", "123456").then(res => {
-      //     console.log(res)
-      //   })
-      //   console.log(this)
+      api.self().then(user => {
+        console.log(user);
+        showLoginDialog.value = false
+        loginOrOutName.value = "退出"
+      });
     })
+
     onMounted(() => {
       console.log('Component is mounted!')
     })

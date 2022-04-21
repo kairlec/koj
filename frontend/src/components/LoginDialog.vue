@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import api from "../assets/js/api";
+import api from "../utils/api";
 import {defineComponent, reactive, ref} from 'vue'
 import type {FormInstance} from 'element-plus'
 
@@ -67,8 +67,8 @@ export default defineComponent({
 
 
     function login() {
-      api.loginUser(form.usernameOrEmail, form.password).then((res) => {
-        context.emit('loginSuccess', res)
+      api.loginUser(form.usernameOrEmail, form.password).then((user) => {
+        context.emit('loginSuccess', user)
       })
     }
 
@@ -102,5 +102,10 @@ export default defineComponent({
 <style scoped>
 .dialog-footer button:first-child {
   margin-right: 10px;
+}
+</style>
+<style>
+.el-dialog {
+  --el-dialog-width: 450px;
 }
 </style>
