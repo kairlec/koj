@@ -41,6 +41,8 @@ enum class GlobalErrorCode(
     COMPETITION_OVER(20014, "比赛已结束", HttpStatusCode.Companion.ClientError.BadRequest),
     COMPETITION_FROZEN(20015, "比赛已冻结", HttpStatusCode.Companion.ClientError.BadRequest),
     COMPETITION_NOT_STARTED_YET(20016, "比赛未开始", HttpStatusCode.Companion.ClientError.BadRequest),
+    MAIL_SEND_TIME_LIMIT(20017, "邮件发送太频繁", HttpStatusCode.Companion.ClientError.TooManyRequests),
+    VERIFY_CODE_ERROR(20018, "验证码错误", HttpStatusCode.Companion.ClientError.BadRequest),
 
     // 业务问题
     USERNAME_EXISTS(30000, "用户名已存在", HttpStatusCode.Companion.ClientError.Conflict),

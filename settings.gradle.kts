@@ -7,7 +7,7 @@ dependencyResolutionManagement {
                 strictly("[3.19, 3.20[")
                 prefer("3.19.4")
             }
-            version("kotlin", "1.6.20")
+            version("kotlin", "1.6.21")
             version("spring", "2.6.+")
             version("pulsar-starter") {
                 strictly("[1, 2[")
@@ -98,6 +98,7 @@ dependencyResolutionManagement {
             library("reactor.test", "io.projectreactor", "reactor-test").withoutVersion()
 
             library("spring-security-crypto", "org.springframework.security", "spring-security-crypto").withoutVersion()
+            library("spring-boot-starter-mail", "org.springframework.boot", "spring-boot-starter-mail").withoutVersion()
             library("spring-boot-starter-jooq", "org.springframework.boot", "spring-boot-starter-jooq").withoutVersion()
             library("spring-boot-starter-jdbc", "org.springframework.boot", "spring-boot-starter-jdbc").withoutVersion()
             library("spring-boot-starter-web", "org.springframework.boot", "spring-boot-starter-web").withoutVersion()
@@ -175,6 +176,7 @@ dependencyResolutionManagement {
             library("bouncyCastele", "org.bouncycastle", "bcprov-jdk15on").version("1.+")
             library("apache-commons-lang3", "org.apache.commons", "commons-lang3").version("3.+")
             library("apache-commons-codec", "commons-codec", "commons-codec").version("1.+")
+            library("mail", "com.sun.mail", "javax.mail").version("1.6.2")
 
             plugin("protobuf", "com.google.protobuf").versionRef("pb-plugin")
             plugin("kotlin-spring", "org.jetbrains.kotlin.plugin.spring").versionRef("kotlin")

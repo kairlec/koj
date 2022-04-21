@@ -8,6 +8,9 @@ import com.kairlec.koj.dao.tables.records.UserRecord
 import kotlinx.coroutines.flow.Flow
 
 interface UserService {
+    suspend fun resetPasswordRequest(username: String, email: String)
+    suspend fun resetPassword(username: String, email: String, newPwd: String, code: String): Boolean
+
     fun getUsers(type: UserType? = null, listCondition: ListCondition): Flow<UserRecord>
 
     @InternalApi

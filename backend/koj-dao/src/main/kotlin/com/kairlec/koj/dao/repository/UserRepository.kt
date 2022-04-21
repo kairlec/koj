@@ -160,7 +160,10 @@ class UserRepository(
             dslAccess.with { create ->
                 create.selectFrom(USER)
                     .let {
-                        if (username != null) {
+                        if (username != null && email != null) {
+                            it.where(USER.USERNAME.eq(username))
+                                .and(USER.EMAIL.eq(email))
+                        } else if (username != null) {
                             it.where(USER.USERNAME.eq(username))
                         } else {
                             it.where(USER.EMAIL.eq(email))

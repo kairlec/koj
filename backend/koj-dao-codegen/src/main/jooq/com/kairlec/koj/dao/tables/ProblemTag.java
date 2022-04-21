@@ -125,6 +125,11 @@ public class ProblemTag extends TableImpl<ProblemTagRecord> {
     }
 
     @Override
+    public List<UniqueKey<ProblemTagRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.KEY_PROBLEM_TAG_NAME_UQ);
+    }
+
+    @Override
     public ProblemTag as(String alias) {
         return new ProblemTag(DSL.name(alias), this);
     }
