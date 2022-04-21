@@ -34,7 +34,7 @@ class ProblemManagerController(
 
     @PutMapping("/tags")
     suspend fun addTag(
-        @RequestBody name: String
+        @ModelAttribute name: String
     ): Long {
         return problemService.newTag(name).sureEffect()
     }
@@ -42,7 +42,7 @@ class ProblemManagerController(
     @PatchMapping("/tags/{tagId}")
     suspend fun updateTag(
         @PathVariable tagId: Long,
-        name: String
+        @ModelAttribute name: String
     ): Boolean {
         return problemService.updateTag(tagId, name).sureEffect("update tag failed")
     }
@@ -65,7 +65,8 @@ class ProblemManagerController(
     data class ProblemModel(
         val name: String,
         val content: String,
-        val spj: Boolean
+        val spj: Boolean,
+        val tags: List<Long>
     )
 
     @PutMapping("/problems")
@@ -75,7 +76,7 @@ class ProblemManagerController(
         if (problem.spj) {
             throw IllegalStateException("spj not support yet")
         }
-        return problemService.newProblem(problem.name, problem.content, problem.spj).sureEffect()
+        return problemService.newProblem(problem.name, problem.content, problem.spj, problem.tags).sureEffect()
     }
 
 }

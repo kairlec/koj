@@ -17,6 +17,7 @@ interface ProblemService {
         name: String,
         content: String,
         spj: Boolean,
+        tags: List<Long>
     ): Long?
 
     suspend fun newTag(name: String): Long?

@@ -100,6 +100,7 @@ CREATE TABLE IF NOT EXISTS koj.problem_tag
     create_time DATETIME DEFAULT NOW()                 NOT NULL COMMENT '创建时间',
     update_time DATETIME DEFAULT NOW() ON UPDATE NOW() NOT NULL COMMENT '更新时间',
     PRIMARY KEY (id),
+    CONSTRAINT name_uq UNIQUE (name),
     INDEX name_idx (name)
 ) COMMENT ='题目标签表';
 
