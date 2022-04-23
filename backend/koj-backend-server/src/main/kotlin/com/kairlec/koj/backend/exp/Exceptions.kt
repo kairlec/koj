@@ -13,15 +13,6 @@ class DataNotModifiedException(override val message: String, override val cause:
 class PermissionDeniedException(override val message: String, override val cause: Throwable? = null) :
     GlobalException(GlobalErrorCode.PERMISSION_DENIED, message, cause = cause)
 
-class CompetitionNotStartedYetException(override val message: String, override val cause: Throwable? = null) :
-    GlobalException(GlobalErrorCode.COMPETITION_NOT_STARTED_YET, message, cause = cause)
-
-class CompetitionFrozenException(override val message: String, override val cause: Throwable? = null) :
-    GlobalException(GlobalErrorCode.COMPETITION_FROZEN, message, cause = cause)
-
-class CompetitionOverException(override val message: String, override val cause: Throwable? = null) :
-    GlobalException(GlobalErrorCode.COMPETITION_OVER, message, cause = cause)
-
 class MailSendTimeLimitException(val leftTime: Duration) : GlobalException(GlobalErrorCode.MAIL_SEND_TIME_LIMIT)
 
 class ResetPasswordCodeWrongException : GlobalException(GlobalErrorCode.VERIFY_CODE_ERROR)

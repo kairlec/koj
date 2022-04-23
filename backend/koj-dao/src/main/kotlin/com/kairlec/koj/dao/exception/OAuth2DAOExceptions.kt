@@ -58,3 +58,12 @@ class CompetitionPwdWrongException(
     override val message: String = "competition password is wrong",
     override val cause: Throwable? = null
 ) : KOJDAOException(GlobalErrorCode.COMPETITION_PWD_ERROR, message, cause)
+
+class CompetitionNotStartedYetException(override val message: String, override val cause: Throwable? = null) :
+    KOJDAOException(GlobalErrorCode.COMPETITION_NOT_STARTED_YET, message, cause = cause)
+
+class CompetitionFrozenException(override val message: String, override val cause: Throwable? = null) :
+    KOJDAOException(GlobalErrorCode.COMPETITION_FROZEN, message, cause = cause)
+
+class CompetitionOverException(override val message: String, override val cause: Throwable? = null) :
+    KOJDAOException(GlobalErrorCode.COMPETITION_OVER, message, cause = cause)

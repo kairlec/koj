@@ -145,15 +145,6 @@ class ProblemRepository(
                 spj = record[PROBLEM.SPJ],
                 createTime = record[PROBLEM.CREATE_TIME],
                 updateTime = record[PROBLEM.UPDATE_TIME],
-//            config = listOf(
-//                ProblemConfig(
-//                    languageId = "it[PROBLEM_CONFIG.LANGUAGE_ID]",
-//                    memoryLimit = 0,
-//                    timeLimit = 0,
-//                    createTime = LocalDateTime.now(),
-//                    updateTime = LocalDateTime.now()
-//                )
-//            ),
                 config = dslAccess.flow {
                     create.selectFrom(PROBLEM_CONFIG)
                         .where(PROBLEM_CONFIG.PROBLEM_ID.eq(id))
@@ -315,5 +306,41 @@ class ProblemRepository(
                 .awaitBool()
         }
     }
+
+    @Transactional(rollbackFor = [Exception::class])
+    suspend fun addProblemConfig(
+        problemId: Long,
+        languageId: String,
+        time: Int,
+        memory: Int,
+    ) :Boolean{
+        return dslAccess.with { create ->
+            create.insertInto(
+                PROBLEM_CONFIG,
+                PROBLEM_CONFIG.PROBLEM_ID,
+                PROBLEM_CONFIG.TIME,
+                PROBLEM_CONFIG.MEMORY,
+                PROBLEM_CONFIG.LANGUAGE_ID
+            )
+                .values(problemId, time, memory, languageId)
+                .awaitBool()
+        }
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
+    suspend fun removeProblemConfig(
+        problemId: Long,
+        languageId: String,
+    ): Boolean {
+        return dslAccess.with { create ->
+            create.deleteFrom(
+                PROBLEM_CONFIG
+            )
+                .where(PROBLEM_CONFIG.PROBLEM_ID.eq(problemId))
+                .and(PROBLEM_CONFIG.LANGUAGE_ID.eq(languageId))
+                .awaitBool()
+        }
+    }
+
 
 }

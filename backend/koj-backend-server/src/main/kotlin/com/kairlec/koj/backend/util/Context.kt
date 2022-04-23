@@ -7,6 +7,7 @@ import com.kairlec.koj.backend.exp.DataNotModifiedException
 import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.repository.PageData
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.http.server.reactive.ServerHttpResponse
@@ -53,6 +54,12 @@ suspend inline fun currentListCondition(): ListCondition {
 
 fun <T> PageData<T>.re(): RE<Flow<T>> {
     return data.ok {
+        xCount(total)
+    }
+}
+
+fun <T, R> PageData<T>.re(transform: suspend (value: T) -> R): RE<Flow<R>> {
+    return data.map(transform).ok {
         xCount(total)
     }
 }
