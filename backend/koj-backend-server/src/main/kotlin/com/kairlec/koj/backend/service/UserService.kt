@@ -2,6 +2,7 @@ package com.kairlec.koj.backend.service
 
 import com.kairlec.koj.common.InternalApi
 import com.kairlec.koj.dao.extended.ListCondition
+import com.kairlec.koj.dao.model.RankInfo
 import com.kairlec.koj.dao.model.UserStat
 import com.kairlec.koj.dao.repository.UserType
 import com.kairlec.koj.dao.tables.records.UserRecord
@@ -29,4 +30,6 @@ interface UserService {
     suspend fun stat(username: String): UserStat?
 
     suspend fun exists(usernameOrEmail: String): Boolean
+
+    fun rank(max: Int): Flow<RankInfo>
 }

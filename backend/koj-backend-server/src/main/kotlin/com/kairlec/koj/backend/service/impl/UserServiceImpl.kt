@@ -8,6 +8,7 @@ import com.kairlec.koj.common.InternalApi
 import com.kairlec.koj.common.util.digestCharRange
 import com.kairlec.koj.common.util.randomString
 import com.kairlec.koj.dao.extended.ListCondition
+import com.kairlec.koj.dao.model.RankInfo
 import com.kairlec.koj.dao.model.UserStat
 import com.kairlec.koj.dao.repository.UserRepository
 import com.kairlec.koj.dao.repository.UserType
@@ -98,6 +99,10 @@ class UserServiceImpl(
 
     override suspend fun exists(usernameOrEmail: String): Boolean {
         return userRepository.exists(usernameOrEmail)
+    }
+
+    override fun rank(max: Int): Flow<RankInfo> {
+        return userRepository.rank(max)
     }
 
 //    override suspend fun userService() {

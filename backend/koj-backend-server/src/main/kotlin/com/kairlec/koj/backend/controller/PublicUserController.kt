@@ -5,8 +5,10 @@ import com.kairlec.koj.backend.service.UserService
 import com.kairlec.koj.backend.util.*
 import com.kairlec.koj.common.exception.UserHasBeBlockedException
 import com.kairlec.koj.common.exception.UsernameOrPasswordWrongException
+import com.kairlec.koj.dao.model.RankInfo
 import com.kairlec.koj.dao.model.UserStat
 import com.kairlec.koj.dao.repository.UserType
+import kotlinx.coroutines.flow.Flow
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 import javax.validation.constraints.Email
@@ -98,5 +100,10 @@ class PublicUserController(
             resetPasswordModel.newPwd,
             resetPasswordModel.code
         ).voidOk()
+    }
+
+    @GetMapping("/users/rank")
+    fun getRank(@RequestParam(defaultValue = "20") max: Int): Flow<RankInfo> {
+        return userService.rank(max)
     }
 }

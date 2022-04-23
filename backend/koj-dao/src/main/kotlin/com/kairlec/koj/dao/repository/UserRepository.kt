@@ -6,17 +6,21 @@ import com.kairlec.koj.dao.Tables.SUBMIT
 import com.kairlec.koj.dao.Tables.USER
 import com.kairlec.koj.dao.extended.*
 import com.kairlec.koj.dao.flow
+import com.kairlec.koj.dao.model.RankInfo
 import com.kairlec.koj.dao.model.SubmitState
 import com.kairlec.koj.dao.model.UserStat
+import com.kairlec.koj.dao.tables.User
 import com.kairlec.koj.dao.tables.records.UserRecord
 import com.kairlec.koj.dao.with
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.withIndex
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.reactor.mono
+import org.jooq.impl.DSL
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Mono
@@ -205,6 +209,26 @@ class UserRepository(
             (next as org.jooq.UpdateSetMoreStep<UserRecord>)
                 .where(USER.ID.eq(id))
                 .awaitSingle() > 0
+        }
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
+    fun rank(max: Int): Flow<RankInfo> {
+        return dslAccess.flow { create ->
+            create.select(User.USER.ID, User.USER.USERNAME, DSL.countDistinct(SUBMIT.PROBLEM_ID).`as`("acc"))
+                .from(User.USER)
+                .leftJoin(SUBMIT)
+                .on(SUBMIT.BELONG_USER_ID.eq(User.USER.ID))
+                .where(SUBMIT.BELONG_COMPETITION_ID.isNull)
+                .and(SUBMIT.STATE.eq(SubmitState.ACCEPTED.value))
+                .groupBy(User.USER.ID)
+                .orderBy(DSL.field("acc"))
+                .limit(max)
+                .asFlow()
+                .withIndex()
+                .map { (index, record) ->
+                    RankInfo(record[User.USER.ID], record[User.USER.USERNAME], index + 1, record.get("acc", Int::class.java))
+                }
         }
     }
 }

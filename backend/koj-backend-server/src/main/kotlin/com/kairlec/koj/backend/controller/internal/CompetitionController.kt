@@ -13,7 +13,7 @@ class CompetitionController(
     suspend fun joinCompetition(
         @PathVariable competitionId: Long,
         @RequestAttribute(userIdAttributes) userId: Long,
-        @ModelAttribute password: String?
+        password: String?
     ) {
         return competitionService.joinCompetition(userId, competitionId, password)
     }

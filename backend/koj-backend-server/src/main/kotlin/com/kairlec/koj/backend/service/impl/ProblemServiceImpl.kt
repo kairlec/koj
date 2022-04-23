@@ -1,9 +1,9 @@
 package com.kairlec.koj.backend.service.impl
 
-import com.kairlec.koj.backend.exp.CompetitionNotStartedYetException
 import com.kairlec.koj.backend.exp.PermissionDeniedException
 import com.kairlec.koj.backend.service.ProblemService
 import com.kairlec.koj.backend.util.sureFound
+import com.kairlec.koj.dao.exception.CompetitionNotStartedYetException
 import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.model.Problem
 import com.kairlec.koj.dao.model.SimpleProblem
