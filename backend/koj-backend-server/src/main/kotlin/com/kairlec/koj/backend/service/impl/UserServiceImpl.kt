@@ -38,13 +38,13 @@ class UserServiceImpl(
         return code
     }
 
-    suspend fun resetPasswordRequest(username: String, email: String) {
+    override suspend fun resetPasswordRequest(username: String, email: String) {
         userRepository.get(username = username, email = email) ?: return
         val code = setResetPasswordCode(email)
         mailService.sendMail(email, "[KOJ]重置密码", "你的验证码是：$code , 有效期为10分钟", ResetPasswordMail)
     }
 
-    suspend fun resetPassword(username: String, email: String, newPwd: String, code: String): Boolean {
+    override suspend fun resetPassword(username: String, email: String, newPwd: String, code: String): Boolean {
         val user = userRepository.get(username = username, email = email) ?: return false
         if (getResetPasswordCode(email) != code) {
             throw ResetPasswordCodeWrongException()

@@ -5,6 +5,7 @@ import com.kairlec.koj.backend.service.MailService
 import com.kairlec.koj.backend.service.MailType
 import com.kairlec.koj.backend.service.TimeLimitMail
 import kotlinx.coroutines.reactor.awaitSingle
+import org.springframework.boot.autoconfigure.mail.MailProperties
 import org.springframework.data.redis.core.ReactiveRedisOperations
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
@@ -15,6 +16,7 @@ import kotlin.time.toKotlinDuration
 @Service
 class MailServiceImpl(
     private val javaMailSender: JavaMailSender,
+    private val properties: MailProperties,
     private val redisOperations: ReactiveRedisOperations<String, String>,
 ) : MailService {
     private suspend fun send(address: String, subject: String, body: String) {
@@ -23,6 +25,7 @@ class MailServiceImpl(
             helper.setTo(address)
             helper.setSubject(subject)
             helper.setText(body)
+            helper.setFrom(properties.username)
         }
         javaMailSender.send(mail)
     }

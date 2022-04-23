@@ -9,6 +9,7 @@ import com.kairlec.koj.dao.model.UserStat
 import com.kairlec.koj.dao.repository.UserType
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
+import javax.validation.constraints.Email
 
 @RestController
 @RequestMapping("/public")
@@ -31,7 +32,7 @@ class PublicUserController(
 
     @PostMapping("/users")
     suspend fun login(
-        @ModelAttribute model: LoginModel
+        model: LoginModel
     ): RE<UserVO> {
         val user = userService.matchUser(model.usernameOrEmail, model.password)?.let {
             if (it.blocked) {
@@ -52,7 +53,7 @@ class PublicUserController(
 
     @PutMapping("/users")
     suspend fun register(
-        @ModelAttribute model: RegisterModel
+        model: RegisterModel
     ): Long {
         return userService.addUser(model.username, model.password, model.email, UserType.USER)
     }
@@ -69,5 +70,33 @@ class PublicUserController(
         } else {
             voidOk()
         }
+    }
+
+    data class ForgePasswordModel(
+        val username: String,
+        @Email
+        val email: String
+    )
+
+    @PostMapping("/users/pwd:forget")
+    suspend fun forgetPassword(forgePasswordModel: ForgePasswordModel): REV {
+        return userService.resetPasswordRequest(forgePasswordModel.username, forgePasswordModel.email).voidOk()
+    }
+
+    data class ResetPasswordModel(
+        val username: String,
+        val email: String,
+        val newPwd: String,
+        val code: String
+    )
+
+    @PostMapping("/users/pwd:reset")
+    suspend fun resetPassword(resetPasswordModel: ResetPasswordModel): REV {
+        return userService.resetPassword(
+            resetPasswordModel.username,
+            resetPasswordModel.email,
+            resetPasswordModel.newPwd,
+            resetPasswordModel.code
+        ).voidOk()
     }
 }
