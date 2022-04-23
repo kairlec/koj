@@ -53,6 +53,16 @@ CREATE TABLE IF NOT EXISTS koj.problem
     INDEX name_idx (name)
 ) COMMENT ='题目表';
 
+CREATE TABLE IF NOT EXISTS koj.problem_run
+(
+    id          BIGINT                 NOT NULL COMMENT '题目id',
+    stdin       TEXT                   NOT NULL COMMENT '输入',
+    ansout      TEXT                   NOT NULL COMMENT '答案输出(用于)',
+    create_time DATETIME DEFAULT NOW() NOT NULL COMMENT '创建时间',
+    update_time DATETIME DEFAULT NOW() NOT NULL COMMENT '更新时间',
+    PRIMARY KEY (id)
+) COMMENT ='题目运行内容表(非spj)';
+
 CREATE TABLE IF NOT EXISTS koj.submit
 (
     id                    BIGINT                                 NOT NULL COMMENT '任务id',

@@ -10,6 +10,7 @@ import com.kairlec.koj.dao.tables.Contestants;
 import com.kairlec.koj.dao.tables.Problem;
 import com.kairlec.koj.dao.tables.ProblemBelongCompetition;
 import com.kairlec.koj.dao.tables.ProblemConfig;
+import com.kairlec.koj.dao.tables.ProblemRun;
 import com.kairlec.koj.dao.tables.ProblemTag;
 import com.kairlec.koj.dao.tables.Submit;
 import com.kairlec.koj.dao.tables.TagBelongProblem;
@@ -52,6 +53,11 @@ public class Tables {
      * 题目语言配置表
      */
     public static final ProblemConfig PROBLEM_CONFIG = ProblemConfig.PROBLEM_CONFIG;
+
+    /**
+     * 题目运行内容表(非spj)
+     */
+    public static final ProblemRun PROBLEM_RUN = ProblemRun.PROBLEM_RUN;
 
     /**
      * 题目标签表
