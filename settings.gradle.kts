@@ -99,6 +99,7 @@ dependencyResolutionManagement {
 
             library("spring-security-crypto", "org.springframework.security", "spring-security-crypto").withoutVersion()
             library("spring-boot-starter-mail", "org.springframework.boot", "spring-boot-starter-mail").withoutVersion()
+            library("spring-boot-starter-processor", "org.springframework.boot", "spring-boot-configuration-processor").withoutVersion()
             library("spring-boot-starter-jooq", "org.springframework.boot", "spring-boot-starter-jooq").withoutVersion()
             library("spring-boot-starter-jdbc", "org.springframework.boot", "spring-boot-starter-jdbc").withoutVersion()
             library("spring-boot-starter-web", "org.springframework.boot", "spring-boot-starter-web").withoutVersion()

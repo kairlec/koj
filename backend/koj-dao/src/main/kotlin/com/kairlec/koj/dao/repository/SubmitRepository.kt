@@ -2,20 +2,21 @@ package com.kairlec.koj.dao.repository
 
 import com.kairlec.koj.common.InternalApi
 import com.kairlec.koj.dao.DSLAccess
-import com.kairlec.koj.dao.Tables.CODE
-import com.kairlec.koj.dao.Tables.SUBMIT
+import com.kairlec.koj.dao.Tables.*
 import com.kairlec.koj.dao.exception.CreateCodeRecordException
 import com.kairlec.koj.dao.exception.CreateSubmitException
 import com.kairlec.koj.dao.extended.*
 import com.kairlec.koj.dao.flow
+import com.kairlec.koj.dao.model.SimpleSubmit
 import com.kairlec.koj.dao.model.SubmitDetail
 import com.kairlec.koj.dao.model.SubmitState
-import com.kairlec.koj.dao.tables.records.SubmitRecord
 import com.kairlec.koj.dao.with
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Repository
@@ -29,23 +30,63 @@ class SubmitRepository(
 
     @Transactional(rollbackFor = [Exception::class])
     suspend fun getSubmitRank(
-        competition: Long? = null,
         listCondition: ListCondition
-    ): PageData<SubmitRecord> {
+    ): PageData<SimpleSubmit> {
         val count = dslAccess.with { create ->
             create.selectCount()
                 .from(SUBMIT)
-                .where(SUBMIT.BELONG_COMPETITION_ID.eq(competition))
                 .listCount(SUBMIT, listCondition)
                 .awaitOrNull(0)
         }
         val data = dslAccess.flow { create ->
-            create.selectFrom(SUBMIT)
-                .where(SUBMIT.BELONG_COMPETITION_ID.eq(competition))
+            create.select()
+                .from(SUBMIT)
+                .innerJoin(USER)
+                .on(USER.ID.eq(SUBMIT.BELONG_USER_ID))
                 .list(SUBMIT, listCondition)
                 .asFlow()
+                .map { submit ->
+                    SimpleSubmit(
+                        id = submit[SUBMIT.ID],
+                        state = SubmitState.parse(submit[SUBMIT.STATE]),
+                        castMemory = submit[SUBMIT.CAST_MEMORY],
+                        castTime = submit[SUBMIT.CAST_TIME],
+                        languageId = submit[SUBMIT.LANGUAGE_ID],
+                        belongUserId = submit[SUBMIT.BELONG_USER_ID],
+                        username = submit[USER.USERNAME],
+                        createTime = submit[SUBMIT.CREATE_TIME],
+                        updateTime = submit[SUBMIT.UPDATE_TIME]
+                    )
+                }
         }
         return data pg count
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
+    fun getSubmitRank(
+        competition: Long,
+    ): Flow<SimpleSubmit> {
+        return dslAccess.flow { create ->
+            create.select()
+                .from(SUBMIT)
+                .innerJoin(USER)
+                .on(USER.ID.eq(SUBMIT.BELONG_USER_ID))
+                .where(SUBMIT.BELONG_COMPETITION_ID.eq(competition))
+                .asFlow()
+                .map { submit ->
+                    SimpleSubmit(
+                        id = submit[SUBMIT.ID],
+                        state = SubmitState.parse(submit[SUBMIT.STATE]),
+                        castMemory = submit[SUBMIT.CAST_MEMORY],
+                        castTime = submit[SUBMIT.CAST_TIME],
+                        languageId = submit[SUBMIT.LANGUAGE_ID],
+                        belongUserId = submit[SUBMIT.BELONG_USER_ID],
+                        username = submit[USER.USERNAME],
+                        createTime = submit[SUBMIT.CREATE_TIME],
+                        updateTime = submit[SUBMIT.UPDATE_TIME]
+                    )
+                }
+        }
     }
 
     @Transactional(rollbackFor = [Exception::class])
@@ -56,8 +97,10 @@ class SubmitRepository(
         return dslAccess.with { create ->
             val submit = create.select()
                 .from(SUBMIT)
-                .join(CODE)
+                .innerJoin(CODE)
                 .on(SUBMIT.ID.eq(CODE.ID))
+                .innerJoin(USER)
+                .on(USER.ID.eq(SUBMIT.BELONG_USER_ID))
                 .where(SUBMIT.ID.eq(id))
                 .and(SUBMIT.BELONG_USER_ID.eq(userId))
                 .awaitFirstOrNull() ?: return@with null
@@ -67,8 +110,8 @@ class SubmitRepository(
                 castMemory = submit[SUBMIT.CAST_MEMORY],
                 castTime = submit[SUBMIT.CAST_TIME],
                 languageId = submit[SUBMIT.LANGUAGE_ID],
-                belongCompetitionId = submit[SUBMIT.BELONG_COMPETITION_ID],
                 belongUserId = submit[SUBMIT.BELONG_USER_ID],
+                username = submit[USER.USERNAME],
                 createTime = submit[SUBMIT.CREATE_TIME],
                 code = submit[CODE.CODE_],
                 updateTime = submit[SUBMIT.UPDATE_TIME]
@@ -81,9 +124,11 @@ class SubmitRepository(
      */
     @InternalApi
     @Transactional(rollbackFor = [Exception::class])
-    suspend fun updateSubmit(id: Long, state: SubmitState): Boolean {
+    suspend fun updateSubmit(id: Long, state: SubmitState, castMemory: Int? = null, castTime: Int? = null): Boolean {
         return dslAccess.with { create ->
             create.update(SUBMIT)
+                .setIfNotNull(SUBMIT.CAST_MEMORY, castMemory)
+                .setIfNotNull(SUBMIT.CAST_TIME, castTime)
                 .set(SUBMIT.STATE, state.value)
                 .where(SUBMIT.STATE.le(state.lessThan))
                 .awaitBool()
@@ -91,7 +136,14 @@ class SubmitRepository(
     }
 
     @Transactional(rollbackFor = [Exception::class])
-    suspend fun createSubmit(id: Long, userId: Long, competition: Long?, languageId: String, code: String) {
+    suspend fun createSubmit(
+        id: Long,
+        userId: Long,
+        competition: Long?,
+        languageId: String,
+        problemId: Long,
+        code: String
+    ) {
         val submitResult = dslAccess.with { create ->
             coroutineScope.async {
                 create.insertInto(SUBMIT)
@@ -100,9 +152,10 @@ class SubmitRepository(
                         SUBMIT.BELONG_USER_ID,
                         SUBMIT.BELONG_COMPETITION_ID,
                         SUBMIT.STATE,
-                        SUBMIT.LANGUAGE_ID
+                        SUBMIT.LANGUAGE_ID,
+                        SUBMIT.PROBLEM_ID
                     )
-                    .values(id, userId, competition, SubmitState.IN_QUEUE.value, languageId)
+                    .values(id, userId, competition, SubmitState.IN_QUEUE.value, languageId, problemId)
                     .awaitBool()
             }
         }

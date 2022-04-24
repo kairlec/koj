@@ -12,11 +12,23 @@ data class SubmitDetail(
     val castMemory: Int?,
     val castTime: Int?,
     val languageId: String,
-    val belongCompetitionId: Long,
     val belongUserId: Long,
+    val username: String,
     val createTime: LocalDateTime,
     val updateTime: LocalDateTime,
     val code: String,
+)
+
+data class SimpleSubmit(
+    val id: Long,
+    val state: SubmitState,
+    val castMemory: Int?,
+    val castTime: Int?,
+    val languageId: String,
+    val belongUserId: Long,
+    val username: String,
+    val createTime: LocalDateTime,
+    val updateTime: LocalDateTime,
 )
 
 sealed interface ValueAble {

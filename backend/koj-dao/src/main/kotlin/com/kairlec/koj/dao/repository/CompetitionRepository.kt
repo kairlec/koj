@@ -1,7 +1,6 @@
 package com.kairlec.koj.dao.repository
 
 import com.kairlec.koj.dao.DSLAccess
-import com.kairlec.koj.dao.Hasher
 import com.kairlec.koj.dao.Tables.COMPETITION
 import com.kairlec.koj.dao.Tables.CONTESTANTS
 import com.kairlec.koj.dao.exception.CompetitionOverException
@@ -20,7 +19,6 @@ import java.time.LocalDateTime
 @Repository
 class CompetitionRepository(
     private val dslAccess: DSLAccess,
-    private val hasher: Hasher,
 ) {
     @Transactional(rollbackFor = [Exception::class])
     suspend fun getCompetitions(
