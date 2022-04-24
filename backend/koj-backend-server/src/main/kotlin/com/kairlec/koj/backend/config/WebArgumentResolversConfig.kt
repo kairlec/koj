@@ -1,5 +1,6 @@
 package com.kairlec.koj.backend.config
 
+import com.kairlec.koj.backend.config.adapter.RequestParamMethodArgumentResolverAdapter
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Configuration
@@ -8,7 +9,6 @@ import org.springframework.core.ReactiveAdapterRegistry
 import org.springframework.util.MultiValueMap
 import org.springframework.web.reactive.config.WebFluxConfigurer
 import org.springframework.web.reactive.result.method.annotation.ArgumentResolverConfigurer
-import org.springframework.web.reactive.result.method.annotation.RequestParamMethodArgumentResolver
 import org.springframework.web.server.ServerWebExchange
 
 
@@ -30,7 +30,7 @@ class WebArgumentResolversConfig(
         factory: ConfigurableBeanFactory,
         registry: ReactiveAdapterRegistry,
         useDefaultResolution: Boolean
-    ) : RequestParamMethodArgumentResolver(factory, registry, useDefaultResolution) {
+    ) : RequestParamMethodArgumentResolverAdapter(factory, registry, useDefaultResolution) {
 
         @Suppress("UNCHECKED_CAST")
         override fun resolveNamedValue(name: String, parameter: MethodParameter, exchange: ServerWebExchange): Any? {
