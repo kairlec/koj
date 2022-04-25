@@ -44,7 +44,7 @@ class LanguageIdSupporter(
 
     private val listOperations = redisOperations.opsForList()
 
-    private val _supportLanguageChanges = MutableSharedFlow<Flow<String>>(3)
+    private val _supportLanguageChanges = MutableSharedFlow<List<String>>(3)
     val supportLanguageChanges = _supportLanguageChanges.asSharedFlow()
 
     @Scheduled(fixedDelay = 10_000)
@@ -59,12 +59,12 @@ class LanguageIdSupporter(
                     supportLanguages.map { languageId ->
                         async { listOperations.leftPush(LANGUAGE_IDS_KEY, languageId).awaitSingle() }
                     }.toList().awaitAll()
-                    _supportLanguageChanges.emit(supportLanguages)
+                    _supportLanguageChanges.emit(supportLanguages.toList())
                 }
             } else {
                 log.debug { "get lock failed, execute pull" }
                 coroutineScope.launch {
-                    _supportLanguageChanges.emit(listOperations.rangeAsFlow(LANGUAGE_IDS_KEY, 0, -1))
+                    _supportLanguageChanges.emit(listOperations.rangeAsFlow(LANGUAGE_IDS_KEY, 0, -1).toList())
                 }
             }
             mono { }
