@@ -1,10 +1,10 @@
 package com.kairlec.koj.backend.config
 
 import com.kairlec.koj.backend.component.LanguageIdSupporter
+import com.kairlec.koj.backend.service.SubmitService
 import com.kairlec.koj.common.*
-import com.kairlec.koj.model.Task
-import com.kairlec.koj.model.TaskResult
-import com.kairlec.koj.model.TaskStatus
+import com.kairlec.koj.dao.model.SubmitState
+import com.kairlec.koj.model.*
 import io.github.majusko.pulsar.producer.ProducerCollector
 import io.github.majusko.pulsar.producer.ProducerFactory
 import io.github.majusko.pulsar.producer.PulsarTemplate
@@ -22,7 +22,9 @@ import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
 import org.apache.pulsar.client.api.PulsarClientException
 import org.apache.pulsar.client.api.SubscriptionType
+import org.springframework.beans.factory.getBean
 import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.event.EventListener
@@ -57,9 +59,10 @@ class SandboxConfig {
     @Bean
     fun sandboxMQ(
         fluxConsumerFactory: FluxConsumerFactory,
-        producer: PulsarTemplate<ByteArray>
+        producer: PulsarTemplate<ByteArray>,
+        applicationContext: ApplicationContext
     ): SandboxMQ {
-        return SandboxMQ(fluxConsumerFactory, producer)
+        return SandboxMQ(fluxConsumerFactory, producer, applicationContext)
     }
 
     @Bean
@@ -82,7 +85,9 @@ class SandboxConfig {
 
 class SandboxMQ(
     fluxConsumerFactory: FluxConsumerFactory,
-    private val producer: PulsarTemplate<ByteArray>
+    private val producer: PulsarTemplate<ByteArray>,
+    private val applicationContext: ApplicationContext,
+//    private val jud
 ) {
     companion object {
         private val log = KotlinLogging.logger { }
@@ -139,14 +144,44 @@ class SandboxMQ(
         }
     }
 
+    private val submitService by lazy {
+        applicationContext.getBean<SubmitService>()
+    }
+
+    @OptIn(InternalApi::class)
     private suspend fun taskStatus(data: ByteArray) {
         val status = TaskStatus.parseFrom(data)
         log.info { "task status(${status.status}):${status}" }
+        submitService.updateSubmit(status.id, status.status.asSubmitState(), null, null)
     }
 
+    @OptIn(InternalApi::class)
     private suspend fun taskResult(data: ByteArray) {
         val result = TaskResult.parseFrom(data)
         log.info { "task result(${result.type}):${result}" }
+        submitService.updateSubmit(result.id, result.type.asSubmitState(), result.memory, result.time)
+    }
+
+    private fun TaskIntermediateStatusEnum.asSubmitState(): SubmitState {
+        return when (this) {
+            TaskIntermediateStatusEnum.COMPILING -> SubmitState.IN_COMPILING
+            TaskIntermediateStatusEnum.RUNNING -> SubmitState.IN_RUNNING
+            TaskIntermediateStatusEnum.UNRECOGNIZED -> SubmitState.UNKNOWN
+        }
+    }
+
+    private fun TaskResultType.asSubmitState(): SubmitState {
+        return when (this) {
+            TaskResultType.NO_ERROR -> SubmitState.IN_JUDGING
+            TaskResultType.CPU_TIME_LIMIT_EXCEEDED,
+            TaskResultType.REAL_TIME_LIMIT_EXCEEDED -> SubmitState.TIME_LIMIT_EXCEEDED
+            TaskResultType.MEMORY_LIMIT_EXCEEDED -> SubmitState.MEMORY_LIMIT_EXCEEDED
+            TaskResultType.RUNTIME_ERROR -> SubmitState.RUNTIME_ERROR
+            TaskResultType.SYSTEM_ERROR -> SubmitState.SYSTEM_ERROR
+            TaskResultType.OUTPUT_LIMIT_EXCEEDED -> SubmitState.OUTPUT_LIMIT_EXCEEDED
+            TaskResultType.COMPILE_ERROR -> SubmitState.COMPILATION_ERROR
+            TaskResultType.UNRECOGNIZED -> SubmitState.UNKNOWN
+        }
     }
 
     fun sendTask(task: Task) {

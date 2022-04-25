@@ -1,5 +1,6 @@
 package com.kairlec.koj.dao.repository
 
+import com.kairlec.koj.common.InternalApi
 import com.kairlec.koj.dao.DSLAccess
 import com.kairlec.koj.dao.Tables.*
 import com.kairlec.koj.dao.extended.*
@@ -7,12 +8,14 @@ import com.kairlec.koj.dao.flow
 import com.kairlec.koj.dao.model.Problem
 import com.kairlec.koj.dao.model.ProblemConfig
 import com.kairlec.koj.dao.model.SimpleProblem
+import com.kairlec.koj.dao.tables.records.ProblemConfigRecord
 import com.kairlec.koj.dao.tables.records.ProblemTagRecord
 import com.kairlec.koj.dao.with
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Repository
@@ -313,16 +316,45 @@ class ProblemRepository(
         languageId: String,
         time: Int,
         memory: Int,
-    ) :Boolean{
+        maxOutputSize: Long?,
+        maxStack: Long?,
+        maxProcessNumber: Short?,
+        args: String,
+        env: String
+    ): Boolean {
         return dslAccess.with { create ->
             create.insertInto(
                 PROBLEM_CONFIG,
                 PROBLEM_CONFIG.PROBLEM_ID,
                 PROBLEM_CONFIG.TIME,
                 PROBLEM_CONFIG.MEMORY,
-                PROBLEM_CONFIG.LANGUAGE_ID
+                PROBLEM_CONFIG.LANGUAGE_ID,
+                PROBLEM_CONFIG.MAX_OUTPUT_SIZE,
+                PROBLEM_CONFIG.MAX_STACK,
+                PROBLEM_CONFIG.MAX_PROCESS_NUMBER,
+                PROBLEM_CONFIG.ARGS,
+                PROBLEM_CONFIG.ENV
             )
-                .values(problemId, time, memory, languageId)
+                .values(
+                    DSL.value(problemId),
+                    DSL.value(time),
+                    DSL.value(memory),
+                    DSL.value(languageId),
+                    DSL.nvl(
+                        maxOutputSize?.let { org.jooq.types.ULong.valueOf(it) },
+                        DSL.defaultValue(PROBLEM_CONFIG.MAX_OUTPUT_SIZE)
+                    ),
+                    DSL.nvl(
+                        maxStack?.let { org.jooq.types.ULong.valueOf(it) },
+                        DSL.defaultValue(PROBLEM_CONFIG.MAX_STACK)
+                    ),
+                    DSL.nvl(
+                        maxProcessNumber?.let { org.jooq.types.UShort.valueOf(it) },
+                        DSL.defaultValue(PROBLEM_CONFIG.MAX_PROCESS_NUMBER)
+                    ),
+                    DSL.value(args),
+                    DSL.value(env)
+                )
                 .awaitBool()
         }
     }
@@ -342,5 +374,41 @@ class ProblemRepository(
         }
     }
 
+    @InternalApi
+    suspend fun getProblemConfig(
+        problemId: Long,
+        languageId: String
+    ): ProblemConfigRecord? {
+        return dslAccess.with { create ->
+            create.selectFrom(PROBLEM_CONFIG)
+                .where(PROBLEM_CONFIG.PROBLEM_ID.eq(problemId))
+                .and(PROBLEM_CONFIG.LANGUAGE_ID.eq(languageId))
+                .awaitFirstOrNull()
+        }
+    }
+
+    @InternalApi
+    suspend fun getProblemStdin(
+        problemId: Long,
+    ): String? {
+        return dslAccess.with { create ->
+            create.select(PROBLEM_RUN.STDIN)
+                .from(PROBLEM_RUN)
+                .where(PROBLEM_RUN.ID.eq(problemId))
+                .awaitFirstOrNull()?.value1()
+        }
+    }
+
+    @InternalApi
+    suspend fun getProblemAnsOut(
+        problemId: Long,
+    ): String? {
+        return dslAccess.with { create ->
+            create.select(PROBLEM_RUN.ANSOUT)
+                .from(PROBLEM_RUN)
+                .where(PROBLEM_RUN.ID.eq(problemId))
+                .awaitFirstOrNull()?.value1()
+        }
+    }
 
 }

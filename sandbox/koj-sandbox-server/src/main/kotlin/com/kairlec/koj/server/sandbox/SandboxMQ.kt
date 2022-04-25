@@ -42,7 +42,7 @@ class ProducerConfig {
 internal class SandboxMQ(
     private val fluxConsumerFactory: FluxConsumerFactory,
     private val producer: PulsarTemplate<ByteArray>,
-    private val applicationContext: ApplicationContext,
+    applicationContext: ApplicationContext,
 ) {
     private val dispatcher = ThreadPoolExecutor(
         1,

@@ -97,8 +97,8 @@ class SubmitRepository(
         return dslAccess.with { create ->
             val submit = create.select()
                 .from(SUBMIT)
-                .innerJoin(CODE)
-                .on(SUBMIT.ID.eq(CODE.ID))
+                .innerJoin(SUBMIT_EXTEND)
+                .on(SUBMIT.ID.eq(SUBMIT_EXTEND.ID))
                 .innerJoin(USER)
                 .on(USER.ID.eq(SUBMIT.BELONG_USER_ID))
                 .where(SUBMIT.ID.eq(id))
@@ -113,7 +113,7 @@ class SubmitRepository(
                 belongUserId = submit[SUBMIT.BELONG_USER_ID],
                 username = submit[USER.USERNAME],
                 createTime = submit[SUBMIT.CREATE_TIME],
-                code = submit[CODE.CODE_],
+                code = submit[SUBMIT_EXTEND.CODE],
                 updateTime = submit[SUBMIT.UPDATE_TIME]
             )
         }
@@ -124,7 +124,7 @@ class SubmitRepository(
      */
     @InternalApi
     @Transactional(rollbackFor = [Exception::class])
-    suspend fun updateSubmit(id: Long, state: SubmitState, castMemory: Int? = null, castTime: Int? = null): Boolean {
+    suspend fun updateSubmit(id: Long, state: SubmitState, castMemory: Long? = null, castTime: Long? = null): Boolean {
         return dslAccess.with { create ->
             create.update(SUBMIT)
                 .setIfNotNull(SUBMIT.CAST_MEMORY, castMemory)
@@ -161,12 +161,14 @@ class SubmitRepository(
         }
         val codeResult = dslAccess.with { create ->
             coroutineScope.async {
-                create.insertInto(CODE)
+                create.insertInto(SUBMIT_EXTEND)
                     .columns(
-                        CODE.ID,
-                        CODE.CODE_,
+                        SUBMIT_EXTEND.ID,
+                        SUBMIT_EXTEND.CODE,
+                        SUBMIT_EXTEND.STDOUT,
+                        SUBMIT_EXTEND.STDERR
                     )
-                    .values(id, code)
+                    .values(id, code, "", "")
                     .awaitBool()
             }
         }

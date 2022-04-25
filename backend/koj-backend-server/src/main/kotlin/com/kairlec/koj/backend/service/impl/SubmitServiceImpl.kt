@@ -1,7 +1,12 @@
 package com.kairlec.koj.backend.service.impl
 
 import com.baidu.fsg.uid.UidGenerator
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.kairlec.koj.backend.component.LanguageIdSupporter
+import com.kairlec.koj.backend.config.SandboxMQ
+import com.kairlec.koj.backend.exp.NotSupportLanguageConfigException
+import com.kairlec.koj.backend.exp.NotSupportLanguageException
 import com.kairlec.koj.backend.exp.PermissionDeniedException
 import com.kairlec.koj.backend.service.SubmitService
 import com.kairlec.koj.common.InternalApi
@@ -13,10 +18,16 @@ import com.kairlec.koj.dao.repository.CompetitionRepository
 import com.kairlec.koj.dao.repository.PageData
 import com.kairlec.koj.dao.repository.ProblemRepository
 import com.kairlec.koj.dao.repository.SubmitRepository
+import com.kairlec.koj.model.task
+import com.kairlec.koj.model.taskConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.net.InetAddress
+import kotlin.random.Random
 
 @Service
 class SubmitServiceImpl(
@@ -25,6 +36,9 @@ class SubmitServiceImpl(
     private val uidGenerator: UidGenerator,
     private val problemRepository: ProblemRepository,
     private val languageIdSupporter: LanguageIdSupporter,
+    private val sandboxMQ: SandboxMQ,
+    private val objectMapper: ObjectMapper,
+    applicationContext: ApplicationContext
 ) : SubmitService {
     override suspend fun getSubmits(listCondition: ListCondition): PageData<SimpleSubmit> {
         return submitRepository.getSubmitRank(listCondition)
@@ -55,6 +69,8 @@ class SubmitServiceImpl(
         return submitRepository.createSubmit(id, userId, competitionId, languageId, problemId, code)
     }
 
+    @Transactional
+    @OptIn(InternalApi::class)
     override suspend fun createSubmit(
         userId: Long,
         competitionId: Long?,
@@ -63,18 +79,49 @@ class SubmitServiceImpl(
         code: String
     ): Long {
         if (languageIdSupporter.supportLanguageChanges.replayCache.lastOrNull()?.any { it == languageId } != true) {
-            TODO("throw language not supported exception")
-//            throw LanguageNotSupport("language not support")
+            throw NotSupportLanguageException(languageId)
         }
-        TODO("获取题目内容和语言要求,创建沙盒任务并提交")
-        return uidGenerator.uid.also {
-            submitRepository.createSubmit(it, userId, competitionId, languageId, problemId, code)
-        }
+        val problemConfig =
+            problemRepository.getProblemConfig(problemId, languageId)
+                ?: throw NotSupportLanguageConfigException(languageId)
+        val problemStdin =
+            problemRepository.getProblemStdin(problemId) ?: throw NotSupportLanguageConfigException(languageId)
+        val id = uidGenerator.uid
+        submitRepository.createSubmit(id, userId, competitionId, languageId, problemId, code)
+        sandboxMQ.sendTask(task {
+            this.id = id
+            this.namespace = "${userId}_${problemId}"
+            this.code = code
+            this.languageId = languageId
+            this.config = taskConfig {
+                this.maxTime = problemConfig.time
+                this.maxMemory = problemConfig.memory.toLong()
+                this.maxOutputSize = problemConfig.maxOutputSize.toLong()
+                this.maxStack = problemConfig.maxStack.toLong()
+                this.maxProcessNumber = problemConfig.maxProcessNumber.toInt()
+                this.args.addAll(objectMapper.readValue<List<String>>(problemConfig.args))
+                this.env.addAll(objectMapper.readValue<List<String>>(problemConfig.env))
+            }
+            this.stdin = problemStdin
+            this.debug = false
+            this.processorName = consumerNameSuffix
+        })
+        return id
     }
 
     @InternalApi
-    override suspend fun updateSubmit(id: Long, state: SubmitState, castMemory: Int?, castTime: Int?): Boolean {
+    override suspend fun updateSubmit(id: Long, state: SubmitState, castMemory: Long?, castTime: Long?): Boolean {
         return submitRepository.updateSubmit(id, state, castMemory, castTime)
     }
 
+    private val applicationName = applicationContext.applicationName.ifBlank {
+        "koj-be-server"
+    }
+
+    private val consumerNameSuffix = "$hostname-${Random.nextLong()}-${applicationName}"
+
+    companion object {
+
+        private val hostname = InetAddress.getLocalHost().hostName
+    }
 }
