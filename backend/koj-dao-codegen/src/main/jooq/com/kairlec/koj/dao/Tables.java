@@ -4,7 +4,6 @@
 package com.kairlec.koj.dao;
 
 
-import com.kairlec.koj.dao.tables.Code;
 import com.kairlec.koj.dao.tables.Competition;
 import com.kairlec.koj.dao.tables.Contestants;
 import com.kairlec.koj.dao.tables.Problem;
@@ -13,6 +12,7 @@ import com.kairlec.koj.dao.tables.ProblemConfig;
 import com.kairlec.koj.dao.tables.ProblemRun;
 import com.kairlec.koj.dao.tables.ProblemTag;
 import com.kairlec.koj.dao.tables.Submit;
+import com.kairlec.koj.dao.tables.SubmitExtend;
 import com.kairlec.koj.dao.tables.TagBelongProblem;
 import com.kairlec.koj.dao.tables.UidWorkerNode;
 import com.kairlec.koj.dao.tables.User;
@@ -23,11 +23,6 @@ import com.kairlec.koj.dao.tables.User;
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Tables {
-
-    /**
-     * 代码表
-     */
-    public static final Code CODE = Code.CODE;
 
     /**
      * 比赛表
@@ -68,6 +63,11 @@ public class Tables {
      * 任务表
      */
     public static final Submit SUBMIT = Submit.SUBMIT;
+
+    /**
+     * 任务拓展信息表
+     */
+    public static final SubmitExtend SUBMIT_EXTEND = SubmitExtend.SUBMIT_EXTEND;
 
     /**
      * 题目标签关系表

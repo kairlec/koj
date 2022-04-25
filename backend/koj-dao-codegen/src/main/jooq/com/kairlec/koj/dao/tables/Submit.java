@@ -73,12 +73,12 @@ public class Submit extends TableImpl<SubmitRecord> {
     /**
      * The column <code>koj.submit.cast_memory</code>. 任务内存
      */
-    public final TableField<SubmitRecord, Integer> CAST_MEMORY = createField(DSL.name("cast_memory"), SQLDataType.INTEGER, this, "任务内存");
+    public final TableField<SubmitRecord, Long> CAST_MEMORY = createField(DSL.name("cast_memory"), SQLDataType.BIGINT, this, "任务内存");
 
     /**
      * The column <code>koj.submit.cast_time</code>. 耗时
      */
-    public final TableField<SubmitRecord, Integer> CAST_TIME = createField(DSL.name("cast_time"), SQLDataType.INTEGER, this, "耗时");
+    public final TableField<SubmitRecord, Long> CAST_TIME = createField(DSL.name("cast_time"), SQLDataType.BIGINT, this, "耗时");
 
     /**
      * The column <code>koj.submit.belong_competition_id</code>. 所属比赛id
@@ -218,7 +218,7 @@ public class Submit extends TableImpl<SubmitRecord> {
     // -------------------------------------------------------------------------
 
     @Override
-    public Row10<Long, Byte, Long, String, Integer, Integer, Long, Long, LocalDateTime, LocalDateTime> fieldsRow() {
+    public Row10<Long, Byte, Long, String, Long, Long, Long, Long, LocalDateTime, LocalDateTime> fieldsRow() {
         return (Row10) super.fieldsRow();
     }
 }

@@ -9,17 +9,19 @@ import com.kairlec.koj.dao.tables.ProblemConfig;
 import java.time.LocalDateTime;
 
 import org.jooq.Field;
+import org.jooq.Record11;
 import org.jooq.Record2;
-import org.jooq.Record6;
-import org.jooq.Row6;
+import org.jooq.Row11;
 import org.jooq.impl.UpdatableRecordImpl;
+import org.jooq.types.ULong;
+import org.jooq.types.UShort;
 
 
 /**
  * 题目语言配置表
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord> implements Record6<Long, String, Integer, Integer, LocalDateTime, LocalDateTime> {
+public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord> implements Record11<Long, String, Integer, Integer, ULong, ULong, UShort, LocalDateTime, LocalDateTime, String, String> {
 
     private static final long serialVersionUID = 1L;
 
@@ -84,10 +86,59 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     }
 
     /**
+     * Setter for <code>koj.problem_config.max_output_size</code>.
+     * 最大输出限制(字节),默认无限制
+     */
+    public ProblemConfigRecord setMaxOutputSize(ULong value) {
+        set(4, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>koj.problem_config.max_output_size</code>.
+     * 最大输出限制(字节),默认无限制
+     */
+    public ULong getMaxOutputSize() {
+        return (ULong) get(4);
+    }
+
+    /**
+     * Setter for <code>koj.problem_config.max_stack</code>. 最大堆栈(字节),默认无限制
+     */
+    public ProblemConfigRecord setMaxStack(ULong value) {
+        set(5, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>koj.problem_config.max_stack</code>. 最大堆栈(字节),默认无限制
+     */
+    public ULong getMaxStack() {
+        return (ULong) get(5);
+    }
+
+    /**
+     * Setter for <code>koj.problem_config.max_process_number</code>.
+     * 最大处理器数量,默认1
+     */
+    public ProblemConfigRecord setMaxProcessNumber(UShort value) {
+        set(6, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>koj.problem_config.max_process_number</code>.
+     * 最大处理器数量,默认1
+     */
+    public UShort getMaxProcessNumber() {
+        return (UShort) get(6);
+    }
+
+    /**
      * Setter for <code>koj.problem_config.create_time</code>. 创建时间
      */
     public ProblemConfigRecord setCreateTime(LocalDateTime value) {
-        set(4, value);
+        set(7, value);
         return this;
     }
 
@@ -95,14 +146,14 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
      * Getter for <code>koj.problem_config.create_time</code>. 创建时间
      */
     public LocalDateTime getCreateTime() {
-        return (LocalDateTime) get(4);
+        return (LocalDateTime) get(7);
     }
 
     /**
      * Setter for <code>koj.problem_config.update_time</code>. 更新时间
      */
     public ProblemConfigRecord setUpdateTime(LocalDateTime value) {
-        set(5, value);
+        set(8, value);
         return this;
     }
 
@@ -110,7 +161,37 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
      * Getter for <code>koj.problem_config.update_time</code>. 更新时间
      */
     public LocalDateTime getUpdateTime() {
-        return (LocalDateTime) get(5);
+        return (LocalDateTime) get(8);
+    }
+
+    /**
+     * Setter for <code>koj.problem_config.args</code>. 额外参数(默认无)
+     */
+    public ProblemConfigRecord setArgs(String value) {
+        set(9, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>koj.problem_config.args</code>. 额外参数(默认无)
+     */
+    public String getArgs() {
+        return (String) get(9);
+    }
+
+    /**
+     * Setter for <code>koj.problem_config.env</code>. 额外环境参数(默认无)
+     */
+    public ProblemConfigRecord setEnv(String value) {
+        set(10, value);
+        return this;
+    }
+
+    /**
+     * Getter for <code>koj.problem_config.env</code>. 额外环境参数(默认无)
+     */
+    public String getEnv() {
+        return (String) get(10);
     }
 
     // -------------------------------------------------------------------------
@@ -123,17 +204,17 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     }
 
     // -------------------------------------------------------------------------
-    // Record6 type implementation
+    // Record11 type implementation
     // -------------------------------------------------------------------------
 
     @Override
-    public Row6<Long, String, Integer, Integer, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row6) super.fieldsRow();
+    public Row11<Long, String, Integer, Integer, ULong, ULong, UShort, LocalDateTime, LocalDateTime, String, String> fieldsRow() {
+        return (Row11) super.fieldsRow();
     }
 
     @Override
-    public Row6<Long, String, Integer, Integer, LocalDateTime, LocalDateTime> valuesRow() {
-        return (Row6) super.valuesRow();
+    public Row11<Long, String, Integer, Integer, ULong, ULong, UShort, LocalDateTime, LocalDateTime, String, String> valuesRow() {
+        return (Row11) super.valuesRow();
     }
 
     @Override
@@ -157,13 +238,38 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     }
 
     @Override
-    public Field<LocalDateTime> field5() {
+    public Field<ULong> field5() {
+        return ProblemConfig.PROBLEM_CONFIG.MAX_OUTPUT_SIZE;
+    }
+
+    @Override
+    public Field<ULong> field6() {
+        return ProblemConfig.PROBLEM_CONFIG.MAX_STACK;
+    }
+
+    @Override
+    public Field<UShort> field7() {
+        return ProblemConfig.PROBLEM_CONFIG.MAX_PROCESS_NUMBER;
+    }
+
+    @Override
+    public Field<LocalDateTime> field8() {
         return ProblemConfig.PROBLEM_CONFIG.CREATE_TIME;
     }
 
     @Override
-    public Field<LocalDateTime> field6() {
+    public Field<LocalDateTime> field9() {
         return ProblemConfig.PROBLEM_CONFIG.UPDATE_TIME;
+    }
+
+    @Override
+    public Field<String> field10() {
+        return ProblemConfig.PROBLEM_CONFIG.ARGS;
+    }
+
+    @Override
+    public Field<String> field11() {
+        return ProblemConfig.PROBLEM_CONFIG.ENV;
     }
 
     @Override
@@ -187,13 +293,38 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     }
 
     @Override
-    public LocalDateTime component5() {
+    public ULong component5() {
+        return getMaxOutputSize();
+    }
+
+    @Override
+    public ULong component6() {
+        return getMaxStack();
+    }
+
+    @Override
+    public UShort component7() {
+        return getMaxProcessNumber();
+    }
+
+    @Override
+    public LocalDateTime component8() {
         return getCreateTime();
     }
 
     @Override
-    public LocalDateTime component6() {
+    public LocalDateTime component9() {
         return getUpdateTime();
+    }
+
+    @Override
+    public String component10() {
+        return getArgs();
+    }
+
+    @Override
+    public String component11() {
+        return getEnv();
     }
 
     @Override
@@ -217,13 +348,38 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     }
 
     @Override
-    public LocalDateTime value5() {
+    public ULong value5() {
+        return getMaxOutputSize();
+    }
+
+    @Override
+    public ULong value6() {
+        return getMaxStack();
+    }
+
+    @Override
+    public UShort value7() {
+        return getMaxProcessNumber();
+    }
+
+    @Override
+    public LocalDateTime value8() {
         return getCreateTime();
     }
 
     @Override
-    public LocalDateTime value6() {
+    public LocalDateTime value9() {
         return getUpdateTime();
+    }
+
+    @Override
+    public String value10() {
+        return getArgs();
+    }
+
+    @Override
+    public String value11() {
+        return getEnv();
     }
 
     @Override
@@ -251,25 +407,60 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     }
 
     @Override
-    public ProblemConfigRecord value5(LocalDateTime value) {
+    public ProblemConfigRecord value5(ULong value) {
+        setMaxOutputSize(value);
+        return this;
+    }
+
+    @Override
+    public ProblemConfigRecord value6(ULong value) {
+        setMaxStack(value);
+        return this;
+    }
+
+    @Override
+    public ProblemConfigRecord value7(UShort value) {
+        setMaxProcessNumber(value);
+        return this;
+    }
+
+    @Override
+    public ProblemConfigRecord value8(LocalDateTime value) {
         setCreateTime(value);
         return this;
     }
 
     @Override
-    public ProblemConfigRecord value6(LocalDateTime value) {
+    public ProblemConfigRecord value9(LocalDateTime value) {
         setUpdateTime(value);
         return this;
     }
 
     @Override
-    public ProblemConfigRecord values(Long value1, String value2, Integer value3, Integer value4, LocalDateTime value5, LocalDateTime value6) {
+    public ProblemConfigRecord value10(String value) {
+        setArgs(value);
+        return this;
+    }
+
+    @Override
+    public ProblemConfigRecord value11(String value) {
+        setEnv(value);
+        return this;
+    }
+
+    @Override
+    public ProblemConfigRecord values(Long value1, String value2, Integer value3, Integer value4, ULong value5, ULong value6, UShort value7, LocalDateTime value8, LocalDateTime value9, String value10, String value11) {
         value1(value1);
         value2(value2);
         value3(value3);
         value4(value4);
         value5(value5);
         value6(value6);
+        value7(value7);
+        value8(value8);
+        value9(value9);
+        value10(value10);
+        value11(value11);
         return this;
     }
 
@@ -287,15 +478,20 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
     /**
      * Create a detached, initialised ProblemConfigRecord
      */
-    public ProblemConfigRecord(Long problemId, String languageId, Integer memory, Integer time, LocalDateTime createTime, LocalDateTime updateTime) {
+    public ProblemConfigRecord(Long problemId, String languageId, Integer memory, Integer time, ULong maxOutputSize, ULong maxStack, UShort maxProcessNumber, LocalDateTime createTime, LocalDateTime updateTime, String args, String env) {
         super(ProblemConfig.PROBLEM_CONFIG);
 
         setProblemId(problemId);
         setLanguageId(languageId);
         setMemory(memory);
         setTime(time);
+        setMaxOutputSize(maxOutputSize);
+        setMaxStack(maxStack);
+        setMaxProcessNumber(maxProcessNumber);
         setCreateTime(createTime);
         setUpdateTime(updateTime);
+        setArgs(args);
+        setEnv(env);
     }
 
     /**
@@ -309,8 +505,13 @@ public class ProblemConfigRecord extends UpdatableRecordImpl<ProblemConfigRecord
             setLanguageId(value.getLanguageId());
             setMemory(value.getMemory());
             setTime(value.getTime());
+            setMaxOutputSize(value.getMaxOutputSize());
+            setMaxStack(value.getMaxStack());
+            setMaxProcessNumber(value.getMaxProcessNumber());
             setCreateTime(value.getCreateTime());
             setUpdateTime(value.getUpdateTime());
+            setArgs(value.getArgs());
+            setEnv(value.getEnv());
         }
     }
 }

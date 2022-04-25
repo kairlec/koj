@@ -20,8 +20,8 @@ public class Submit implements Serializable {
     private final Byte          state;
     private final Long          problemId;
     private final String        languageId;
-    private final Integer       castMemory;
-    private final Integer       castTime;
+    private final Long          castMemory;
+    private final Long          castTime;
     private final Long          belongCompetitionId;
     private final Long          belongUserId;
     private final LocalDateTime createTime;
@@ -45,8 +45,8 @@ public class Submit implements Serializable {
         Byte          state,
         Long          problemId,
         String        languageId,
-        Integer       castMemory,
-        Integer       castTime,
+        Long          castMemory,
+        Long          castTime,
         Long          belongCompetitionId,
         Long          belongUserId,
         LocalDateTime createTime,
@@ -95,14 +95,14 @@ public class Submit implements Serializable {
     /**
      * Getter for <code>koj.submit.cast_memory</code>. 任务内存
      */
-    public Integer getCastMemory() {
+    public Long getCastMemory() {
         return this.castMemory;
     }
 
     /**
      * Getter for <code>koj.submit.cast_time</code>. 耗时
      */
-    public Integer getCastTime() {
+    public Long getCastTime() {
         return this.castTime;
     }
 

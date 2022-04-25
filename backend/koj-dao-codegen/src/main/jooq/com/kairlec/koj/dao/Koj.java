@@ -4,7 +4,6 @@
 package com.kairlec.koj.dao;
 
 
-import com.kairlec.koj.dao.tables.Code;
 import com.kairlec.koj.dao.tables.Competition;
 import com.kairlec.koj.dao.tables.Contestants;
 import com.kairlec.koj.dao.tables.Problem;
@@ -13,6 +12,7 @@ import com.kairlec.koj.dao.tables.ProblemConfig;
 import com.kairlec.koj.dao.tables.ProblemRun;
 import com.kairlec.koj.dao.tables.ProblemTag;
 import com.kairlec.koj.dao.tables.Submit;
+import com.kairlec.koj.dao.tables.SubmitExtend;
 import com.kairlec.koj.dao.tables.TagBelongProblem;
 import com.kairlec.koj.dao.tables.UidWorkerNode;
 import com.kairlec.koj.dao.tables.User;
@@ -37,11 +37,6 @@ public class Koj extends SchemaImpl {
      * The reference instance of <code>koj</code>
      */
     public static final Koj KOJ = new Koj();
-
-    /**
-     * 代码表
-     */
-    public final Code CODE = Code.CODE;
 
     /**
      * 比赛表
@@ -84,6 +79,11 @@ public class Koj extends SchemaImpl {
     public final Submit SUBMIT = Submit.SUBMIT;
 
     /**
+     * 任务拓展信息表
+     */
+    public final SubmitExtend SUBMIT_EXTEND = SubmitExtend.SUBMIT_EXTEND;
+
+    /**
      * 题目标签关系表
      */
     public final TagBelongProblem TAG_BELONG_PROBLEM = TagBelongProblem.TAG_BELONG_PROBLEM;
@@ -114,7 +114,6 @@ public class Koj extends SchemaImpl {
     @Override
     public final List<Table<?>> getTables() {
         return Arrays.asList(
-            Code.CODE,
             Competition.COMPETITION,
             Contestants.CONTESTANTS,
             Problem.PROBLEM,
@@ -123,6 +122,7 @@ public class Koj extends SchemaImpl {
             ProblemRun.PROBLEM_RUN,
             ProblemTag.PROBLEM_TAG,
             Submit.SUBMIT,
+            SubmitExtend.SUBMIT_EXTEND,
             TagBelongProblem.TAG_BELONG_PROBLEM,
             UidWorkerNode.UID_WORKER_NODE,
             User.USER

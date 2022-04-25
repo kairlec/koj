@@ -18,7 +18,7 @@ import org.jooq.ForeignKey;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
-import org.jooq.Row6;
+import org.jooq.Row11;
 import org.jooq.Schema;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -27,6 +27,8 @@ import org.jooq.UniqueKey;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.jooq.impl.TableImpl;
+import org.jooq.types.ULong;
+import org.jooq.types.UShort;
 
 
 /**
@@ -71,6 +73,23 @@ public class ProblemConfig extends TableImpl<ProblemConfigRecord> {
     public final TableField<ProblemConfigRecord, Integer> TIME = createField(DSL.name("time"), SQLDataType.INTEGER.nullable(false), this, "时间限制");
 
     /**
+     * The column <code>koj.problem_config.max_output_size</code>.
+     * 最大输出限制(字节),默认无限制
+     */
+    public final TableField<ProblemConfigRecord, ULong> MAX_OUTPUT_SIZE = createField(DSL.name("max_output_size"), SQLDataType.BIGINTUNSIGNED.nullable(false), this, "最大输出限制(字节),默认无限制");
+
+    /**
+     * The column <code>koj.problem_config.max_stack</code>. 最大堆栈(字节),默认无限制
+     */
+    public final TableField<ProblemConfigRecord, ULong> MAX_STACK = createField(DSL.name("max_stack"), SQLDataType.BIGINTUNSIGNED.nullable(false), this, "最大堆栈(字节),默认无限制");
+
+    /**
+     * The column <code>koj.problem_config.max_process_number</code>.
+     * 最大处理器数量,默认1
+     */
+    public final TableField<ProblemConfigRecord, UShort> MAX_PROCESS_NUMBER = createField(DSL.name("max_process_number"), SQLDataType.SMALLINTUNSIGNED.nullable(false).defaultValue(DSL.inline("1", SQLDataType.SMALLINTUNSIGNED)), this, "最大处理器数量,默认1");
+
+    /**
      * The column <code>koj.problem_config.create_time</code>. 创建时间
      */
     public final TableField<ProblemConfigRecord, LocalDateTime> CREATE_TIME = createField(DSL.name("create_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "创建时间");
@@ -79,6 +98,16 @@ public class ProblemConfig extends TableImpl<ProblemConfigRecord> {
      * The column <code>koj.problem_config.update_time</code>. 更新时间
      */
     public final TableField<ProblemConfigRecord, LocalDateTime> UPDATE_TIME = createField(DSL.name("update_time"), SQLDataType.LOCALDATETIME(0).nullable(false), this, "更新时间");
+
+    /**
+     * The column <code>koj.problem_config.args</code>. 额外参数(默认无)
+     */
+    public final TableField<ProblemConfigRecord, String> ARGS = createField(DSL.name("args"), SQLDataType.CLOB.nullable(false), this, "额外参数(默认无)");
+
+    /**
+     * The column <code>koj.problem_config.env</code>. 额外环境参数(默认无)
+     */
+    public final TableField<ProblemConfigRecord, String> ENV = createField(DSL.name("env"), SQLDataType.CLOB.nullable(false), this, "额外环境参数(默认无)");
 
     private ProblemConfig(Name alias, Table<ProblemConfigRecord> aliased) {
         this(alias, aliased, null);
@@ -120,7 +149,7 @@ public class ProblemConfig extends TableImpl<ProblemConfigRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.PROBLEM_CONFIG_LANGUAGE_ID_IDX, Indexes.PROBLEM_CONFIG_PROBLEM_ID_IDX);
+        return Arrays.asList(Indexes.PROBLEM_CONFIG_PROBLEM_LANGUAGE_IDX);
     }
 
     @Override
@@ -172,11 +201,11 @@ public class ProblemConfig extends TableImpl<ProblemConfigRecord> {
     }
 
     // -------------------------------------------------------------------------
-    // Row6 type methods
+    // Row11 type methods
     // -------------------------------------------------------------------------
 
     @Override
-    public Row6<Long, String, Integer, Integer, LocalDateTime, LocalDateTime> fieldsRow() {
-        return (Row6) super.fieldsRow();
+    public Row11<Long, String, Integer, Integer, ULong, ULong, UShort, LocalDateTime, LocalDateTime, String, String> fieldsRow() {
+        return (Row11) super.fieldsRow();
     }
 }

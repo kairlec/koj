@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
  * 任务表
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements Record10<Long, Byte, Long, String, Integer, Integer, Long, Long, LocalDateTime, LocalDateTime> {
+public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements Record10<Long, Byte, Long, String, Long, Long, Long, Long, LocalDateTime, LocalDateTime> {
 
     private static final long serialVersionUID = 1L;
 
@@ -86,7 +86,7 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     /**
      * Setter for <code>koj.submit.cast_memory</code>. 任务内存
      */
-    public SubmitRecord setCastMemory(Integer value) {
+    public SubmitRecord setCastMemory(Long value) {
         set(4, value);
         return this;
     }
@@ -94,14 +94,14 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     /**
      * Getter for <code>koj.submit.cast_memory</code>. 任务内存
      */
-    public Integer getCastMemory() {
-        return (Integer) get(4);
+    public Long getCastMemory() {
+        return (Long) get(4);
     }
 
     /**
      * Setter for <code>koj.submit.cast_time</code>. 耗时
      */
-    public SubmitRecord setCastTime(Integer value) {
+    public SubmitRecord setCastTime(Long value) {
         set(5, value);
         return this;
     }
@@ -109,8 +109,8 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     /**
      * Getter for <code>koj.submit.cast_time</code>. 耗时
      */
-    public Integer getCastTime() {
-        return (Integer) get(5);
+    public Long getCastTime() {
+        return (Long) get(5);
     }
 
     /**
@@ -187,12 +187,12 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     // -------------------------------------------------------------------------
 
     @Override
-    public Row10<Long, Byte, Long, String, Integer, Integer, Long, Long, LocalDateTime, LocalDateTime> fieldsRow() {
+    public Row10<Long, Byte, Long, String, Long, Long, Long, Long, LocalDateTime, LocalDateTime> fieldsRow() {
         return (Row10) super.fieldsRow();
     }
 
     @Override
-    public Row10<Long, Byte, Long, String, Integer, Integer, Long, Long, LocalDateTime, LocalDateTime> valuesRow() {
+    public Row10<Long, Byte, Long, String, Long, Long, Long, Long, LocalDateTime, LocalDateTime> valuesRow() {
         return (Row10) super.valuesRow();
     }
 
@@ -217,12 +217,12 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     }
 
     @Override
-    public Field<Integer> field5() {
+    public Field<Long> field5() {
         return Submit.SUBMIT.CAST_MEMORY;
     }
 
     @Override
-    public Field<Integer> field6() {
+    public Field<Long> field6() {
         return Submit.SUBMIT.CAST_TIME;
     }
 
@@ -267,12 +267,12 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     }
 
     @Override
-    public Integer component5() {
+    public Long component5() {
         return getCastMemory();
     }
 
     @Override
-    public Integer component6() {
+    public Long component6() {
         return getCastTime();
     }
 
@@ -317,12 +317,12 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     }
 
     @Override
-    public Integer value5() {
+    public Long value5() {
         return getCastMemory();
     }
 
     @Override
-    public Integer value6() {
+    public Long value6() {
         return getCastTime();
     }
 
@@ -371,13 +371,13 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     }
 
     @Override
-    public SubmitRecord value5(Integer value) {
+    public SubmitRecord value5(Long value) {
         setCastMemory(value);
         return this;
     }
 
     @Override
-    public SubmitRecord value6(Integer value) {
+    public SubmitRecord value6(Long value) {
         setCastTime(value);
         return this;
     }
@@ -407,7 +407,7 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     }
 
     @Override
-    public SubmitRecord values(Long value1, Byte value2, Long value3, String value4, Integer value5, Integer value6, Long value7, Long value8, LocalDateTime value9, LocalDateTime value10) {
+    public SubmitRecord values(Long value1, Byte value2, Long value3, String value4, Long value5, Long value6, Long value7, Long value8, LocalDateTime value9, LocalDateTime value10) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -435,7 +435,7 @@ public class SubmitRecord extends UpdatableRecordImpl<SubmitRecord> implements R
     /**
      * Create a detached, initialised SubmitRecord
      */
-    public SubmitRecord(Long id, Byte state, Long problemId, String languageId, Integer castMemory, Integer castTime, Long belongCompetitionId, Long belongUserId, LocalDateTime createTime, LocalDateTime updateTime) {
+    public SubmitRecord(Long id, Byte state, Long problemId, String languageId, Long castMemory, Long castTime, Long belongCompetitionId, Long belongUserId, LocalDateTime createTime, LocalDateTime updateTime) {
         super(Submit.SUBMIT);
 
         setId(id);

@@ -35,14 +35,13 @@ public class Indexes {
     public static final Index CONTESTANTS_COMPETITION_ID_IDX = Internal.createIndex(DSL.name("competition_id_idx"), Contestants.CONTESTANTS, new OrderField[] { Contestants.CONTESTANTS.COMPETITION_ID }, false);
     public static final Index PROBLEM_BELONG_COMPETITION_COMPETITION_ID_IDX = Internal.createIndex(DSL.name("competition_id_idx"), ProblemBelongCompetition.PROBLEM_BELONG_COMPETITION, new OrderField[] { ProblemBelongCompetition.PROBLEM_BELONG_COMPETITION.COMPETITION_ID }, false);
     public static final Index USER_EMAIL_IDX = Internal.createIndex(DSL.name("email_idx"), User.USER, new OrderField[] { User.USER.EMAIL }, false);
-    public static final Index PROBLEM_CONFIG_LANGUAGE_ID_IDX = Internal.createIndex(DSL.name("language_id_idx"), ProblemConfig.PROBLEM_CONFIG, new OrderField[] { ProblemConfig.PROBLEM_CONFIG.LANGUAGE_ID }, false);
     public static final Index COMPETITION_NAME_IDX = Internal.createIndex(DSL.name("name_idx"), Competition.COMPETITION, new OrderField[] { Competition.COMPETITION.NAME }, false);
     public static final Index PROBLEM_NAME_IDX = Internal.createIndex(DSL.name("name_idx"), Problem.PROBLEM, new OrderField[] { Problem.PROBLEM.NAME }, false);
     public static final Index PROBLEM_TAG_NAME_IDX = Internal.createIndex(DSL.name("name_idx"), ProblemTag.PROBLEM_TAG, new OrderField[] { ProblemTag.PROBLEM_TAG.NAME }, false);
     public static final Index SUBMIT_PROBLEM_ID = Internal.createIndex(DSL.name("problem_id"), Submit.SUBMIT, new OrderField[] { Submit.SUBMIT.PROBLEM_ID }, false);
     public static final Index PROBLEM_BELONG_COMPETITION_PROBLEM_ID_IDX = Internal.createIndex(DSL.name("problem_id_idx"), ProblemBelongCompetition.PROBLEM_BELONG_COMPETITION, new OrderField[] { ProblemBelongCompetition.PROBLEM_BELONG_COMPETITION.PROBLEM_ID }, false);
-    public static final Index PROBLEM_CONFIG_PROBLEM_ID_IDX = Internal.createIndex(DSL.name("problem_id_idx"), ProblemConfig.PROBLEM_CONFIG, new OrderField[] { ProblemConfig.PROBLEM_CONFIG.PROBLEM_ID }, false);
     public static final Index TAG_BELONG_PROBLEM_PROBLEM_ID_IDX = Internal.createIndex(DSL.name("problem_id_idx"), TagBelongProblem.TAG_BELONG_PROBLEM, new OrderField[] { TagBelongProblem.TAG_BELONG_PROBLEM.PROBLEM_ID }, false);
+    public static final Index PROBLEM_CONFIG_PROBLEM_LANGUAGE_IDX = Internal.createIndex(DSL.name("problem_language_idx"), ProblemConfig.PROBLEM_CONFIG, new OrderField[] { ProblemConfig.PROBLEM_CONFIG.PROBLEM_ID, ProblemConfig.PROBLEM_CONFIG.LANGUAGE_ID }, false);
     public static final Index TAG_BELONG_PROBLEM_TAG_ID_IDX = Internal.createIndex(DSL.name("tag_id_idx"), TagBelongProblem.TAG_BELONG_PROBLEM, new OrderField[] { TagBelongProblem.TAG_BELONG_PROBLEM.TAG_ID }, false);
     public static final Index CONTESTANTS_USER_ID_IDX = Internal.createIndex(DSL.name("user_id_idx"), Contestants.CONTESTANTS, new OrderField[] { Contestants.CONTESTANTS.USER_ID }, false);
     public static final Index USER_USERNAME_IDX = Internal.createIndex(DSL.name("username_idx"), User.USER, new OrderField[] { User.USER.USERNAME }, false);
