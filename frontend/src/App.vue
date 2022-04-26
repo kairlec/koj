@@ -1,31 +1,30 @@
-<script setup lang="ts">
-import Home from "./components/Home.vue"
-</script>
+<script setup lang='ts'>
+import Home from './components/Home.vue';</script>
 
 <template>
-  <Home></Home>
+    <Home></Home>
 </template>
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    color: #2c3e50;
 }
 </style>
-<script lang="ts">
-import {defineComponent} from 'vue'
-import {useRouter} from 'vue-router'
+<script lang='ts'>
+import { defineComponent } from 'vue';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
-  setup() {
-    return {
-      goto() {
-        useRouter().push("/home");
-      },
+    setup() {
+        return {
+            goto() {
+                useRouter().push('/home');
+            }
+        };
     }
-  },
-})
+});
 </script>

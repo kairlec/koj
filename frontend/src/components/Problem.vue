@@ -1,9 +1,8 @@
-<script setup lang="ts">
-import {ref} from 'vue'
+<script setup lang='ts'>
 
 defineProps({
-  msg: String
-})
+    msg: String
+});
 
 </script>
 
@@ -13,6 +12,6 @@ defineProps({
 
 <style scoped>
 a {
-  color: #42b983;
+    color: #42b983;
 }
 </style>
