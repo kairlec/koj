@@ -17,6 +17,7 @@ data class SubmitDetail(
     val createTime: LocalDateTime,
     val updateTime: LocalDateTime,
     val code: String,
+    val stderr: String?
 )
 
 data class SimpleSubmit(

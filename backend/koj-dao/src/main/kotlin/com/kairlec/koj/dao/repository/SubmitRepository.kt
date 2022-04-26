@@ -94,8 +94,8 @@ class SubmitRepository(
         userId: Long,
         id: Long
     ): SubmitDetail? {
-        return dslAccess.with { create ->
-            val submit = create.select()
+        val submit = dslAccess.with { create ->
+            create.select()
                 .from(SUBMIT)
                 .innerJoin(SUBMIT_EXTEND)
                 .on(SUBMIT.ID.eq(SUBMIT_EXTEND.ID))
@@ -103,20 +103,32 @@ class SubmitRepository(
                 .on(USER.ID.eq(SUBMIT.BELONG_USER_ID))
                 .where(SUBMIT.ID.eq(id))
                 .and(SUBMIT.BELONG_USER_ID.eq(userId))
-                .awaitFirstOrNull() ?: return@with null
-            SubmitDetail(
-                id = submit[SUBMIT.ID],
-                state = SubmitState.parse(submit[SUBMIT.STATE]),
-                castMemory = submit[SUBMIT.CAST_MEMORY],
-                castTime = submit[SUBMIT.CAST_TIME],
-                languageId = submit[SUBMIT.LANGUAGE_ID],
-                belongUserId = submit[SUBMIT.BELONG_USER_ID],
-                username = submit[USER.USERNAME],
-                createTime = submit[SUBMIT.CREATE_TIME],
-                code = submit[SUBMIT_EXTEND.CODE],
-                updateTime = submit[SUBMIT.UPDATE_TIME]
-            )
+                .awaitFirstOrNull()
+        } ?: return null
+        val state = SubmitState.parse(submit[SUBMIT.STATE])
+        val stderr = if (state == SubmitState.COMPILATION_ERROR) {
+            dslAccess.with { create ->
+                create.select(SUBMIT_EXTEND.STDERR)
+                    .from(SUBMIT_EXTEND)
+                    .where(SUBMIT_EXTEND.ID.eq(id))
+                    .awaitFirstOrNull()
+            }?.value1()
+        } else {
+            null
         }
+        return SubmitDetail(
+            id = submit[SUBMIT.ID],
+            state = state,
+            castMemory = submit[SUBMIT.CAST_MEMORY],
+            castTime = submit[SUBMIT.CAST_TIME],
+            languageId = submit[SUBMIT.LANGUAGE_ID],
+            belongUserId = submit[SUBMIT.BELONG_USER_ID],
+            username = submit[USER.USERNAME],
+            createTime = submit[SUBMIT.CREATE_TIME],
+            code = submit[SUBMIT_EXTEND.CODE],
+            updateTime = submit[SUBMIT.UPDATE_TIME],
+            stderr = stderr
+        )
     }
 
     /**
