@@ -124,15 +124,31 @@ class SubmitRepository(
      */
     @InternalApi
     @Transactional(rollbackFor = [Exception::class])
-    suspend fun updateSubmit(id: Long, state: SubmitState, castMemory: Long? = null, castTime: Long? = null): Boolean {
-        return dslAccess.with { create ->
+    suspend fun updateSubmit(
+        id: Long,
+        state: SubmitState,
+        castMemory: Long? = null,
+        castTime: Long? = null,
+        stderr: String? = null,
+        stdout: String? = null
+    ): Boolean {
+        val timeOk = dslAccess.with { create ->
             create.update(SUBMIT)
                 .setIfNotNull(SUBMIT.CAST_MEMORY, castMemory)
                 .setIfNotNull(SUBMIT.CAST_TIME, castTime)
                 .set(SUBMIT.STATE, state.value)
                 .where(SUBMIT.STATE.le(state.lessThan))
+                .and(SUBMIT.ID.eq(id))
                 .awaitBool()
         }
+        val stdOk = dslAccess.with { create ->
+            create.update(SUBMIT_EXTEND)
+                .setIfNotNull(SUBMIT_EXTEND.STDERR, stderr)
+                .setIfNotNull(SUBMIT_EXTEND.STDOUT, stdout)
+                .where(SUBMIT_EXTEND.ID.eq(id))
+                .awaitBool()
+        }
+        return timeOk && stdOk
     }
 
     @Transactional(rollbackFor = [Exception::class])

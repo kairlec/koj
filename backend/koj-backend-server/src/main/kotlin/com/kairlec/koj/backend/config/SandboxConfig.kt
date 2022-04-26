@@ -159,7 +159,15 @@ class SandboxMQ(
     private suspend fun taskResult(data: ByteArray) {
         val result = TaskResult.parseFrom(data)
         log.info { "task result(${result.type}):${result}" }
-        submitService.updateSubmit(result.id, result.type.asSubmitState(), result.memory, result.time)
+        result.stderr
+        submitService.updateSubmit(
+            result.id,
+            result.type.asSubmitState(),
+            result.memory,
+            result.time,
+            result.stderr,
+            result.stdout
+        )
     }
 
     private fun TaskIntermediateStatusEnum.asSubmitState(): SubmitState {

@@ -34,6 +34,13 @@ interface SubmitService {
     ): Long
 
     @InternalApi
-    suspend fun updateSubmit(id: Long, state: SubmitState, castMemory: Long? = null, castTime: Long? = null): Boolean
+    suspend fun updateSubmit(
+        id: Long,
+        state: SubmitState,
+        castMemory: Long? = null,
+        castTime: Long? = null,
+        stderr: String? = null,
+        stdout: String? = null
+    ): Boolean
 
 }
