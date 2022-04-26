@@ -1,5 +1,6 @@
 package com.kairlec.koj.backend.service.impl
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.kairlec.koj.backend.exp.PermissionDeniedException
 import com.kairlec.koj.backend.service.ProblemService
 import com.kairlec.koj.backend.util.sureFound
@@ -21,7 +22,8 @@ import java.time.LocalDateTime
 @Service
 class ProblemServiceImpl(
     private val problemRepository: ProblemRepository,
-    private val competitionRepository: CompetitionRepository
+    private val competitionRepository: CompetitionRepository,
+    private val objectMapper: ObjectMapper,
 ) : ProblemService {
     override suspend fun getProblems(tags: List<String>, listCondition: ListCondition): PageData<SimpleProblem> {
         return problemRepository.getProblems(tags, listCondition)
@@ -53,7 +55,7 @@ class ProblemServiceImpl(
     @Transactional(rollbackFor = [Exception::class])
     override suspend fun newProblem(name: String, content: String, spj: Boolean, tags: List<Long>): Long? {
         return problemRepository.newProblem(name, content, spj).also {
-            if(it != null) {
+            if (it != null && tags.isNotEmpty()) {
                 problemRepository.addProblemTags(it, tags)
             }
         }
@@ -85,5 +87,39 @@ class ProblemServiceImpl(
 
     override suspend fun updateTag(tagId: Long, name: String): Boolean {
         return problemRepository.updateTag(tagId, name)
+    }
+
+    override suspend fun addProblemConfig(
+        problemId: Long,
+        languageId: String,
+        time: Int,
+        memory: Int,
+        maxOutputSize: Long?,
+        maxStack: Long?,
+        maxProcessNumber: Short?,
+        args: List<String>,
+        env: List<String>
+    ): Boolean {
+        return problemRepository.addProblemConfig(
+            problemId,
+            languageId,
+            time,
+            memory,
+            maxOutputSize,
+            maxStack,
+            maxProcessNumber,
+            objectMapper.writeValueAsString(args),
+            objectMapper.writeValueAsString(env)
+        )
+    }
+
+    override suspend fun removeProblemConfig(
+        problemId: Long,
+        languageId: String,
+    ): Boolean {
+        return problemRepository.removeProblemConfig(
+            problemId,
+            languageId,
+        )
     }
 }

@@ -38,4 +38,21 @@ interface ProblemService {
     suspend fun removeProblem(id: Long): Boolean
 
     suspend fun updateTag(tagId: Long, name: String): Boolean
+
+    suspend fun addProblemConfig(
+        problemId: Long,
+        languageId: String,
+        time: Int,
+        memory: Int,
+        maxOutputSize: Long?,
+        maxStack: Long?,
+        maxProcessNumber: Short?,
+        args: List<String>,
+        env: List<String>
+    ): Boolean
+
+    suspend fun removeProblemConfig(
+        problemId: Long,
+        languageId: String,
+    ): Boolean
 }

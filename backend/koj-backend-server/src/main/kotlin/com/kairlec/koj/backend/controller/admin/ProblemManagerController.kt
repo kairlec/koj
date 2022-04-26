@@ -79,5 +79,45 @@ class ProblemManagerController(
         return problemService.newProblem(problem.name, problem.content, problem.spj, problem.tags).sureEffect()
     }
 
+    data class ConfigModel(
+        val languageId: String,
+        val time: Int,
+        val memory: Int,
+        val maxOutputSize: Long?,
+        val maxStack: Long?,
+        val maxProcessNumber: Short?,
+        val args: List<String>?,
+        val env: List<String>?
+    )
+
+    @PutMapping("/problems/{problemId}/configs")
+    suspend fun addConfig(
+        @PathVariable problemId: Long,
+        @RequestBody config: ConfigModel
+    ) {
+        problemService.addProblemConfig(
+            problemId,
+            config.languageId,
+            config.time,
+            config.memory,
+            config.maxOutputSize,
+            config.maxStack,
+            config.maxProcessNumber,
+            config.args ?: emptyList(),
+            config.env ?: emptyList()
+        ).sureEffect()
+    }
+
+    @DeleteMapping("/problems/{problemId}/configs/{languageId}")
+    suspend fun addConfig(
+        @PathVariable problemId: Long,
+        @PathVariable languageId: String
+    ) {
+        problemService.removeProblemConfig(
+            problemId,
+            languageId,
+        ).sureEffect()
+    }
+
 
 }

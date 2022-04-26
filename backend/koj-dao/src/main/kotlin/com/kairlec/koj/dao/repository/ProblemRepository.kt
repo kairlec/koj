@@ -40,7 +40,7 @@ class ProblemRepository(
         return dslAccess.flow { create ->
             create.select(PROBLEM.ID, PROBLEM.NAME, PROBLEM.SPJ, DSL.field("tr.tag_names"))
                 .from(PROBLEM)
-                .innerJoin(
+                .leftJoin(
                     create.select(
                         TAG_BELONG_PROBLEM.PROBLEM_ID.`as`("pi"),
                         DSL.groupConcat(PROBLEM_TAG.NAME).separator(",").`as`("tag_names")
@@ -66,7 +66,7 @@ class ProblemRepository(
                         name = it[PROBLEM.NAME],
                         spj = it[PROBLEM.SPJ],
                         idx = null,
-                        tags = it["tr.tag_names"].toString().split(",")
+                        tags = it["tr.tag_names"]?.toString()?.split(",") ?: emptyList()
                     )
                 }
         } pg count
