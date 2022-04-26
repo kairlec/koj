@@ -1,5 +1,6 @@
 package com.kairlec.koj.backend.controller
 
+import com.kairlec.koj.backend.service.ReadOnlySubmitService
 import com.kairlec.koj.backend.service.SubmitService
 import com.kairlec.koj.backend.util.RE
 import com.kairlec.koj.backend.util.currentListCondition
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/public/submits")
 class PublicSubmitController(
-    private val submitService: SubmitService
+    private val submitService: ReadOnlySubmitService
 ) {
     @GetMapping("/-")
     suspend fun getSubmits(): RE<Flow<SimpleSubmit>> {

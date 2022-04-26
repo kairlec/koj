@@ -1,15 +1,19 @@
 package com.kairlec.koj.backend.controller.internal
 
+import com.kairlec.koj.backend.component.LanguageIdSupporter
+import com.kairlec.koj.backend.config.SandboxMQ
 import com.kairlec.koj.backend.config.userIdAttributes
+import com.kairlec.koj.backend.service.ReadOnlySubmitService
 import com.kairlec.koj.backend.service.SubmitService
 import com.kairlec.koj.backend.util.sureFound
 import com.kairlec.koj.dao.model.SubmitDetail
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/submits")
-class SubmitController(
-    private val submitService: SubmitService
+class ReadOnlySubmitController(
+    private val submitService: ReadOnlySubmitService
 ) {
     @GetMapping("/{submitId}")
     suspend fun getSubmit(
@@ -18,7 +22,15 @@ class SubmitController(
     ): SubmitDetail {
         return submitService.getSubmit(userId, submitId).sureFound("submit<${submitId}> not found")
     }
+}
 
+@RestController
+@RequestMapping("/submits")
+// TODO: [SubmitService]不知道为什么找得到
+@ConditionalOnBean(SubmitService::class, SandboxMQ::class, LanguageIdSupporter::class)
+class SubmitController(
+    private val submitService: SubmitService
+) {
     data class SubmitModel(
         val competitionId: Long?,
         val languageId: String,

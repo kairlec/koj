@@ -7,22 +7,14 @@ import com.kairlec.koj.backend.component.LanguageIdSupporter
 import com.kairlec.koj.backend.config.SandboxMQ
 import com.kairlec.koj.backend.exp.NotSupportLanguageConfigException
 import com.kairlec.koj.backend.exp.NotSupportLanguageException
-import com.kairlec.koj.backend.exp.PermissionDeniedException
 import com.kairlec.koj.backend.service.SubmitService
 import com.kairlec.koj.common.InternalApi
-import com.kairlec.koj.dao.extended.ListCondition
-import com.kairlec.koj.dao.model.SimpleSubmit
-import com.kairlec.koj.dao.model.SubmitDetail
 import com.kairlec.koj.dao.model.SubmitState
-import com.kairlec.koj.dao.repository.CompetitionRepository
-import com.kairlec.koj.dao.repository.PageData
 import com.kairlec.koj.dao.repository.ProblemRepository
 import com.kairlec.koj.dao.repository.SubmitRepository
 import com.kairlec.koj.model.task
 import com.kairlec.koj.model.taskConfig
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.withContext
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -30,9 +22,9 @@ import java.net.InetAddress
 import kotlin.random.Random
 
 @Service
+@ConditionalOnBean(SandboxMQ::class, LanguageIdSupporter::class)
 class SubmitServiceImpl(
     private val submitRepository: SubmitRepository,
-    private val competitionRepository: CompetitionRepository,
     private val uidGenerator: UidGenerator,
     private val problemRepository: ProblemRepository,
     private val languageIdSupporter: LanguageIdSupporter,
@@ -40,23 +32,6 @@ class SubmitServiceImpl(
     private val objectMapper: ObjectMapper,
     applicationContext: ApplicationContext
 ) : SubmitService {
-    override suspend fun getSubmits(listCondition: ListCondition): PageData<SimpleSubmit> {
-        return submitRepository.getSubmitRank(listCondition)
-    }
-
-    override suspend fun getSubmit(userId: Long, submitId: Long): SubmitDetail? {
-        return submitRepository.getSubmitDetail(userId, submitId)
-    }
-
-    override suspend fun getSubmits(userId: Long, competitionId: Long): Flow<SimpleSubmit> {
-        if (!competitionRepository.isInCompetition(userId, competitionId)) {
-            throw PermissionDeniedException("not in this competition")
-        }
-        return withContext(Dispatchers.IO) {
-            submitRepository.getSubmitRank(competitionId)
-        }
-    }
-
     @InternalApi
     override suspend fun createSubmit(
         id: Long,
@@ -110,8 +85,15 @@ class SubmitServiceImpl(
     }
 
     @InternalApi
-    override suspend fun updateSubmit(id: Long, state: SubmitState, castMemory: Long?, castTime: Long?): Boolean {
-        return submitRepository.updateSubmit(id, state, castMemory, castTime)
+    override suspend fun updateSubmit(
+        id: Long,
+        state: SubmitState,
+        castMemory: Long?,
+        castTime: Long?,
+        stderr: String?,
+        stdout: String?
+    ): Boolean {
+        return submitRepository.updateSubmit(id, state, castMemory, castTime, stderr, stdout)
     }
 
     private val applicationName = applicationContext.applicationName.ifBlank {
