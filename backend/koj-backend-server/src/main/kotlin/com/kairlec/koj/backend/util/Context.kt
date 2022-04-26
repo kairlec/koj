@@ -69,5 +69,6 @@ inline fun <T : Any> T?.sureFound(message: String = "data not found", cause: Thr
 
 inline fun <T : Any> T?.sureEffect(message: String = "data not modified", cause: Throwable? = null): T =
     this ?: throw DataNotModifiedException(message, cause = cause)
+
 inline fun Boolean.sureEffect(message: String = "data not modified", cause: Throwable? = null): Boolean =
-    if(this) true else throw DataNotModifiedException(message, cause = cause)
+    if (this) true else throw DataNotModifiedException(message, cause = cause)
