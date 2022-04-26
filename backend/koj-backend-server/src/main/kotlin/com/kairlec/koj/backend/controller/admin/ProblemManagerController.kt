@@ -2,6 +2,8 @@ package com.kairlec.koj.backend.controller.admin
 
 import com.kairlec.koj.backend.service.ProblemService
 import com.kairlec.koj.backend.util.sureEffect
+import com.kairlec.koj.backend.util.sureFound
+import com.kairlec.koj.dao.tables.records.ProblemRunRecord
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -119,5 +121,24 @@ class ProblemManagerController(
         ).sureEffect()
     }
 
+    data class ProblemRunConfig(
+        val stdin: String,
+        val ansout: String
+    )
+
+    @PutMapping("/problems/{problemId}/runs")
+    suspend fun saveRunConfig(
+        @PathVariable problemId: Long,
+        @RequestBody config: ProblemRunConfig
+    ) {
+        problemService.saveProblemRunConfig(problemId, config.stdin, config.ansout).sureEffect()
+    }
+
+    @GetMapping("/problems/{problemId}/runs")
+    suspend fun saveRunConfig(
+        @PathVariable problemId: Long
+    ): ProblemRunRecord {
+        return problemService.getProblemRunConfig(problemId).sureFound("run config not set yet")
+    }
 
 }

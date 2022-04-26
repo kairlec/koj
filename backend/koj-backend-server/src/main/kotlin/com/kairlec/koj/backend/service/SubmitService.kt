@@ -36,4 +36,6 @@ interface SubmitService {
         stderr: String? = null,
         stdout: String? = null
     ): Boolean
+
+    fun getLanguages(): List<String>
 }

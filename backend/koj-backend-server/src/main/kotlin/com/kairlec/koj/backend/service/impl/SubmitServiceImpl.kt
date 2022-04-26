@@ -96,6 +96,10 @@ class SubmitServiceImpl(
         return submitRepository.updateSubmit(id, state, castMemory, castTime, stderr, stdout)
     }
 
+    override fun getLanguages(): List<String> {
+        return languageIdSupporter.supportLanguageChanges.replayCache.lastOrNull() ?: emptyList()
+    }
+
     private val applicationName = applicationContext.applicationName.ifBlank {
         "koj-be-server"
     }

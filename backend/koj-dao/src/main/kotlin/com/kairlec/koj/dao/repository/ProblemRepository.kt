@@ -9,6 +9,7 @@ import com.kairlec.koj.dao.model.Problem
 import com.kairlec.koj.dao.model.ProblemConfig
 import com.kairlec.koj.dao.model.SimpleProblem
 import com.kairlec.koj.dao.tables.records.ProblemConfigRecord
+import com.kairlec.koj.dao.tables.records.ProblemRunRecord
 import com.kairlec.koj.dao.tables.records.ProblemTagRecord
 import com.kairlec.koj.dao.with
 import kotlinx.coroutines.flow.Flow
@@ -383,6 +384,34 @@ class ProblemRepository(
             create.selectFrom(PROBLEM_CONFIG)
                 .where(PROBLEM_CONFIG.PROBLEM_ID.eq(problemId))
                 .and(PROBLEM_CONFIG.LANGUAGE_ID.eq(languageId))
+                .awaitFirstOrNull()
+        }
+    }
+
+    /**
+     * 如果不存在则新增,存在则更新
+     */
+    suspend fun saveProblemRunConfig(
+        problemId: Long,
+        stdin: String,
+        ansout: String
+    ): Boolean {
+        return dslAccess.with { create ->
+            create.insertInto(PROBLEM_RUN, PROBLEM_RUN.ID, PROBLEM_RUN.STDIN, PROBLEM_RUN.ANSOUT)
+                .values(problemId, stdin, ansout)
+                .onDuplicateKeyUpdate()
+                .set(PROBLEM_RUN.STDIN, stdin)
+                .set(PROBLEM_RUN.ANSOUT, ansout)
+                .awaitBool()
+        }
+    }
+
+    suspend fun getProblemRunConfig(
+        problemId: Long
+    ): ProblemRunRecord? {
+        return dslAccess.with { create ->
+            create.selectFrom(PROBLEM_RUN)
+                .where(PROBLEM_RUN.ID.eq(problemId))
                 .awaitFirstOrNull()
         }
     }

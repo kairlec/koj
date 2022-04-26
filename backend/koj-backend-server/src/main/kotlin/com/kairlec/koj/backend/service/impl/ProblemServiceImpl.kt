@@ -11,6 +11,7 @@ import com.kairlec.koj.dao.model.SimpleProblem
 import com.kairlec.koj.dao.repository.CompetitionRepository
 import com.kairlec.koj.dao.repository.PageData
 import com.kairlec.koj.dao.repository.ProblemRepository
+import com.kairlec.koj.dao.tables.records.ProblemRunRecord
 import com.kairlec.koj.dao.tables.records.ProblemTagRecord
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -121,5 +122,13 @@ class ProblemServiceImpl(
             problemId,
             languageId,
         )
+    }
+
+    override suspend fun saveProblemRunConfig(problemId: Long, stdin: String, ansout: String): Boolean {
+        return problemRepository.saveProblemRunConfig(problemId, stdin, ansout)
+    }
+
+    override suspend fun getProblemRunConfig(problemId: Long): ProblemRunRecord? {
+        return problemRepository.getProblemRunConfig(problemId)
     }
 }

@@ -47,7 +47,7 @@ class LanguageIdSupporter(
     private val _supportLanguageChanges = MutableSharedFlow<List<String>>(3)
     val supportLanguageChanges = _supportLanguageChanges.asSharedFlow()
 
-    @Scheduled(fixedDelay = 10_000)
+    @Scheduled(fixedDelay = 30_000)
     fun updateLanguageIds() {
         log.debug { "update language ids" }
         redisReactiveLockRegistry.obtain(UPDATE_LOCK_KEY).tryLockThenExecute {
