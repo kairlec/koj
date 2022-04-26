@@ -13,23 +13,23 @@ class ProblemManagerController(
     suspend fun addProblemTag(
         @PathVariable problemId: Long,
         @PathVariable tagId: Long
-    ): Boolean {
-        return problemService.addProblemTag(problemId, tagId).sureEffect("add problem tag failed")
+    ) {
+        problemService.addProblemTag(problemId, tagId).sureEffect("add problem tag failed")
     }
 
     @DeleteMapping("/problems/{problemId}")
     suspend fun deleteProblem(
         @PathVariable problemId: Long
-    ): Boolean {
-        return problemService.removeProblem(problemId).sureEffect("delete problem failed")
+    ) {
+        problemService.removeProblem(problemId).sureEffect("delete problem failed")
     }
 
     @DeleteMapping("/problems/{problemId}/tags/{tagId}")
     suspend fun deleteProblemTag(
         @PathVariable problemId: Long,
         @PathVariable tagId: Long
-    ): Boolean {
-        return problemService.removeProblemTag(problemId, tagId).sureEffect("delete problem tag failed")
+    ) {
+        problemService.removeProblemTag(problemId, tagId).sureEffect("delete problem tag failed")
     }
 
     @PutMapping("/tags")
@@ -43,8 +43,8 @@ class ProblemManagerController(
     suspend fun updateTag(
         @PathVariable tagId: Long,
         name: String
-    ): Boolean {
-        return problemService.updateTag(tagId, name).sureEffect("update tag failed")
+    ) {
+        problemService.updateTag(tagId, name).sureEffect("update tag failed")
     }
 
     data class UpdateProblemModel(
@@ -57,8 +57,8 @@ class ProblemManagerController(
     suspend fun updateProblem(
         @PathVariable problemId: Long,
         updateModel: UpdateProblemModel
-    ): Boolean {
-        return problemService.updateProblem(problemId, updateModel.name, updateModel.content, updateModel.spj)
+    ) {
+        problemService.updateProblem(problemId, updateModel.name, updateModel.content, updateModel.spj)
             .sureEffect("update problem failed")
     }
 
