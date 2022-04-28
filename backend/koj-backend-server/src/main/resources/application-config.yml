@@ -1,0 +1,32 @@
+pulsar:
+  service-url: ${PULSAR_URL}
+  admin-url: ${PULSAR_ADMIN_URL}
+
+spring:
+  r2dbc:
+    url: ${R2DBC_URL}
+    username: ${R2DBC_USERNAME}
+    password: ${R2DBC_PASSWORD}
+  redis:
+    host: ${REDIS_HOST}
+    password: ${REDIS_PASSWORD}
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT:465}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
+          starttls:
+            enable: true
+
+aes:
+  iv: ${AES_IV}
+  password: ${AES_PASSWORD}
+  salt: ${AES_SALT}
+
+jwt:
+  secret: ${JWT_SECRET}

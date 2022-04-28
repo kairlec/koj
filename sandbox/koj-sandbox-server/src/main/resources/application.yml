@@ -1,0 +1,2 @@
+pulsar:
+  service-url: ${PULSAR_URL}

@@ -1,0 +1,26 @@
+lock:
+  redis:
+    reactive:
+      expire-after: 60s
+      expire-evict-idle: 5s
+      reactive-lock-type:
+        - REDIS
+
+spring:
+  mail:
+    default-encoding: UTF-8
+  profiles:
+    active: config
+debug: true
+
+logging:
+  level:
+    root: DEBUG
+    com.kairlec: DEBUG
+    com.baidu: ERROR
+    pro.chenggang.project.reactive.lock: WARN
+    org.apache.pulsar.shade.org.asynchttpclient: INFO
+    io.lettuce.core: INFO
+    org.apache.pulsar.common.protocol: INFO
+    sun.rmi: ERROR
+    javax.management.remote.rmi: ERROR
