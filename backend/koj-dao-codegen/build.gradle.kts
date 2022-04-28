@@ -7,10 +7,6 @@ plugins {
     alias(libs.plugins.jooq.codegen)
 }
 
-val jooq_host: String by project
-val jooq_user: String by project
-val jooq_password: String by project
-
 tasks.bootJar {
     enabled = false
 }
@@ -23,6 +19,9 @@ dependencies {
     jooqGenerator("jakarta.xml.bind:jakarta.xml.bind-api:3.0.1")
     jooqGenerator("org.glassfish.jaxb:jaxb-runtime:3.0.2")
 }
+val jooq_host: String? by project
+val jooq_user: String? by project
+val jooq_password: String? by project
 
 jooq {
     version.set("3.16.5")
@@ -69,6 +68,9 @@ jooq {
 if (project.hasProperty("JOOQ_CACHE")) {
     sourceSets {
         main {
+            java {
+                setSrcDirs(srcDirs.filter { it.parentFile.name != "jooq" })
+            }
             java.srcDirs("src/main/jooq")
         }
     }
@@ -76,6 +78,9 @@ if (project.hasProperty("JOOQ_CACHE")) {
         isEnabled = false
     }
 } else {
+    requireNotNull(jooq_host) { "jooq_host must be set" }
+    requireNotNull(jooq_user) { "jooq_user must be set" }
+    requireNotNull(jooq_password) { "jooq_password must be set" }
     tasks.named<JooqGenerate>("generateJooq") {
         doFirst {
             delete {
@@ -91,4 +96,3 @@ if (project.hasProperty("JOOQ_CACHE")) {
         }
     }
 }
-
