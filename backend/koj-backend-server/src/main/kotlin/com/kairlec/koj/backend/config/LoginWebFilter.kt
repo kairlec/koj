@@ -6,9 +6,8 @@ import com.kairlec.koj.backend.util.X_IDENTITY
 import com.kairlec.koj.common.exception.GlobalException
 import com.kairlec.koj.common.model.asErrorResult
 import com.kairlec.koj.dao.repository.UserType
-import org.springframework.core.io.buffer.DataBufferUtils
-import org.springframework.core.io.buffer.DefaultDataBufferFactory
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.util.AntPathMatcher
 import org.springframework.web.server.ServerWebExchange
@@ -53,16 +52,8 @@ class LoginWebFilter(
                     val resp = exchange.response
                     val errorResult = e.errorCode.asErrorResult()
                     resp.statusCode = HttpStatus.valueOf(errorResult.httpStatusCode.code)
-                    resp.writeAndFlushWith {
-                        it.onNext(
-                            DataBufferUtils.readInputStream(
-                                { objectMapper.writeValueAsBytes(errorResult).inputStream() },
-                                defaultDataBufferFactory,
-                                1024
-                            )
-                        )
-                        it.onComplete()
-                    }
+                    resp.headers.contentType = MediaType.APPLICATION_JSON
+                    resp.writeWith(Mono.just(resp.bufferFactory().wrap(objectMapper.writeValueAsBytes(errorResult))))
                 } catch (e: Exception) {
                     val resp = exchange.response
                     resp.statusCode = HttpStatus.FORBIDDEN
@@ -73,7 +64,6 @@ class LoginWebFilter(
     }
 
     companion object {
-        val defaultDataBufferFactory = DefaultDataBufferFactory()
         val antPathMatcher = AntPathMatcher()
         const val publicPath = "/public/**"
         const val adminPath = "/admin/**"
