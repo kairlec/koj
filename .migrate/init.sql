@@ -60,7 +60,8 @@ CREATE TABLE IF NOT EXISTS koj.problem_run
     ansout      TEXT                   NOT NULL COMMENT '答案输出(用于)',
     create_time DATETIME DEFAULT NOW() NOT NULL COMMENT '创建时间',
     update_time DATETIME DEFAULT NOW() NOT NULL COMMENT '更新时间',
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    CONSTRAINT run_problem_id_fk FOREIGN KEY (id) REFERENCES koj.problem (id) ON DELETE CASCADE
 ) COMMENT ='题目运行内容表(非spj)';
 
 CREATE TABLE IF NOT EXISTS koj.submit
