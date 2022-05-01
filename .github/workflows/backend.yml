@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - backend/*
+      - backend/**
       - .github/workflows/backend.yml
   workflow_dispatch:
 
