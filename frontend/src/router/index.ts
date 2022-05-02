@@ -5,13 +5,13 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/home',
     name: 'Home',
-    component: Home
-  }
+    component: Home,
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 });
 
 export default router;

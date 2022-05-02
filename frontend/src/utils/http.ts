@@ -6,14 +6,14 @@ interface IgnoreErrorAbleAxiosRequestConfig<D = any> extends AxiosRequestConfig<
 }
 
 interface IgnoreErrorAbleAxiosInstance extends AxiosInstance {
-  (config: IgnoreErrorAbleAxiosRequestConfig): AxiosPromise;
-
-  (url: string, config?: IgnoreErrorAbleAxiosRequestConfig): AxiosPromise;
-
   interceptors: {
     request: AxiosInterceptorManager<IgnoreErrorAbleAxiosRequestConfig>;
     response: AxiosInterceptorManager<AxiosResponse>;
   };
+
+  (config: IgnoreErrorAbleAxiosRequestConfig): AxiosPromise;
+
+  (url: string, config?: IgnoreErrorAbleAxiosRequestConfig): AxiosPromise;
 
   getUri(config?: IgnoreErrorAbleAxiosRequestConfig): string;
 
@@ -38,9 +38,9 @@ function http(baseURL: string = '/api'): IgnoreErrorAbleAxiosInstance {
   const _http = axios.create({
     baseURL: baseURL,
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
-    timeout: 50000
+    timeout: 50000,
   });
 
   _http.interceptors.request.use(
@@ -49,14 +49,14 @@ function http(baseURL: string = '/api'): IgnoreErrorAbleAxiosInstance {
       if (id) {
         config.headers = {
           'x-identity': id,
-          ...config.headers
+          ...config.headers,
         };
       }
       return config;
     },
     (error) => {
       return Promise.reject(error);
-    }
+    },
   );
 
   _http.interceptors.response.use(
@@ -73,7 +73,7 @@ function http(baseURL: string = '/api'): IgnoreErrorAbleAxiosInstance {
       if (data?.code) {
         ElMessage({
           type: 'error',
-          message: `[${data.code}] ${data.message}`
+          message: `[${data.code}] ${data.message}`,
         });
         return Promise.reject(error);
       }
@@ -81,30 +81,30 @@ function http(baseURL: string = '/api'): IgnoreErrorAbleAxiosInstance {
         case 404:
           ElMessage({
             type: 'error',
-            message: '资源不存在'
+            message: '资源不存在',
           });
           break;
         case 500:
           ElMessage({
             type: 'error',
-            message: '服务器故障'
+            message: '服务器故障',
           });
           break;
         case 502:
           ElMessage({
             type: 'error',
-            message: '服务器正在维护'
+            message: '服务器正在维护',
           });
           break;
         default:
           ElMessage({
             type: 'error',
-            message: '请求出错'
+            message: '请求出错',
           });
           break;
       }
       return Promise.reject(error);
-    }
+    },
   );
   return _http;
 }

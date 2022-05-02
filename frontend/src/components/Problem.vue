@@ -1,7 +1,7 @@
-<script setup lang='ts'>
+<script lang='ts' setup>
 
 defineProps({
-    msg: String
+  msg: String,
 });
 
 </script>
@@ -12,6 +12,6 @@ defineProps({
 
 <style scoped>
 a {
-    color: #42b983;
+  color: #42b983;
 }
 </style>

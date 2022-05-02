@@ -78,9 +78,9 @@ function data<T = any>(promise: AxiosPromise<T>, extra: (res: AxiosResponse<T>) 
           stringify({
             username,
             password,
-            email
-          })
-        )
+            email,
+          }),
+        ),
       );
     },
     loginUser: (usernameOrEmail: string, password: string) => {
@@ -89,13 +89,13 @@ function data<T = any>(promise: AxiosPromise<T>, extra: (res: AxiosResponse<T>) 
           login,
           stringify({
             usernameOrEmail,
-            password
-          })
+            password,
+          }),
         ),
         (res) => {
           Storage.identity(res.headers[Storage.xIdentity]);
           return res.data;
-        }
+        },
       );
     },
     destroy: () => axios.delete(destroy),
@@ -115,7 +115,7 @@ function data<T = any>(promise: AxiosPromise<T>, extra: (res: AxiosResponse<T>) 
     },
     stat(username: string) {
       return data(axios.get(`${stat}${username}`));
-    }
+    },
   };
 })();
 
