@@ -1,62 +1,94 @@
 <template>
   <login-dialog v-if='showLoginDialog' @login-success='onLoginSuccess' @login-cancel='onLoginCancel'></login-dialog>
-  <register-dialog v-if='showRegisterDialog' @register-success='onRegisterSuccess'
-                   @register-cancel='onRegisterCancel'></register-dialog>
+  <register-dialog
+    v-if='showRegisterDialog' @register-success='onRegisterSuccess'
+    @register-cancel='onRegisterCancel'></register-dialog>
 
-  <el-menu :default-active='activeIndex' mode='horizontal' router='router' @select='handleSelect'>
+  <el-menu v-if='showMenu' :default-active='activeIndex' mode='horizontal' :router='true' @select='handleSelect'>
     <el-image class='logo' src='/src/assets/logo.svg'></el-image>
     <el-menu-item index='1' route='/home'>首页</el-menu-item>
     <el-menu-item index='2' route='/problem'>题目</el-menu-item>
     <el-menu-item index='3' route='/submit'>提交</el-menu-item>
     <el-menu-item index='4' route='/contents'>比赛</el-menu-item>
     <el-menu-item index='5' route='/rank'>排行</el-menu-item>
-    <el-button class='loginOrOut' round='round' type='primary' @click='loginOrOut'>{{ loginOrOutName }}</el-button>
-    <el-button v-if='username.length===0' round='round' type='primary' @click='registerClick'>注册</el-button>
+    <template v-if='user.user?.type===0'>
+      <el-menu-item index='6' route='/userManage'>用户管理</el-menu-item>
+    </template>
+    <template v-if='!user.user'>
+      <el-button
+        class='login nologin-btn' :loading='user.initing' :round='true' type='primary'
+        @click='showLoginDialog = true'>登录
+      </el-button>
+      <el-button
+        class='nologin-btn' :loading='user.initing' :round='true' type='primary'
+        @click='showRegisterDialog = true'>注册
+      </el-button>
+    </template>
+    <template v-else>
+      <el-dropdown class='login'>
+        <el-button type='primary' class='user-btn' round='round'>
+          {{ user.user.username }}
+          <el-icon class='el-icon--right'>
+            <arrow-down />
+          </el-icon>
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item>修改密码</el-dropdown-item>
+            <el-dropdown-item @click='logout()'>退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+    </template>
   </el-menu>
 </template>
 
 <script lang='ts'>
-import { onBeforeMount, onMounted, ref } from 'vue';
+import { defineComponent, getCurrentInstance, nextTick, onBeforeMount, ref } from 'vue';
 import LoginDialog from './LoginDialog.vue';
 import RegisterDialog from './RegisterDialog.vue';
-import api from '~/api';
+import { ArrowDown } from '@element-plus/icons-vue';
+import { User } from '~/api';
+import { getGlobalUser, setGlobalUser } from '~/hooks/globalUser';
+import { KOJStorage } from '~/storage';
+import { useRouter } from 'vue-router';
 
-export default {
+export default defineComponent({
   name: 'MenuBar',
-  components: { RegisterDialog, LoginDialog },
+  components: { ArrowDown, RegisterDialog, LoginDialog },
   setup() {
+    const showMenu = ref(true);
+
+    function reload() {
+      showMenu.value = false;
+      nextTick(() => {
+        showMenu.value = true;
+      });
+    }
+
+    const instance = getCurrentInstance()!;
     const activeIndex = ref('1');
-    const loginOrOutName = ref('登录');
     const showLoginDialog = ref(false);
     const showRegisterDialog = ref(false);
-    const username = ref('');
+    const user = getGlobalUser(instance.appContext);
+    const route = useRouter();
 
     onBeforeMount(() => {
-      api.self().then(user => {
-        console.log(user);
-        showLoginDialog.value = false;
-        loginOrOutName.value = '退出';
-      });
+
     });
 
-    onMounted(() => {
-      console.log('Component is mounted!');
-    });
     return {
-      username,
+      showMenu,
+      user,
       showLoginDialog,
       showRegisterDialog,
       activeIndex,
-      loginOrOutName,
       handleSelect(key: string) {
         console.log(key);
       },
-      loginOrOut() {
-        showLoginDialog.value = true;
-      },
-      onLoginSuccess() {
+      onLoginSuccess(user: User) {
+        setGlobalUser(instance.appContext, user);
         showLoginDialog.value = false;
-        loginOrOutName.value = '退出';
       },
       onLoginCancel() {
         showLoginDialog.value = false;
@@ -67,12 +99,14 @@ export default {
       onRegisterCancel() {
         showRegisterDialog.value = false;
       },
-      registerClick() {
-        showRegisterDialog.value = true;
-      },
+      logout() {
+        setGlobalUser(instance.appContext, null);
+        KOJStorage.identity(null);
+        reload();
+      }
     };
-  },
-};
+  }
+})
 </script>
 
 <style scoped>
@@ -80,14 +114,19 @@ export default {
   width: 6%;
 }
 
-.el-button {
+.nologin-btn {
   margin-left: 35px;
   border-radius: 30px;
   height: 49px;
   width: 9%;
 }
 
-.loginOrOut {
+.user-btn {
+  border-radius: 30px;
+  height: 49px;
+}
+
+.login {
   margin-left: auto;
 }
 

@@ -1,12 +1,21 @@
-import { createApp } from 'vue';
-import router from './router';
-import App from './App.vue';
-import Axios from 'axios';
+import { createApp } from 'vue'
+import router from './router'
+import App from './App.vue'
+import api from '~/api'
+import { setGlobalUser } from '~/hooks/globalUser'
 
-const app = createApp(App);
+const app = createApp(App)
 
-app.config.globalProperties.Axios = Axios;
+app.use(router)
 
-app.use(router);
+setGlobalUser(app, null, true)
 
-app.mount('#app');
+api
+  .self()
+  .then((user) => {
+    setGlobalUser(app, user, false)
+  })
+  .catch(() => {
+    setGlobalUser(app, null, false)
+  })
+app.mount('#app')

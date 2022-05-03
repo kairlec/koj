@@ -1,17 +1,17 @@
-export namespace Storage {
-  const storage = window.localStorage;
-  export const xIdentity = 'x-identity';
+export namespace KOJStorage {
+  const storage = window.localStorage
+  export const xIdentity = 'x-identity'
 
-  export function identity(value?: string): string | null | undefined {
+  export function identity(value?: string | undefined | null): string | null | undefined {
     if (value !== undefined) {
       if (value) {
-        storage.setItem(xIdentity, value);
-        return value;
+        storage.setItem(xIdentity, value)
+        return value
       } else {
-        storage.removeItem(xIdentity);
+        storage.removeItem(xIdentity)
       }
     } else {
-      return storage.getItem(xIdentity);
+      return storage.getItem(xIdentity)
     }
   }
 }

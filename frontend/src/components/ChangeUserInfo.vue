@@ -5,9 +5,10 @@
     @close='cancel'
   >
 
-    <el-form ref='ruleFormRef'
-             :model='form'
-             :rules='rules'
+    <el-form
+      ref='ruleFormRef'
+      :model='form'
+      :rules='rules'
     >
       <el-form-item :label-width='formLabelWidth' label='账户' prop='username'>
         <el-input v-model='form.username' autocomplete='username' placeholder='用户名' readonly />
@@ -35,7 +36,7 @@ import { defineComponent, reactive, ref } from 'vue';
 import type { FormInstance } from 'element-plus';
 
 export default defineComponent({
-  name: 'LoginDialog',
+  name: 'ChangeUserInfo',
   emits: ['loginSuccess', 'loginCancel'],
   setup(props, context) {
     const formLabelWidth = '60px';
@@ -44,7 +45,7 @@ export default defineComponent({
 
     const form = reactive({
       usernameOrEmail: '',
-      password: '',
+      password: ''
     });
 
     const validateUsernameOrEmail = (rule: any, value: any, callback: any) => {
@@ -65,7 +66,7 @@ export default defineComponent({
 
     const rules = reactive({
       usernameOrEmail: [{ validator: validateUsernameOrEmail, trigger: 'blur' }],
-      password: [{ validator: validatePassword, trigger: 'blur' }],
+      password: [{ validator: validatePassword, trigger: 'blur' }]
     });
 
 
@@ -91,15 +92,15 @@ export default defineComponent({
     };
 
     return {
-      rules,
+      rules: loginRules,
       dialogVisible,
       formLabelWidth,
-      form,
+      form: loginForm,
       submitForm,
       ruleFormRef,
-      cancel,
+      cancel
     };
-  },
+  }
 });
 </script>
 <style scoped>

@@ -5,25 +5,28 @@
     @close='cancel'
   >
 
-    <el-form ref='ruleFormRef'
-             :model='form'
-             :rules='rules'
+    <el-form
+      ref='ruleFormRef'
+      :model='form'
+      :rules='rules'
     >
       <el-form-item :label-width='formLabelWidth' label='账户' prop='username'>
-        <el-input v-model='form.username' autocomplete='nickname' placeholder='用户名' />
+        <el-input v-model='form.username' clearable autocomplete='nickname' maxlength='30' placeholder='用户名' />
       </el-form-item>
       <el-form-item :label-width='formLabelWidth' label='邮箱' prop='email'>
-        <el-input v-model='form.email' autocomplete='email' placeholder='邮箱' />
+        <el-input v-model='form.email' clearable autocomplete='email' maxlength='30' placeholder='邮箱' />
       </el-form-item>
       <el-form-item :label-width='formLabelWidth' label='密码' prop='password'>
-        <el-input v-model='form.password' autocomplete='new-password' type='password' />
+        <el-input
+          v-model='form.password' autocomplete='new-password' type='password' maxlength='30'
+          show-password clearable />
       </el-form-item>
     </el-form>
 
     <template #footer>
       <span class='dialog-footer'>
         <el-button @click='dialogVisible = false'>取消</el-button>
-        <el-button type='primary' @click='submitForm(ruleFormRef)'>注册</el-button>
+        <el-button :loading='loading' type='primary' @click='submitForm(ruleFormRef)'>注册</el-button>
       </span>
     </template>
   </el-dialog>
@@ -41,37 +44,56 @@ export default defineComponent({
     const formLabelWidth = '60px';
     const dialogVisible = ref(true);
     const ruleFormRef = ref<FormInstance>();
+    const controller = new AbortController();
+    const loading = ref(false);
 
     const form = reactive({
       username: '',
       email: '',
-      password: '',
+      password: ''
     });
 
-    let usernameCheckTimeout: NodeJS.Timeout | undefined;
-    let emailCheckTimeout: NodeJS.Timeout | undefined;
+    const checkRequest: {
+      username: {
+        timeout: NodeJS.Timeout | undefined,
+        controller: AbortController,
+      },
+      email: {
+        timeout: NodeJS.Timeout | undefined,
+        controller: AbortController,
+      },
+    } = {
+      username: {
+        timeout: undefined,
+        controller: new AbortController()
+      },
+      email: {
+        timeout: undefined,
+        controller: new AbortController()
+      }
+    };
 
     const validateUsername = (rule: any, value: any, callback: any) => {
-      if (usernameCheckTimeout) {
-        clearTimeout(usernameCheckTimeout);
+      if (checkRequest.username.timeout) {
+        checkRequest.username.controller.abort();
+        clearTimeout(checkRequest.username.timeout);
       }
       if (value === '') {
         callback(new Error('请输入用户名'));
       } else if (value.length < 6) {
         callback(new Error('用户名长度不能小于6位'));
-        // 检查用户名是否包含违规字符
-      } else if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-        callback(new Error('用户名只能包含字母、数字和下划线'));
+      } else if (!/^[a-zA-Z\d_-]{4,}$/.test(value)) {
+        callback(new Error('用户名只能包含字母、数字、下划线和中划线'));
       } else {
-        usernameCheckTimeout = setTimeout(() => {
-          api.existsUsernameOrEmail(value).then(res => {
+        checkRequest.username.timeout = setTimeout(() => {
+          api.existsUsernameOrEmail(value, { signal: checkRequest.username.controller.signal }).then(res => {
             if (res) {
               callback(new Error('用户名已存在'));
             } else {
               callback();
             }
           }).finally(() => {
-            usernameCheckTimeout = undefined;
+            checkRequest.username.timeout = undefined;
           });
         });
       }
@@ -80,31 +102,34 @@ export default defineComponent({
     const validatePassword = (rule: any, value: any, callback: any) => {
       if (value === '') {
         callback(new Error('请输入密码'));
-      } else if (value.length < 6) {
-        callback(new Error('密码长度不能小于6位'));
       } else {
-        callback();
+        if (value.length < 6) {
+          callback(new Error('密码过短'));
+        } else {
+          callback();
+        }
       }
     };
 
     const validateEmail = (rule: any, value: any, callback: any) => {
-      if (emailCheckTimeout) {
-        clearTimeout(emailCheckTimeout);
+      if (checkRequest.email.timeout) {
+        checkRequest.email.controller.abort();
+        clearTimeout(checkRequest.email.timeout);
       }
       if (value === '') {
         callback(new Error('请输入邮箱'));
-      } else if (!(/^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,}$/.test(value))) {
+      } else if (!(/^[a-zA-Z\d_.-]+@[a-zA-Z\d-]+(\.[a-zA-Z\d-]+)*\.[a-zA-Z\d]{2,6}$/.test(value))) {
         callback(new Error('邮箱格式不正确'));
       } else {
-        emailCheckTimeout = setTimeout(() => {
-          api.existsUsernameOrEmail(value).then(res => {
+        checkRequest.email.timeout = setTimeout(() => {
+          api.existsUsernameOrEmail(value, { signal: checkRequest.email.controller.signal }).then(res => {
             if (res) {
               callback(new Error('邮箱已存在'));
             } else {
               callback();
             }
           }).finally(() => {
-            emailCheckTimeout = undefined;
+            checkRequest.email.timeout = undefined;
           });
         });
       }
@@ -113,17 +138,21 @@ export default defineComponent({
     const rules = reactive({
       username: [{ validator: validateUsername, trigger: 'blur' }],
       email: [{ validator: validateEmail, trigger: 'blur' }],
-      password: [{ validator: validatePassword, trigger: 'blur' }],
+      password: [{ validator: validatePassword, trigger: 'blur' }]
     });
 
 
     function register() {
-      api.registerUser(form.username, form.password, form.email).then(() => {
+      loading.value = true;
+      api.registerUser(form.username, form.password, form.email, { signal: controller.signal }).then(() => {
         context.emit('registerSuccess');
+      }).finally(() => {
+        loading.value = false;
       });
     }
 
     function cancel() {
+      controller.abort();
       context.emit('registerCancel');
     }
 
@@ -139,16 +168,16 @@ export default defineComponent({
     };
 
     return {
+      loading,
       rules,
-      dialogVisible,
       dialogVisible,
       formLabelWidth,
       form,
       submitForm,
       ruleFormRef,
-      cancel,
+      cancel
     };
-  },
+  }
 });
 </script>
 <style scoped>

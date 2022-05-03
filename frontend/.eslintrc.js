@@ -10,7 +10,7 @@ module.exports = {
   },
   plugins: ['@typescript-eslint', 'prettier'],
   extends: ['plugin:vue/vue3-recommended', 'plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
-  rules: {
+  rules:  {
     '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
@@ -39,6 +39,6 @@ module.exports = {
     ],
     'space-before-function-paren': 'off',
     quotes: ['error', 'single'],
-    'comma-dangle': ['error', 'never']
+    'comma-dangle': ['error', 'never'],
   }
 };
