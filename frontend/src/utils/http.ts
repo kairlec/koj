@@ -39,7 +39,6 @@ function http(config?: KOJAxiosRequestConfig): KOJAxiosInstance {
 
   _http.interceptors.request.use(
     (config) => {
-      console.log('config', config)
       const id = KOJStorage.identity()
       if (id) {
         config.headers = {
