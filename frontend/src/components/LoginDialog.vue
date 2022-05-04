@@ -90,6 +90,7 @@ export default defineComponent({
     const forgetRuleFormRef = ref<FormInstance>();
     const submitState = ref(false);
     const controller = new AbortController();
+    const loginApi = api.withConfig({ signal: controller.signal });
     const getVerifyCodeBtn = reactive<any>({
       text: '获取验证码',
       loading: false,
@@ -113,9 +114,7 @@ export default defineComponent({
     const getVerifyCode = () => {
       getVerifyCodeBtn.loading = true;
       getVerifyCodeBtn.timer && clearInterval(getVerifyCodeBtn.timer);
-      api.forgetPassword(forgetForm.username, forgetForm.email, {
-        signal: controller.signal
-      }).then(() => {
+      loginApi.forgetPassword(forgetForm.username, forgetForm.email).then(() => {
         getVerifyCodeBtn.timer = setInterval(() => {
           const tmp = getVerifyCodeBtn.duration--;
           getVerifyCodeBtn.text = `${tmp}秒`;
@@ -209,9 +208,7 @@ export default defineComponent({
 
     function login() {
       submitState.value = true;
-      api.loginUser(loginForm.usernameOrEmail, loginForm.password, {
-        signal: controller.signal
-      }).then((user) => {
+      loginApi.loginUser(loginForm.usernameOrEmail, loginForm.password).then((user) => {
         context.emit('loginSuccess', user);
       }).finally(() => {
         submitState.value = false;
@@ -241,9 +238,7 @@ export default defineComponent({
             if (loginMode.value) {
               login();
             } else {
-              api.resetPassword(forgetForm.username, forgetForm.email, forgetForm.verifyCode, forgetForm.newPassword, {
-                signal: controller.signal
-              }).then(() => {
+              loginApi.resetPassword(forgetForm.username, forgetForm.email, forgetForm.verifyCode, forgetForm.newPassword).then(() => {
                 ElMessage({
                   type: 'success',
                   message: '重置密码成功，请重新登录',

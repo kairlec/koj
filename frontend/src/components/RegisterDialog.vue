@@ -46,6 +46,7 @@ export default defineComponent({
     const ruleFormRef = ref<FormInstance>();
     const controller = new AbortController();
     const loading = ref(false);
+    const registerApi = api.withConfig({ signal: controller.signal });
 
     const form = reactive({
       username: '',
@@ -86,7 +87,7 @@ export default defineComponent({
         callback(new Error('用户名只能包含字母、数字、下划线和中划线'));
       } else {
         checkRequest.username.timeout = setTimeout(() => {
-          api.existsUsernameOrEmail(value, { signal: checkRequest.username.controller.signal }).then(res => {
+          registerApi.existsUsernameOrEmail(value, { signal: checkRequest.username.controller.signal }).then(res => {
             if (res) {
               callback(new Error('用户名已存在'));
             } else {
@@ -122,7 +123,7 @@ export default defineComponent({
         callback(new Error('邮箱格式不正确'));
       } else {
         checkRequest.email.timeout = setTimeout(() => {
-          api.existsUsernameOrEmail(value, { signal: checkRequest.email.controller.signal }).then(res => {
+          registerApi.existsUsernameOrEmail(value, { signal: checkRequest.email.controller.signal }).then(res => {
             if (res) {
               callback(new Error('邮箱已存在'));
             } else {
@@ -144,7 +145,7 @@ export default defineComponent({
 
     function register() {
       loading.value = true;
-      api.registerUser(form.username, form.password, form.email, { signal: controller.signal }).then(() => {
+      registerApi.registerUser(form.username, form.password, form.email, { signal: controller.signal }).then(() => {
         context.emit('registerSuccess');
       }).finally(() => {
         loading.value = false;

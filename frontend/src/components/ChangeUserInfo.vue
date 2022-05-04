@@ -32,7 +32,7 @@
 
 <script lang='ts'>
 import api from '../utils/api';
-import { defineComponent, reactive, ref } from 'vue';
+import { defineComponent, onBeforeMount, reactive, ref } from 'vue';
 import type { FormInstance } from 'element-plus';
 
 export default defineComponent({
@@ -63,6 +63,10 @@ export default defineComponent({
         callback();
       }
     };
+
+    onBeforeMount(()=>{
+      api.self()
+    })
 
     const rules = reactive({
       usernameOrEmail: [{ validator: validateUsernameOrEmail, trigger: 'blur' }],

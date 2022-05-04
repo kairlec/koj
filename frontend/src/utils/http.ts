@@ -1,50 +1,45 @@
 import axios, { AxiosInstance, AxiosInterceptorManager, AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { KOJStorage } from './storage'
 
-export interface IgnoreErrorAbleAxiosRequestConfig<D = any> extends AxiosRequestConfig<D> {
+export interface KOJAxiosRequestConfig<D = any> extends AxiosRequestConfig<D> {
   ignoreError?: boolean
 }
 
-export interface IgnoreErrorAbleAxiosInstance extends AxiosInstance {
+export interface KOJAxiosInstance extends AxiosInstance {
   interceptors: {
-    request: AxiosInterceptorManager<IgnoreErrorAbleAxiosRequestConfig>
+    request: AxiosInterceptorManager<KOJAxiosRequestConfig>
     response: AxiosInterceptorManager<AxiosResponse>
   }
 
-  (config: IgnoreErrorAbleAxiosRequestConfig): AxiosPromise
+  (config: KOJAxiosRequestConfig): AxiosPromise
 
-  (url: string, config?: IgnoreErrorAbleAxiosRequestConfig): AxiosPromise
+  (url: string, config?: KOJAxiosRequestConfig): AxiosPromise
 
-  getUri(config?: IgnoreErrorAbleAxiosRequestConfig): string
+  getUri(config?: KOJAxiosRequestConfig): string
 
-  request<T = any, R = AxiosResponse<T>, D = any>(config: IgnoreErrorAbleAxiosRequestConfig<D>): Promise<R>
+  request<T = any, R = AxiosResponse<T>, D = any>(config: KOJAxiosRequestConfig<D>): Promise<R>
 
-  get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: IgnoreErrorAbleAxiosRequestConfig<D>): Promise<R>
+  get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: KOJAxiosRequestConfig<D>): Promise<R>
 
-  delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: IgnoreErrorAbleAxiosRequestConfig<D>): Promise<R>
+  delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: KOJAxiosRequestConfig<D>): Promise<R>
 
-  head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: IgnoreErrorAbleAxiosRequestConfig<D>): Promise<R>
+  head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: KOJAxiosRequestConfig<D>): Promise<R>
 
-  options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: IgnoreErrorAbleAxiosRequestConfig<D>): Promise<R>
+  options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: KOJAxiosRequestConfig<D>): Promise<R>
 
-  post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: IgnoreErrorAbleAxiosRequestConfig<D>): Promise<R>
+  post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: KOJAxiosRequestConfig<D>): Promise<R>
 
-  put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: IgnoreErrorAbleAxiosRequestConfig<D>): Promise<R>
+  put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: KOJAxiosRequestConfig<D>): Promise<R>
 
-  patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: IgnoreErrorAbleAxiosRequestConfig<D>): Promise<R>
+  patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: KOJAxiosRequestConfig<D>): Promise<R>
 }
 
-function http(baseURL = '/api'): IgnoreErrorAbleAxiosInstance {
-  const _http = axios.create({
-    baseURL: baseURL,
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    timeout: 5000,
-  })
+function http(config?: KOJAxiosRequestConfig): KOJAxiosInstance {
+  const _http = axios.create(config)
 
   _http.interceptors.request.use(
     (config) => {
+      console.log('config', config)
       const id = KOJStorage.identity()
       if (id) {
         config.headers = {
@@ -116,6 +111,7 @@ function http(baseURL = '/api'): IgnoreErrorAbleAxiosInstance {
       return Promise.reject(error)
     },
   )
+
   return _http
 }
 
