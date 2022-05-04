@@ -165,7 +165,7 @@ export default defineComponent({
     const validateUsername = (rule: any, value: any, callback: any) => {
       if (value === '') {
         callback(new Error('请输入用户名'));
-      } else if (!/^[a-zA-Z\d_-]{6,}$/.test(value)) {
+      } else if (!/^[a-zA-Z\d_-]{4,}$/.test(value)) {
         callback(new Error('用户名格式不正确'));
       } else {
         callback();
@@ -176,7 +176,7 @@ export default defineComponent({
       if (value === '') {
         callback(new Error('请输入密码'));
       } else {
-        if (value.length < 6) {
+        if (value.length < 4) {
           callback(new Error('密码过短'));
         } else {
           callback();

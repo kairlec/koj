@@ -4,15 +4,17 @@
     v-if='showRegisterDialog' @register-success='onRegisterSuccess'
     @register-cancel='onRegisterCancel'></register-dialog>
 
-  <el-menu v-if='showMenu' :default-active='activeIndex' mode='horizontal' :router='true' @select='handleSelect'>
+  <el-menu v-if='showMenu' :default-active='activeIndex' mode='horizontal' :router='true'>
     <el-image class='logo' src='/src/assets/logo.svg'></el-image>
-    <el-menu-item index='1' route='/home'>首页</el-menu-item>
-    <el-menu-item index='2' route='/problem'>题目</el-menu-item>
-    <el-menu-item index='3' route='/submit'>提交</el-menu-item>
-    <el-menu-item index='4' route='/contents'>比赛</el-menu-item>
-    <el-menu-item index='5' route='/rank'>排行</el-menu-item>
+    <template
+      v-for='(item,idx) in userMenuRoutes' :key='idx'>
+      <el-menu-item :index='`1${idx}`' :route='item.path'>{{ item.name }}</el-menu-item>
+    </template>
     <template v-if='user.user?.type===0'>
-      <el-menu-item index='6' route='/userManage'>用户管理</el-menu-item>
+      <template
+        v-for='(item,idx) in manageMenuRoutes' :key='idx'>
+        <el-menu-item :index='`0${idx}`' :route='item.path'>{{ item.name }}</el-menu-item>
+      </template>
     </template>
     <template v-if='!user.user'>
       <el-button
@@ -44,14 +46,15 @@
 </template>
 
 <script lang='ts'>
-import { defineComponent, getCurrentInstance, nextTick, onBeforeMount, ref } from 'vue';
+import { defineComponent, getCurrentInstance, nextTick, ref, watch } from 'vue';
 import LoginDialog from './LoginDialog.vue';
 import RegisterDialog from './RegisterDialog.vue';
 import { ArrowDown } from '@element-plus/icons-vue';
 import { User } from '~/api';
 import { getGlobalUser, setGlobalUser } from '~/hooks/globalUser';
 import { KOJStorage } from '~/storage';
-import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+import { routes } from '../router';
 
 export default defineComponent({
   name: 'MenuBar',
@@ -71,21 +74,45 @@ export default defineComponent({
     const showLoginDialog = ref(false);
     const showRegisterDialog = ref(false);
     const user = getGlobalUser(instance.appContext);
-    const route = useRouter();
-
-    onBeforeMount(() => {
-
-    });
+    const route = useRoute();
+    const allRoutes = routes.filter((it) => it.displayName);
+    const userRoutes = allRoutes.filter((it) => !it.manage);
+    const manageRoutes = allRoutes.filter((it) => it.manage);
+    const userMenuRoutes = ref(userRoutes.map((item) => {
+      return {
+        path: item.path,
+        name: item.displayName
+      };
+    }));
+    const manageMenuRoutes = ref(manageRoutes.map((item) => {
+      return {
+        path: item.path,
+        name: item.displayName
+      };
+    }));
+    watch(() => route.fullPath,
+      (rt) => {
+        for (let i = 0; i < allRoutes.length; i++) {
+          const current = allRoutes[i];
+          if (rt.startsWith(current.path)) {
+            if (current.manage) {
+              activeIndex.value = `0${i}`;
+            } else {
+              activeIndex.value = `1${i}`;
+            }
+            break;
+          }
+        }
+      });
 
     return {
+      userMenuRoutes,
+      manageMenuRoutes,
       showMenu,
       user,
       showLoginDialog,
       showRegisterDialog,
       activeIndex,
-      handleSelect(key: string) {
-        console.log(key);
-      },
       onLoginSuccess(user: User) {
         setGlobalUser(instance.appContext, user);
         showLoginDialog.value = false;
@@ -106,7 +133,7 @@ export default defineComponent({
       }
     };
   }
-})
+});
 </script>
 
 <style scoped>
