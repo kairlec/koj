@@ -4,7 +4,7 @@
     v-if='showRegisterDialog' @register-success='onRegisterSuccess'
     @register-cancel='onRegisterCancel'></register-dialog>
 
-  <el-menu v-if='showMenu' :default-active='activeIndex' mode='horizontal' :router='true'>
+  <el-menu v-if='showMenu' :id='id' :default-active='activeIndex' mode='horizontal' :router='true'>
     <el-image class='logo' src='/src/assets/logo.svg'></el-image>
     <template
       v-for='(item,idx) in userMenuRoutes' :key='idx'>
@@ -59,6 +59,12 @@ import { routes } from '../router';
 export default defineComponent({
   name: 'MenuBar',
   components: { ArrowDown, RegisterDialog, LoginDialog },
+  props:{
+    id: {
+      type: String,
+      default: 'menu-bar'
+    }
+  },
   setup() {
     const showMenu = ref(true);
 
@@ -165,7 +171,7 @@ export default defineComponent({
 
 <style scoped>
 .el-menu-item {
-  width: 6%;
+  width: 8%;
 }
 
 .nologin-btn {
