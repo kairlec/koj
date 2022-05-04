@@ -71,10 +71,12 @@ function http(baseURL = '/api'): IgnoreErrorAbleAxiosInstance {
         return Promise.reject(error)
       }
       if (!error.response) {
-        ElMessage({
-          type: 'error',
-          message: error.message,
-        })
+        if (error.message !== 'canceled') {
+          ElMessage({
+            type: 'error',
+            message: error.message,
+          })
+        }
         return Promise.reject(error)
       }
       const data = error.response.data
