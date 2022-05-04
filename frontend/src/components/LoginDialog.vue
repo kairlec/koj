@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     v-model='dialogVisible'
-    title='登录'
+    :title='loginMode ? "登录" : "忘记密码"'
     @close='cancel'
   >
     <el-form
@@ -89,7 +89,7 @@ export default defineComponent({
     const loginRuleFormRef = ref<FormInstance>();
     const forgetRuleFormRef = ref<FormInstance>();
     const submitState = ref(false);
-    const controller = new AbortController()
+    const controller = new AbortController();
     const getVerifyCodeBtn = reactive<any>({
       text: '获取验证码',
       loading: false,
@@ -113,8 +113,8 @@ export default defineComponent({
     const getVerifyCode = () => {
       getVerifyCodeBtn.loading = true;
       getVerifyCodeBtn.timer && clearInterval(getVerifyCodeBtn.timer);
-      api.forgetPassword(forgetForm.username, forgetForm.email,{
-        signal:controller.signal
+      api.forgetPassword(forgetForm.username, forgetForm.email, {
+        signal: controller.signal
       }).then(() => {
         getVerifyCodeBtn.timer = setInterval(() => {
           const tmp = getVerifyCodeBtn.duration--;
@@ -209,8 +209,8 @@ export default defineComponent({
 
     function login() {
       submitState.value = true;
-      api.loginUser(loginForm.usernameOrEmail, loginForm.password,{
-        signal:controller.signal
+      api.loginUser(loginForm.usernameOrEmail, loginForm.password, {
+        signal: controller.signal
       }).then((user) => {
         context.emit('loginSuccess', user);
       }).finally(() => {
@@ -219,7 +219,7 @@ export default defineComponent({
     }
 
     function cancel() {
-      controller.abort()
+      controller.abort();
       context.emit('loginCancel');
     }
 
@@ -241,8 +241,8 @@ export default defineComponent({
             if (loginMode.value) {
               login();
             } else {
-              api.resetPassword(forgetForm.username, forgetForm.email, forgetForm.verifyCode, forgetForm.newPassword,{
-                signal:controller.signal
+              api.resetPassword(forgetForm.username, forgetForm.email, forgetForm.verifyCode, forgetForm.newPassword, {
+                signal: controller.signal
               }).then(() => {
                 ElMessage({
                   type: 'success',

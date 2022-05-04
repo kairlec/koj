@@ -53,7 +53,7 @@ import { ArrowDown } from '@element-plus/icons-vue';
 import { User } from '~/api';
 import { getGlobalUser, setGlobalUser } from '~/hooks/globalUser';
 import { KOJStorage } from '~/storage';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { routes } from '../router';
 
 export default defineComponent({
@@ -75,6 +75,7 @@ export default defineComponent({
     const showRegisterDialog = ref(false);
     const user = getGlobalUser(instance.appContext);
     const route = useRoute();
+    const router = useRouter();
     const allRoutes = routes.filter((it) => it.displayName);
     const userRoutes = allRoutes.filter((it) => !it.manage);
     const manageRoutes = allRoutes.filter((it) => it.manage);
@@ -96,7 +97,6 @@ export default defineComponent({
           const current = manageRoutes[i];
           if (rt.startsWith(current.path)) {
             activeIndex.value = `0${i}`;
-            console.log(activeIndex.value);
             return;
           }
         }
@@ -104,12 +104,34 @@ export default defineComponent({
           const current = userRoutes[i];
           if (rt.startsWith(current.path)) {
             activeIndex.value = `1${i}`;
-            console.log(activeIndex.value);
             return;
           }
         }
       });
-
+    function checkManageNeedRouteBack(){
+      const rt = route.fullPath;
+      for (let i = 0; i < manageRoutes.length; i++) {
+        const current = manageRoutes[i];
+        if (rt.startsWith(current.path)) {
+          router.push({ name: 'Home' });
+          return;
+        }
+      }
+    }
+    // 用户变动（初始化成功、退出登录、新登录等）
+    watch(() => user.user,
+      (newUser) => {
+        if (!newUser) {
+          checkManageNeedRouteBack()
+        }
+      });
+    // 监听初始化事件（比如初始化失败）
+    watch(() => user.initing,
+      (initing) => {
+        if (!initing) {
+          checkManageNeedRouteBack()
+        }
+      });
     return {
       userMenuRoutes,
       manageMenuRoutes,
