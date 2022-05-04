@@ -92,15 +92,20 @@ export default defineComponent({
     }));
     watch(() => route.fullPath,
       (rt) => {
-        for (let i = 0; i < allRoutes.length; i++) {
-          const current = allRoutes[i];
+        for (let i = 0; i < manageRoutes.length; i++) {
+          const current = manageRoutes[i];
           if (rt.startsWith(current.path)) {
-            if (current.manage) {
-              activeIndex.value = `0${i}`;
-            } else {
-              activeIndex.value = `1${i}`;
-            }
-            break;
+            activeIndex.value = `0${i}`;
+            console.log(activeIndex.value);
+            return;
+          }
+        }
+        for (let i = 0; i < userRoutes.length; i++) {
+          const current = userRoutes[i];
+          if (rt.startsWith(current.path)) {
+            activeIndex.value = `1${i}`;
+            console.log(activeIndex.value);
+            return;
           }
         }
       });

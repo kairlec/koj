@@ -40,7 +40,7 @@ function http(baseURL = '/api'): IgnoreErrorAbleAxiosInstance {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    timeout: 50000,
+    timeout: 5000,
   })
 
   _http.interceptors.request.use(
@@ -66,7 +66,15 @@ function http(baseURL = '/api'): IgnoreErrorAbleAxiosInstance {
       }
     },
     (error) => {
+      console.debug(error)
       if (error.config?.ignoreError) {
+        return Promise.reject(error)
+      }
+      if (!error.response) {
+        ElMessage({
+          type: 'error',
+          message: error.message,
+        })
         return Promise.reject(error)
       }
       const data = error.response.data
