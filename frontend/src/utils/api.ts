@@ -42,9 +42,11 @@ export type SearchCondition = Record<
   }
 >
 
+export type SortCondition = Record<string, 'Asc' | 'Desc'>
+
 export interface ListCondition {
   search?: SearchCondition
-  sort?: string[]
+  sort?: SortCondition
   limit?: number
   seek?: any[]
 }
@@ -76,13 +78,31 @@ function wrapSearch(search?: SearchCondition): string[] | undefined {
   }
 }
 
+function wrapSort(sort?: SortCondition): string[] | undefined {
+  if (sort) {
+    const target: string[] = []
+    for (const key in sort) {
+      const cur = sort[key]
+      switch (cur) {
+        case 'Asc':
+          target.push(`-${key}`)
+          break
+        case 'Desc':
+          target.push(`~${key}`)
+          break
+      }
+    }
+    return target
+  }
+}
+
 export function listConditionAsParam(
   condition?: ListCondition,
 ): Record<'search' | 'sort' | 'limit' | 'seek', string | undefined> | undefined {
   if (condition) {
     return {
       search: wrapSearch(condition.search)?.join(','),
-      sort: condition.sort?.join(','),
+      sort: wrapSort(condition.sort)?.join(','),
       limit: condition.limit?.toString(),
       seek: condition.seek?.join(','),
     }
@@ -116,7 +136,7 @@ interface IApi {
     config?: KOJAxiosRequestConfig,
   ): Promise<undefined>
 
-  problems(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleProblem>>
+  problems(tags?: string[], listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleProblem>>
 }
 
 const _axios = http({
@@ -208,17 +228,16 @@ const apiRoute = wrapRecord({
         reset() {
           return `${this._base}:reset`
         },
-      }
+      },
     },
     problems: {
       _base: '',
       list() {
         return `${this._base}/-`
       },
-    }
-  }
+    },
+  },
 })
-console.log(apiRoute)
 
 function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxiosRequestConfig): IApi {
   return {
@@ -239,7 +258,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
             email,
           }),
           { ...addonConfig, ...config },
-        )
+        ),
       )
     },
     loginUser(usernameOrEmail: string, password: string, config?: KOJAxiosRequestConfig) {
@@ -285,9 +304,9 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
         apiRoute.public.users.pwd.forget(),
         stringify({
           username,
-          email
+          email,
         }),
-        { ...addonConfig, ...config }
+        { ...addonConfig, ...config },
       )
     },
     resetPassword(
@@ -311,9 +330,13 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
         },
       )
     },
-    problems(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleProblem>> {
+    problems(tags?: string[], listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleProblem>> {
       const cf = { ...addonConfig, ...config }
-      cf.params = { ...cf.params, ...listCondition }
+      cf.params = { ...cf.params, ...listConditionAsParam(listCondition) }
+      if (tags && tags.length) {
+        debugger
+        cf.params.tags = tags.join(',')
+      }
       return page(this.axios.get(apiRoute.public.problems.list(), cf))
     },
   }

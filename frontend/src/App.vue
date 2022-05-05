@@ -1,28 +1,44 @@
 <template>
   <el-container>
     <el-header>
-      <MenuBar id='menu'></MenuBar>
+      <MenuBar></MenuBar>
     </el-header>
-    <el-main id='body-main'>
-      <router-view />
+    <el-main style='padding: 0'>
+      <el-container :style='bodyStyle'>
+        <router-view />
+      </el-container>
     </el-main>
   </el-container>
 </template>
 
-<style>
-a {
-  color: #42b983;
+<script lang='ts' setup>
+import { onBeforeMount, onBeforeUnmount, onMounted, ref } from 'vue';
+
+//region 刷新body的最大高度,flex搞了半天,没搞好,还是直接resize,开摆!
+
+const bodyStyle = ref('');
+
+function useResize(onResize: (this: Window, ev: UIEvent) => any) {
+  onMounted(() => {
+    window.addEventListener('resize', onResize);
+  });
+  onBeforeUnmount(() => {
+    window.removeEventListener('resize', onResize);
+  });
 }
 
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+function freshBodySize() {
+  bodyStyle.value = `max-height: ${window.innerHeight - 76}px`;
 }
 
-/*#menu{*/
-/*  position:fixed;*/
-/*}*/
-</style>
+onBeforeMount(() => {
+  freshBodySize();
+});
+
+useResize(() => {
+  freshBodySize();
+});
+
+//endregion
+
+</script>
