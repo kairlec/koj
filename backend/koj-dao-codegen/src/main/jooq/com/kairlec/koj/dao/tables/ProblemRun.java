@@ -9,6 +9,8 @@ import com.kairlec.koj.dao.Koj;
 import com.kairlec.koj.dao.tables.records.ProblemRunRecord;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
@@ -112,6 +114,23 @@ public class ProblemRun extends TableImpl<ProblemRunRecord> {
     @Override
     public UniqueKey<ProblemRunRecord> getPrimaryKey() {
         return Keys.KEY_PROBLEM_RUN_PRIMARY;
+    }
+
+    @Override
+    public List<ForeignKey<ProblemRunRecord, ?>> getReferences() {
+        return Arrays.asList(Keys.PROBLEM_RUN_FK);
+    }
+
+    private transient Problem _problem;
+
+    /**
+     * Get the implicit join path to the <code>koj.problem</code> table.
+     */
+    public Problem problem() {
+        if (_problem == null)
+            _problem = new Problem(this, Keys.PROBLEM_RUN_FK);
+
+        return _problem;
     }
 
     @Override

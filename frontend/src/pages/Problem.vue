@@ -2,25 +2,47 @@
   <el-container class='problem-container'>
     <el-header style='text-align: right; font-size: 12px'>
       <div class='toolbar'>
-        <p>这里随便写点什么吧</p>
-        <el-button-group>
-          <el-button
-            type='primary' :loading='fetchingProblemList' :icon='ArrowLeft' :disabled='!havePrev'
-            @click='fetchProblemList("Prev")'>
-            {{ havePrev ? '上一页' : '没有更多了' }}
-          </el-button>
-          <el-button
-            type='primary' :loading='fetchingProblemList' :disabled='!haveNext'
-            @click='fetchProblemList("Next")'>
-            {{ haveNext ? '下一页' : '没有更多了' }}
-            <el-icon class='el-icon--right'>
-              <ArrowRight />
-            </el-icon>
-          </el-button>
-        </el-button-group>
-        <el-button :loading='fetchingProblemList' :icon='RefreshRight' @click='fetchProblemList("Refresh")'>
-          {{ fetchingProblemList ? '请求中' : '刷新' }}
-        </el-button>
+        <el-row :gutter='20'>
+          <el-col :span='6'></el-col>
+          <el-col :span='8'>
+            <el-input
+              v-model='searchText'
+              class='w-50 m-2'
+              size='large'
+              placeholder='输入名称搜索'
+              :prefix-icon='Search'
+              clearable
+              maxlength='20'
+              @keyup.enter='searchProblem'
+            >
+              <template #append>
+                <el-button :icon='Search' @click='searchProblem' />
+              </template>
+            </el-input>
+          </el-col>
+          <el-col :span='10'>
+            <el-button-group>
+              <el-button
+                type='primary' size='large' :loading='fetchingProblemList' :icon='ArrowLeft' :disabled='!havePrev'
+                @click='fetchProblemList("Prev")'>
+                {{ havePrev ? '上一页' : '没有更多了' }}
+              </el-button>
+              <el-button
+                type='primary' size='large' :loading='fetchingProblemList' :disabled='!haveNext'
+                @click='fetchProblemList("Next")'>
+                {{ haveNext ? '下一页' : '没有更多了' }}
+                <el-icon class='el-icon--right'>
+                  <ArrowRight />
+                </el-icon>
+              </el-button>
+              <el-button
+                size='large' :loading='fetchingProblemList' :icon='RefreshRight'
+                @click='fetchProblemList("Refresh")'>
+                {{ fetchingProblemList ? '请求中' : '刷新' }}
+              </el-button>
+            </el-button-group>
+          </el-col>
+        </el-row>
       </div>
     </el-header>
 
@@ -31,13 +53,24 @@
             <template v-if='problemList'>
               <p v-for='item in problemList.record' :key='item.id' style='cursor: pointer' class='problem-item'>
                 {{ item.name }}</p>
-              <p v-for='item in 20' :key='item' style='cursor: pointer' class='problem-item'>
-                这里是模拟数据</p>
             </template>
           </el-scrollbar>
         </el-main>
         <el-aside width='35%'>
+          <el-select
+            v-model="value1"
+            multiple
+            placeholder="选择标签筛选"
+            style="width: 240px"
+          >
+          </el-select>
           <el-scrollbar>
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
             <p>这里应该放标签</p>
           </el-scrollbar>
         </el-aside>
@@ -50,7 +83,7 @@
 <script lang='ts'>
 import { defineComponent, onBeforeMount, onBeforeUnmount, Ref, ref } from 'vue';
 import api, { ListCondition, PageData, SimpleProblem } from '~/api';
-import { ArrowLeft, ArrowRight, RefreshRight } from '@element-plus/icons-vue';
+import { ArrowLeft, ArrowRight, RefreshRight, Search } from '@element-plus/icons-vue';
 
 export default defineComponent({
   components: {
@@ -65,13 +98,15 @@ export default defineComponent({
     const havePrev = ref(false);
     const haveNext = ref(false);
     const tagFilter: Ref<string[]> = ref([]);
+    const tags = ref<string[]>([]);
+    const selectedTags = ref<string[]>([]);
 
 
     type SortMode = 'Asc' | 'Desc';
     type FetchMode = 'Refresh' | 'Next' | 'Prev';
 
     let currentSortMode: SortMode = 'Desc';
-    let searchText = '';
+    const searchText = ref('');
 
     onBeforeUnmount(() => {
       controller.abort();
@@ -90,11 +125,11 @@ export default defineComponent({
           id: fetchMode != 'Prev' ? currentSortMode : (currentSortMode == 'Asc' ? 'Desc' : 'Asc')
         }
       } as ListCondition;
-      if (searchText) {
+      if (searchText.value) {
         res.search = {
           name: {
             mode: 'Fuzzy',
-            value: searchText
+            value: searchText.value
           }
         };
       }
@@ -112,6 +147,13 @@ export default defineComponent({
       fetchProblemList('Refresh');
     });
 
+    function searchProblem() {
+      lastFetchCondition = undefined;
+      fetchProblemList('Refresh');
+    }
+
+    // function fetch
+
     function fetchProblemList(fetchMode: FetchMode) {
       if (fetchMode === 'Refresh') {
         problemList.value = undefined;
@@ -119,12 +161,6 @@ export default defineComponent({
       fetchingProblemList.value = true;
       const condition = buildListCondition(fetchMode);
       problemApi.problems(tagFilter.value, condition).then((data) => {
-        if (fetchMode === 'Refresh') {
-          data.record.push(...Array(11).fill({
-            id: 0,
-            name: '这里是模拟数据'
-          }));
-        }
         if (data.record.length) {
           lastFetchCondition = condition;
           if (fetchMode == 'Prev') {
@@ -142,6 +178,9 @@ export default defineComponent({
             haveNext.value = true;
             havePrev.value = true;
           }
+          if (fetchMode == 'Refresh' && !(condition.seek?.length)) {
+            havePrev.value = false;
+          }
         } else {
           if (fetchMode === 'Next') {
             haveNext.value = false;
@@ -156,6 +195,11 @@ export default defineComponent({
     }
 
     return {
+      selectedTags,
+      tags,
+      searchProblem,
+      searchText,
+      Search,
       havePrev,
       haveNext,
       ArrowLeft,
@@ -193,10 +237,12 @@ export default defineComponent({
 }
 
 .problem-container .toolbar {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 100%;
-  right: 20px;
+}
+
+.toolbar .el-row {
+  padding-top: 10px;
 }
 </style>
