@@ -34,6 +34,11 @@ export interface SimpleProblem {
   tags: string[]
 }
 
+export interface Tag {
+  id: number
+  name: string
+}
+
 export type SearchCondition = Record<
   string,
   {
@@ -137,6 +142,8 @@ interface IApi {
   ): Promise<undefined>
 
   problems(tags?: string[], listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleProblem>>
+
+  tags(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<Tag>>
 }
 
 const _axios = http({
@@ -228,7 +235,7 @@ const apiRoute = wrapRecord({
         reset() {
           return `${this._base}:reset`
         },
-      },
+      }
     },
     problems: {
       _base: '',
@@ -236,6 +243,12 @@ const apiRoute = wrapRecord({
         return `${this._base}/-`
       },
     },
+    tags: {
+      _base: '',
+      list() {
+        return `${this._base}/-`
+      }
+    }
   },
 })
 
@@ -258,7 +271,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
             email,
           }),
           { ...addonConfig, ...config },
-        ),
+        )
       )
     },
     loginUser(usernameOrEmail: string, password: string, config?: KOJAxiosRequestConfig) {
@@ -327,18 +340,22 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
         {
           ...addonConfig,
           ...config,
-        },
+        }
       )
     },
     problems(tags?: string[], listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleProblem>> {
       const cf = { ...addonConfig, ...config }
       cf.params = { ...cf.params, ...listConditionAsParam(listCondition) }
       if (tags && tags.length) {
-        debugger
         cf.params.tags = tags.join(',')
       }
       return page(this.axios.get(apiRoute.public.problems.list(), cf))
     },
+    tags(listCondition, config) {
+      const cf = { ...addonConfig, ...config }
+      cf.params = { ...cf.params, ...listConditionAsParam(listCondition) }
+      return page(this.axios.get(apiRoute.public.tags.list(), cf))
+    }
   }
 }
 

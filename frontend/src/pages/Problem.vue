@@ -49,40 +49,49 @@
     <el-main style='padding: 0'>
       <el-container style='max-height: 100%'>
         <el-main style='padding: 0'>
-          <el-scrollbar>
+          <el-scrollbar v-loading='fetchingProblemList'>
+            <template v-if='fetchingProblemListError.length'>
+              <el-result
+                icon="error"
+                title="请求出错"
+                :sub-title="fetchingProblemListError"
+              >
+                <template #extra>
+                  <el-button type="primary" @click='fetchProblemList("Refresh")'>刷新</el-button>
+                </template>
+              </el-result>
+            </template>
             <template v-if='problemList'>
               <p v-for='item in problemList.record' :key='item.id' style='cursor: pointer' class='problem-item'>
-                {{ item.name }}</p>
+                {{ `${item.id} : ${item.name}` }}</p>
             </template>
           </el-scrollbar>
         </el-main>
-        <el-aside width='35%'>
-          <el-select
-            v-model="value1"
-            multiple
-            placeholder="选择标签筛选"
-            style="width: 240px"
-          >
-          </el-select>
-          <el-scrollbar>
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-            <p>这里应该放标签</p>
-          </el-scrollbar>
+        <el-aside id='tag-container' width='35%'>
+          <el-card v-loading='fetchingTagList' class="box-card">
+            <template #header>
+              <div class="card-header">
+                <span>标签列表</span>
+              </div>
+            </template>
+            <el-scrollbar>
+              <el-check-tag
+                v-for='(item,idx) in tags' :key='item.id' :checked='item.selected'
+                :style='item.selected? "border-color: var(--el-color-primary)" : ""'
+                @change='tagOnChange(idx)'>
+                {{ item.name }}
+              </el-check-tag>
+            </el-scrollbar>
+          </el-card>
         </el-aside>
       </el-container>
-
     </el-main>
   </el-container>
 </template>
 
 <script lang='ts'>
 import { defineComponent, onBeforeMount, onBeforeUnmount, Ref, ref } from 'vue';
-import api, { ListCondition, PageData, SimpleProblem } from '~/api';
+import api, { ListCondition, PageData, SimpleProblem, Tag } from '~/api';
 import { ArrowLeft, ArrowRight, RefreshRight, Search } from '@element-plus/icons-vue';
 
 export default defineComponent({
@@ -95,17 +104,20 @@ export default defineComponent({
     let lastFetchCondition: ListCondition | undefined;
     const problemList: Ref<PageData<SimpleProblem> | undefined> = ref();
     const fetchingProblemList = ref(false);
+    const fetchingProblemListError = ref('');
+    const fetchingTagList = ref(true);
     const havePrev = ref(false);
     const haveNext = ref(false);
-    const tagFilter: Ref<string[]> = ref([]);
-    const tags = ref<string[]>([]);
-    const selectedTags = ref<string[]>([]);
+    const tags = ref<({ selected?: boolean } & Tag)[]>([]);
 
+    function tagOnChange(idx: number) {
+      tags.value[idx].selected = !tags.value[idx].selected;
+    }
 
     type SortMode = 'Asc' | 'Desc';
     type FetchMode = 'Refresh' | 'Next' | 'Prev';
 
-    let currentSortMode: SortMode = 'Desc';
+    let currentSortMode: SortMode = 'Asc';
     const searchText = ref('');
 
     onBeforeUnmount(() => {
@@ -145,6 +157,7 @@ export default defineComponent({
 
     onBeforeMount(() => {
       fetchProblemList('Refresh');
+      fetchTags();
     });
 
     function searchProblem() {
@@ -152,15 +165,29 @@ export default defineComponent({
       fetchProblemList('Refresh');
     }
 
-    // function fetch
+    function fetchTags() {
+      problemApi.tags({
+        limit: 99999
+      }, {
+        ignoreError: true
+      }).then(res => {
+        tags.value = res.record;
+        fetchingTagList.value = false;
+      }).catch(() => {
+        setTimeout(() => {
+          fetchTags();
+        }, 100);
+      });
+    }
 
     function fetchProblemList(fetchMode: FetchMode) {
       if (fetchMode === 'Refresh') {
         problemList.value = undefined;
       }
       fetchingProblemList.value = true;
+      fetchingProblemListError.value =''
       const condition = buildListCondition(fetchMode);
-      problemApi.problems(tagFilter.value, condition).then((data) => {
+      problemApi.problems(tags.value.filter(it => it.selected).map((it) => it.name), condition).then((data) => {
         if (data.record.length) {
           lastFetchCondition = condition;
           if (fetchMode == 'Prev') {
@@ -189,14 +216,20 @@ export default defineComponent({
             havePrev.value = false;
           }
         }
+      }).catch((err)=>{
+        if(fetchMode==='Refresh'){
+          fetchingProblemListError.value = err.message
+        }
       }).finally(() => {
         fetchingProblemList.value = false;
       });
     }
 
     return {
-      selectedTags,
+      fetchingProblemListError,
+      fetchingTagList,
       tags,
+      tagOnChange,
       searchProblem,
       searchText,
       Search,
@@ -216,7 +249,8 @@ export default defineComponent({
 .problem-item {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-left: 30px;
   height: 50px;
   margin: 10px;
   text-align: center;
@@ -233,13 +267,30 @@ export default defineComponent({
 
 .problem-container .el-aside {
   color: var(--el-text-color-primary);
-  background: var(--el-color-primary-light-8);
 }
 
 .problem-container .toolbar {
   align-items: center;
   justify-content: center;
   height: 100%;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#tag-container .el-check-tag{
+  margin: 5px;
+  height: 17px;
+  font-size: 18px;
+  padding: 13px 19px;
+  border: 1px solid black;
+}
+
+#tag-container .el-card{
+  margin-top: 10px;
 }
 
 .toolbar .el-row {
