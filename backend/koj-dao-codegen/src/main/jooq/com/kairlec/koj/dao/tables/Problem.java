@@ -69,7 +69,7 @@ public class Problem extends TableImpl<ProblemRecord> {
     /**
      * The column <code>koj.problem.spj</code>. 是否为spj
      */
-    public final TableField<ProblemRecord, Boolean> SPJ = createField(DSL.name("spj"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.inline("0", SQLDataType.BOOLEAN)), this, "是否为spj");
+    public final TableField<ProblemRecord, Byte> SPJ = createField(DSL.name("spj"), SQLDataType.TINYINT.nullable(false).defaultValue(DSL.inline("0", SQLDataType.TINYINT)), this, "是否为spj");
 
     /**
      * The column <code>koj.problem.create_time</code>. 创建时间
@@ -165,7 +165,7 @@ public class Problem extends TableImpl<ProblemRecord> {
     // -------------------------------------------------------------------------
 
     @Override
-    public Row6<Long, String, String, Boolean, LocalDateTime, LocalDateTime> fieldsRow() {
+    public Row6<Long, String, String, Byte, LocalDateTime, LocalDateTime> fieldsRow() {
         return (Row6) super.fieldsRow();
     }
 }

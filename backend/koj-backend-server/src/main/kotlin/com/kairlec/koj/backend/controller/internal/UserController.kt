@@ -18,7 +18,7 @@ class UserController(
     @GetMapping("/self")
     suspend fun getUserInfo(@RequestAttribute(userIdAttributes) userId: Long): RE<PublicUserController.UserVO> {
         val user = userService.getUser(userId)?.let {
-            if (it.blocked) {
+            if (it.blocked == 0.toByte()) {
                 throw UserHasBeBlockedException()
             }
             PublicUserController.UserVO(it.id, it.username, it.email, it.type, it.createTime)

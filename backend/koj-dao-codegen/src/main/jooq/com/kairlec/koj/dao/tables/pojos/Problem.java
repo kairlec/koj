@@ -19,7 +19,7 @@ public class Problem implements Serializable {
     private final Long          id;
     private final String        name;
     private final String        content;
-    private final Boolean       spj;
+    private final Byte          spj;
     private final LocalDateTime createTime;
     private final LocalDateTime updateTime;
 
@@ -36,7 +36,7 @@ public class Problem implements Serializable {
         Long          id,
         String        name,
         String        content,
-        Boolean       spj,
+        Byte          spj,
         LocalDateTime createTime,
         LocalDateTime updateTime
     ) {
@@ -72,7 +72,7 @@ public class Problem implements Serializable {
     /**
      * Getter for <code>koj.problem.spj</code>. 是否为spj
      */
-    public Boolean getSpj() {
+    public Byte getSpj() {
         return this.spj;
     }
 

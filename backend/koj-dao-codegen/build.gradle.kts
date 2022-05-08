@@ -36,17 +36,10 @@ jooq {
                     password = jooq_password
                 }
                 generator.apply {
-                    name = "org.jooq.codegen.DefaultGenerator"
+                    name = "org.jooq.codegen.JavaGenerator"
                     database.apply {
                         name = "org.jooq.meta.mysql.MySQLDatabase"
                         inputSchema = "koj"
-                        forcedTypes.addAll(
-                            listOf(
-                                org.jooq.meta.jaxb.ForcedType()
-                                    .withName("BOOLEAN")
-                                    .withIncludeTypes("""(?i:TINYINT\(1\))""")
-                            )
-                        )
                     }
                     generate.apply {
                         isDeprecated = false

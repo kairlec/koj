@@ -19,7 +19,7 @@ import org.jooq.impl.UpdatableRecordImpl;
  * 题目表
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
-public class ProblemRecord extends UpdatableRecordImpl<ProblemRecord> implements Record6<Long, String, String, Boolean, LocalDateTime, LocalDateTime> {
+public class ProblemRecord extends UpdatableRecordImpl<ProblemRecord> implements Record6<Long, String, String, Byte, LocalDateTime, LocalDateTime> {
 
     private static final long serialVersionUID = 1L;
 
@@ -71,7 +71,7 @@ public class ProblemRecord extends UpdatableRecordImpl<ProblemRecord> implements
     /**
      * Setter for <code>koj.problem.spj</code>. 是否为spj
      */
-    public ProblemRecord setSpj(Boolean value) {
+    public ProblemRecord setSpj(Byte value) {
         set(3, value);
         return this;
     }
@@ -79,8 +79,8 @@ public class ProblemRecord extends UpdatableRecordImpl<ProblemRecord> implements
     /**
      * Getter for <code>koj.problem.spj</code>. 是否为spj
      */
-    public Boolean getSpj() {
-        return (Boolean) get(3);
+    public Byte getSpj() {
+        return (Byte) get(3);
     }
 
     /**
@@ -127,12 +127,12 @@ public class ProblemRecord extends UpdatableRecordImpl<ProblemRecord> implements
     // -------------------------------------------------------------------------
 
     @Override
-    public Row6<Long, String, String, Boolean, LocalDateTime, LocalDateTime> fieldsRow() {
+    public Row6<Long, String, String, Byte, LocalDateTime, LocalDateTime> fieldsRow() {
         return (Row6) super.fieldsRow();
     }
 
     @Override
-    public Row6<Long, String, String, Boolean, LocalDateTime, LocalDateTime> valuesRow() {
+    public Row6<Long, String, String, Byte, LocalDateTime, LocalDateTime> valuesRow() {
         return (Row6) super.valuesRow();
     }
 
@@ -152,7 +152,7 @@ public class ProblemRecord extends UpdatableRecordImpl<ProblemRecord> implements
     }
 
     @Override
-    public Field<Boolean> field4() {
+    public Field<Byte> field4() {
         return Problem.PROBLEM.SPJ;
     }
 
@@ -182,7 +182,7 @@ public class ProblemRecord extends UpdatableRecordImpl<ProblemRecord> implements
     }
 
     @Override
-    public Boolean component4() {
+    public Byte component4() {
         return getSpj();
     }
 
@@ -212,7 +212,7 @@ public class ProblemRecord extends UpdatableRecordImpl<ProblemRecord> implements
     }
 
     @Override
-    public Boolean value4() {
+    public Byte value4() {
         return getSpj();
     }
 
@@ -245,7 +245,7 @@ public class ProblemRecord extends UpdatableRecordImpl<ProblemRecord> implements
     }
 
     @Override
-    public ProblemRecord value4(Boolean value) {
+    public ProblemRecord value4(Byte value) {
         setSpj(value);
         return this;
     }
@@ -263,7 +263,7 @@ public class ProblemRecord extends UpdatableRecordImpl<ProblemRecord> implements
     }
 
     @Override
-    public ProblemRecord values(Long value1, String value2, String value3, Boolean value4, LocalDateTime value5, LocalDateTime value6) {
+    public ProblemRecord values(Long value1, String value2, String value3, Byte value4, LocalDateTime value5, LocalDateTime value6) {
         value1(value1);
         value2(value2);
         value3(value3);
@@ -287,7 +287,7 @@ public class ProblemRecord extends UpdatableRecordImpl<ProblemRecord> implements
     /**
      * Create a detached, initialised ProblemRecord
      */
-    public ProblemRecord(Long id, String name, String content, Boolean spj, LocalDateTime createTime, LocalDateTime updateTime) {
+    public ProblemRecord(Long id, String name, String content, Byte spj, LocalDateTime createTime, LocalDateTime updateTime) {
         super(Problem.PROBLEM);
 
         setId(id);

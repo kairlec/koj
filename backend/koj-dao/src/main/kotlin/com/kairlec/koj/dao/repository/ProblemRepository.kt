@@ -39,35 +39,41 @@ class ProblemRepository(
                 .awaitOrNull(0)
         }
         return dslAccess.flow { create ->
-            create.select(PROBLEM.ID, PROBLEM.NAME, PROBLEM.SPJ, DSL.field("tr.tag_names"))
-                .from(PROBLEM)
-                .leftJoin(
+            create.select(
+                DSL.field(PROBLEM.ID.unqualifiedName),
+                DSL.field(PROBLEM.NAME.unqualifiedName),
+                DSL.field(PROBLEM.SPJ.unqualifiedName),
+                DSL.groupConcat(DSL.field("tag_name")).separator(",").`as`("tag_names")
+            )
+                .from(
                     create.select(
-                        TAG_BELONG_PROBLEM.PROBLEM_ID.`as`("pi"),
-                        DSL.groupConcat(PROBLEM_TAG.NAME).separator(",").`as`("tag_names")
+                        PROBLEM.ID,
+                        PROBLEM.NAME,
+                        PROBLEM.SPJ,
+                        PROBLEM_TAG.NAME.`as`("tag_name")
                     )
-                        .from(PROBLEM_TAG)
-                        .join(TAG_BELONG_PROBLEM)
+                        .from(PROBLEM)
+                        .leftJoin(TAG_BELONG_PROBLEM)
+                        .on(PROBLEM.ID.eq(TAG_BELONG_PROBLEM.PROBLEM_ID))
+                        .leftJoin(PROBLEM_TAG)
                         .on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
                         .let {
                             if (tags.isEmpty()) {
-                                it
+                                it.list(PROBLEM, listCondition)
                             } else {
                                 it.where(PROBLEM_TAG.NAME.`in`(tags))
+                                    .list(PROBLEM, listCondition)
                             }
                         }
-                        .asTable("tr")
-                )
-                .on(DSL.field("pi").eq(PROBLEM.ID))
-                .list(PROBLEM, listCondition)
+                ).groupBy(DSL.field(PROBLEM.ID.unqualifiedName))
                 .asFlow()
                 .map {
                     SimpleProblem(
                         id = it[PROBLEM.ID],
                         name = it[PROBLEM.NAME],
-                        spj = it[PROBLEM.SPJ],
+                        spj = it[PROBLEM.SPJ] == 0.toByte(),
                         idx = null,
-                        tags = it["tr.tag_names"]?.toString()?.split(",") ?: emptyList()
+                        tags = it["tag_names"]?.toString()?.split(",") ?: emptyList()
                     )
                 }
         } pg count
@@ -79,39 +85,44 @@ class ProblemRepository(
     ): Flow<SimpleProblem> {
         return dslAccess.flow { create ->
             create.select(
-                PROBLEM.ID,
-                PROBLEM.NAME,
-                PROBLEM.SPJ,
-                PROBLEM_BELONG_COMPETITION.IDX,
-                DSL.field("tr.tag_names")
-            )
-                .from(PROBLEM)
-                .leftJoin(PROBLEM_BELONG_COMPETITION)
-                .on(PROBLEM.ID.eq(PROBLEM_BELONG_COMPETITION.PROBLEM_ID))
-                .innerJoin(
-                    create.select(
-                        TAG_BELONG_PROBLEM.PROBLEM_ID.`as`("pi"),
-                        DSL.groupConcat(PROBLEM_TAG.NAME).separator(",").`as`("tag_names")
-                    )
-                        .from(PROBLEM_TAG)
-                        .join(TAG_BELONG_PROBLEM)
-                        .on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
-                        .asTable("tr")
+                DSL.field(PROBLEM.ID.unqualifiedName),
+                DSL.field(PROBLEM.NAME.unqualifiedName),
+                DSL.field(PROBLEM.SPJ.unqualifiedName),
+                DSL.field(PROBLEM_BELONG_COMPETITION.IDX.unqualifiedName),
+                DSL.groupConcat(DSL.field("tag_name")).separator(",").`as`("tag_names")
+            ).from(
+                create.select(
+                    PROBLEM.ID,
+                    PROBLEM.NAME,
+                    PROBLEM.SPJ,
+                    PROBLEM_BELONG_COMPETITION.IDX,
+                    PROBLEM_TAG.NAME.`as`("tag_name")
                 )
-                .on(DSL.field("pi").eq(PROBLEM.ID))
-                .where(PROBLEM_BELONG_COMPETITION.COMPETITION_ID.eq(competitionId))
-                .orderBy(PROBLEM_BELONG_COMPETITION.CREATE_TIME)
-                .asFlow().map {
+                    .from(PROBLEM)
+                    .leftJoin(PROBLEM_BELONG_COMPETITION)
+                    .on(PROBLEM.ID.eq(PROBLEM_BELONG_COMPETITION.PROBLEM_ID))
+                    .leftJoin(TAG_BELONG_PROBLEM)
+                    .on(PROBLEM.ID.eq(TAG_BELONG_PROBLEM.PROBLEM_ID))
+                    .leftJoin(PROBLEM_TAG)
+                    .on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
+                    .where(PROBLEM_BELONG_COMPETITION.COMPETITION_ID.eq(competitionId))
+                    .orderBy(PROBLEM_BELONG_COMPETITION.CREATE_TIME)
+            )
+                .groupBy(DSL.field(PROBLEM.ID.unqualifiedName))
+                .asFlow()
+                .map {
                     SimpleProblem(
                         id = it[PROBLEM.ID],
                         name = it[PROBLEM.NAME],
-                        spj = it[PROBLEM.SPJ],
+                        spj = it[PROBLEM.SPJ] == 0.toByte(),
                         idx = it[PROBLEM_BELONG_COMPETITION.IDX],
-                        tags = it["tr.tag_names"].toString().split(",")
+                        tags = it["tag_names"]?.toString()?.split(",") ?: emptyList()
                     )
                 }
         }
     }
+
+    private val problemFields = PROBLEM.fields().map { DSL.field(it.unqualifiedName) }.toTypedArray()
 
     @Transactional(rollbackFor = [Exception::class])
     suspend fun getProblem(
@@ -119,23 +130,27 @@ class ProblemRepository(
     ): Problem? {
         val record = try {
             dslAccess.with { create ->
-                create.select(*PROBLEM.fields(), *PROBLEM_BELONG_COMPETITION.fields(), DSL.field("tr.tag_names"))
-                    .from(PROBLEM)
-                    .leftJoin(PROBLEM_BELONG_COMPETITION)
-                    .on(PROBLEM.ID.eq(PROBLEM_BELONG_COMPETITION.PROBLEM_ID))
-                    .innerJoin(
-                        create.select(
-                            TAG_BELONG_PROBLEM.PROBLEM_ID.`as`("pi"),
-                            DSL.groupConcat(PROBLEM_TAG.NAME).separator(",").`as`("tag_names")
-                        )
-                            .from(PROBLEM_TAG)
-                            .join(TAG_BELONG_PROBLEM)
-                            .on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
-                            .asTable("tr")
+                create.select(
+                    *problemFields,
+                    DSL.field(PROBLEM_BELONG_COMPETITION.IDX.unqualifiedName),
+                    DSL.groupConcat(DSL.field("tag_name")).separator(",").`as`("tag_names")
+                ).from(
+                    create.select(
+                        *PROBLEM.fields(),
+                        PROBLEM_BELONG_COMPETITION.IDX,
+                        PROBLEM_TAG.NAME.`as`("tag_name")
                     )
-                    .on(DSL.field("pi").eq(PROBLEM.ID))
-                    .where(PROBLEM.ID.eq(id))
-                    .orderBy(PROBLEM_BELONG_COMPETITION.CREATE_TIME)
+                        .from(PROBLEM)
+                        .leftJoin(PROBLEM_BELONG_COMPETITION)
+                        .on(PROBLEM.ID.eq(PROBLEM_BELONG_COMPETITION.PROBLEM_ID))
+                        .leftJoin(TAG_BELONG_PROBLEM)
+                        .on(PROBLEM.ID.eq(TAG_BELONG_PROBLEM.PROBLEM_ID))
+                        .leftJoin(PROBLEM_TAG)
+                        .on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
+                        .where(PROBLEM.ID.eq(id))
+                        .orderBy(PROBLEM_BELONG_COMPETITION.CREATE_TIME)
+                )
+                    .groupBy(DSL.field(PROBLEM.ID.unqualifiedName))
                     .awaitSingle()
             }
         } catch (e: NoSuchElementException) {
@@ -146,7 +161,7 @@ class ProblemRepository(
                 id = record[PROBLEM.ID],
                 name = record[PROBLEM.NAME],
                 content = record[PROBLEM.CONTENT],
-                spj = record[PROBLEM.SPJ],
+                spj = record[PROBLEM.SPJ] == 0.toByte(),
                 createTime = record[PROBLEM.CREATE_TIME],
                 updateTime = record[PROBLEM.UPDATE_TIME],
                 config = dslAccess.flow {
@@ -163,7 +178,7 @@ class ProblemRepository(
                         }
                 }.toList(),
                 idx = record[PROBLEM_BELONG_COMPETITION.IDX],
-                tags = record["tr.tag_names"].toString().split(",")
+                tags = record["tag_names"]?.toString()?.split(",") ?: emptyList()
             )
         }
     }
@@ -192,7 +207,7 @@ class ProblemRepository(
     ): Long? {
         return dslAccess.with { create ->
             create.insertInto(PROBLEM, PROBLEM.NAME, PROBLEM.CONTENT, PROBLEM.SPJ)
-                .values(name, content, spj)
+                .values(name, content, if (spj) 1 else 0)
                 .returningResult(PROBLEM.ID)
                 .awaitOrNull()
         }
@@ -210,7 +225,7 @@ class ProblemRepository(
             create.update(PROBLEM)
                 .setIfNotNull(PROBLEM.NAME, name)
                 .setIfNotNull(PROBLEM.CONTENT, content)
-                .setIfNotNull(PROBLEM.SPJ, spj)
+                .setIfNotNull(PROBLEM.SPJ, spj?.let { if (it) 1 else 0 })
                 .where(PROBLEM.ID.eq(id))
                 .awaitBool()
         }
