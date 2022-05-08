@@ -3,18 +3,19 @@ import { stringify } from 'qs'
 import { KOJStorage } from './storage'
 import { AxiosPromise, AxiosResponse } from 'axios'
 
-export interface ICreateTime {
+export interface ITime {
   createTime: Date
+  updateTime?: Date
 }
 
-export interface UserStat extends ICreateTime {
+export interface UserStat extends ITime {
   id: number
   username: string
   submitted: number
   ac: number[]
 }
 
-export interface User extends ICreateTime {
+export interface User extends ITime {
   id: number
   username: string
   email: string
@@ -31,6 +32,32 @@ export interface SimpleProblem {
   name: string
   spj: boolean
   idx?: number
+  tags: string[]
+}
+
+export interface ProblemSampleAns {
+  input: string
+  output: string
+}
+
+export interface ProblemContent {
+  description: string
+  input: string
+  output: string
+  samples: ProblemSampleAns[]
+  hint?: string
+}
+
+export interface ProblemDetail {
+  id: number
+  name: string
+  content: string
+  contentObj: ProblemContent
+  spj: boolean
+  createTime: string
+  updateTime: string
+  config: any[]
+  idx?: any
   tags: string[]
 }
 
@@ -143,6 +170,8 @@ interface IApi {
 
   problems(tags?: string[], listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleProblem>>
 
+  problem(id: number, config?: KOJAxiosRequestConfig): Promise<ProblemDetail>
+
   tags(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<Tag>>
 }
 
@@ -181,10 +210,15 @@ function page<T = any>(
   })
 }
 
-function extraCrateTime(res: AxiosResponse): ICreateTime {
-  const user = res.data
-  user.createTime = new Date(user.createTime)
-  return user
+function extraTime<T>(res: AxiosResponse): T & ITime {
+  const data = res.data
+  if (data.createTime) {
+    data.createTime = new Date(data.createTime)
+  }
+  if (data.updateTime) {
+    data.updateTime = new Date(data.updateTime)
+  }
+  return data
 }
 
 function wrapRecord<T extends Record<string, any>>(base: T, parent = ''): T {
@@ -235,20 +269,23 @@ const apiRoute = wrapRecord({
         reset() {
           return `${this._base}:reset`
         },
-      }
+      },
     },
     problems: {
       _base: '',
       list() {
         return `${this._base}/-`
       },
+      detail(id: number) {
+        return `${this._base}/${id}`
+      },
     },
     tags: {
       _base: '',
       list() {
         return `${this._base}/-`
-      }
-    }
+      },
+    },
   },
 })
 
@@ -259,7 +296,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
     },
     axios: axiosInstance,
     self(config?: KOJAxiosRequestConfig) {
-      return data(this.axios.get(apiRoute.users.self(), { ignoreError: true, ...config }), extraCrateTime) as Promise<User>
+      return data(this.axios.get(apiRoute.users.self(), { ignoreError: true, ...config }), extraTime)
     },
     registerUser(username: string, password: string, email: string, config?: KOJAxiosRequestConfig) {
       return data(
@@ -271,7 +308,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
             email,
           }),
           { ...addonConfig, ...config },
-        )
+        ),
       )
     },
     loginUser(usernameOrEmail: string, password: string, config?: KOJAxiosRequestConfig) {
@@ -310,7 +347,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
         })
     },
     stat(username: string, config?: KOJAxiosRequestConfig) {
-      return data(this.axios.get(apiRoute.public.users.stat(username), { ...addonConfig, ...config }), extraCrateTime) as Promise<UserStat>
+      return data(this.axios.get(apiRoute.public.users.stat(username), { ...addonConfig, ...config }), extraTime)
     },
     forgetPassword(username: string, email: string, config?: KOJAxiosRequestConfig): Promise<undefined> {
       return this.axios.post(
@@ -340,7 +377,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
         {
           ...addonConfig,
           ...config,
-        }
+        },
       )
     },
     problems(tags?: string[], listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleProblem>> {
@@ -351,11 +388,21 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       }
       return page(this.axios.get(apiRoute.public.problems.list(), cf))
     },
+    problem(id: number, config?: KOJAxiosRequestConfig): Promise<ProblemDetail> {
+      return data(this.axios.get(apiRoute.public.problems.detail(id), { ...addonConfig, ...config }), extraTime).then((problem) => {
+        try {
+          problem.contentObj = JSON.parse(problem.content)
+        } catch {
+          return Promise.reject(new Error('content is not json'))
+        }
+        return problem
+      })
+    },
     tags(listCondition, config) {
       const cf = { ...addonConfig, ...config }
       cf.params = { ...cf.params, ...listConditionAsParam(listCondition) }
       return page(this.axios.get(apiRoute.public.tags.list(), cf))
-    }
+    },
   }
 }
 

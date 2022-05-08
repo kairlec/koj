@@ -5,7 +5,9 @@
     </el-header>
     <el-main style='padding: 0'>
       <el-container :style='bodyStyle'>
-        <router-view />
+        <keep-alive include='ProblemList'>
+          <router-view />
+        </keep-alive>
       </el-container>
     </el-main>
   </el-container>

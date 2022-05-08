@@ -5,12 +5,12 @@ module.exports = {
     ecmaVersion: 2022,
     sourceType: 'module',
     ecmaFeatures: {
-      jsx: true
+      jsx: true,
     }
   },
   plugins: ['@typescript-eslint', 'prettier'],
   extends: ['plugin:vue/vue3-recommended', 'plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
-  rules:  {
+  rules: {
     '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
@@ -27,18 +27,17 @@ module.exports = {
       'error',
       {
         argsIgnorePattern: '^h$',
-        varsIgnorePattern: '^h$'
+        varsIgnorePattern: '^h$',
       }
     ],
     'no-unused-vars': [
       'error',
       {
         argsIgnorePattern: '^h$',
-        varsIgnorePattern: '^h$'
+        varsIgnorePattern: '^h$',
       }
     ],
     'space-before-function-paren': 'off',
     quotes: ['error', 'single'],
-    'comma-dangle': ['error', 'never'],
   }
-};
+}

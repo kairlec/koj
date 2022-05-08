@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import Home from '../pages/Home.vue'
 import Submit from '../pages/Submit.vue'
-import Problem from '../pages/Problem.vue'
+import ProblemList from '../pages/ProblemList.vue'
+import ProblemDetail from '../pages/ProblemDetail.vue'
 
 export const routes: Array<RouteRecordRaw & { displayName?: String; manage?: boolean }> = [
   { path: '/', redirect: '/home' },
@@ -15,20 +16,18 @@ export const routes: Array<RouteRecordRaw & { displayName?: String; manage?: boo
     path: '/problem',
     name: 'Problem',
     displayName: '题目',
-    component: Problem,
+    component: ProblemList,
+  },
+  {
+    path: '/problem/:id',
+    name: 'ProblemDetail',
+    component: ProblemDetail,
   },
   {
     path: '/submit',
     name: 'Submit',
     displayName: '提交',
     component: Submit,
-    children: [
-      {
-        path: '/submit/:id',
-        name: 'SubmitDetail',
-        component: Submit,
-      },
-    ]
   },
   {
     path: '/userManage',

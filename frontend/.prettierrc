@@ -7,5 +7,5 @@
   "parser": "babel-ts",
   "endOfLine": "auto",
   "semi": false,
-  "eslintIntegration": false
+  "eslintIntegration": false,
 }

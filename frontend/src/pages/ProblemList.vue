@@ -52,25 +52,32 @@
           <el-scrollbar v-loading='fetchingProblemList'>
             <template v-if='fetchingProblemListError.length'>
               <el-result
-                icon="error"
-                title="请求出错"
-                :sub-title="fetchingProblemListError"
+                icon='error'
+                title='请求出错'
+                :sub-title='fetchingProblemListError'
               >
                 <template #extra>
-                  <el-button type="primary" @click='fetchProblemList("Refresh")'>刷新</el-button>
+                  <el-button type='primary' @click='fetchProblemList("Refresh")'>刷新</el-button>
                 </template>
               </el-result>
             </template>
             <template v-if='problemList'>
-              <p v-for='item in problemList.record' :key='item.id' style='cursor: pointer' class='problem-item'>
-                {{ `${item.id} : ${item.name}` }}</p>
+              <!--              <p  class='problem-item'>ID : Name</p>-->
+              <!--                              <p v-for='item in problemList.record' :key='item.id' style='cursor: pointer' class='problem-item'>-->
+              <!--                                {{ `${item.id} : ${item.name}` }}</p>-->
+              <el-table
+                :data='problemList?.record' :stripe='true' style='width: 100%;margin-top:10px;'
+                :row-style='{cursor: "pointer"}' max-height='100%' :border='true' @row-click='detailProblem'>
+                <el-table-column prop='id' label='ID' width='180' />
+                <el-table-column prop='name' label='题目' />
+              </el-table>
             </template>
           </el-scrollbar>
         </el-main>
         <el-aside id='tag-container' width='35%'>
-          <el-card v-loading='fetchingTagList' class="box-card">
+          <el-card v-loading='fetchingTagList' class='box-card'>
             <template #header>
-              <div class="card-header">
+              <div class='card-header'>
                 <span>标签列表</span>
               </div>
             </template>
@@ -93,10 +100,12 @@
 import { defineComponent, onBeforeMount, onBeforeUnmount, Ref, ref } from 'vue';
 import api, { ListCondition, PageData, SimpleProblem, Tag } from '~/api';
 import { ArrowLeft, ArrowRight, RefreshRight, Search } from '@element-plus/icons-vue';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
+  name: 'ProblemList',
   components: {
-    ArrowRight
+    ArrowRight,
   },
   setup() {
     const controller = new AbortController();
@@ -134,15 +143,15 @@ export default defineComponent({
       const res = {
         limit: pageLimit,
         sort: {
-          id: fetchMode != 'Prev' ? currentSortMode : (currentSortMode == 'Asc' ? 'Desc' : 'Asc')
-        }
+          id: fetchMode != 'Prev' ? currentSortMode : (currentSortMode == 'Asc' ? 'Desc' : 'Asc'),
+        },
       } as ListCondition;
       if (searchText.value) {
         res.search = {
           name: {
             mode: 'Fuzzy',
-            value: searchText.value
-          }
+            value: searchText.value,
+          },
         };
       }
       if (problemList.value?.record?.length) {
@@ -153,6 +162,12 @@ export default defineComponent({
         }
       }
       return res;
+    }
+
+    const router = useRouter();
+
+    function detailProblem(row: SimpleProblem) {
+      router.push({ name: 'ProblemDetail', params: { id: row.id } });
     }
 
     onBeforeMount(() => {
@@ -167,9 +182,9 @@ export default defineComponent({
 
     function fetchTags() {
       problemApi.tags({
-        limit: 99999
+        limit: 99999,
       }, {
-        ignoreError: true
+        ignoreError: true,
       }).then(res => {
         tags.value = res.record;
         fetchingTagList.value = false;
@@ -185,7 +200,7 @@ export default defineComponent({
         problemList.value = undefined;
       }
       fetchingProblemList.value = true;
-      fetchingProblemListError.value =''
+      fetchingProblemListError.value = '';
       const condition = buildListCondition(fetchMode);
       problemApi.problems(tags.value.filter(it => it.selected).map((it) => it.name), condition).then((data) => {
         if (data.record.length) {
@@ -216,9 +231,9 @@ export default defineComponent({
             havePrev.value = false;
           }
         }
-      }).catch((err)=>{
-        if(fetchMode==='Refresh'){
-          fetchingProblemListError.value = err.message
+      }).catch((err) => {
+        if (fetchMode === 'Refresh') {
+          fetchingProblemListError.value = err.message;
         }
       }).finally(() => {
         fetchingProblemList.value = false;
@@ -226,6 +241,7 @@ export default defineComponent({
     }
 
     return {
+      detailProblem,
       fetchingProblemListError,
       fetchingTagList,
       tags,
@@ -239,9 +255,9 @@ export default defineComponent({
       RefreshRight,
       problemList,
       fetchingProblemList,
-      fetchProblemList
+      fetchProblemList,
     };
-  }
+  },
 });
 </script>
 
@@ -281,7 +297,7 @@ export default defineComponent({
   align-items: center;
 }
 
-#tag-container .el-check-tag{
+#tag-container .el-check-tag {
   margin: 5px;
   height: 17px;
   font-size: 18px;
@@ -289,11 +305,16 @@ export default defineComponent({
   border: 1px solid black;
 }
 
-#tag-container .el-card{
+#tag-container .el-card {
   margin-top: 10px;
 }
 
 .toolbar .el-row {
   padding-top: 10px;
 }
+
+.el-table__body .el-table__row {
+  cursor: pointer;
+}
+
 </style>
