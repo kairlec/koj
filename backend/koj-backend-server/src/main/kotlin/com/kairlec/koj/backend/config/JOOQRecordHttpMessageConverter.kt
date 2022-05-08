@@ -44,7 +44,7 @@ class JOOQRecordHttpMessageConverter(jsonFormat: JSONFormat?) : AbstractHttpMess
 class JOOQRecordStdSerializer(jsonFormat: JSONFormat?) : StdSerializer<Record>(Record::class.java) {
     private val jsonFormat = jsonFormat ?: JSONFormat.DEFAULT_FOR_RECORDS.recordFormat(JSONFormat.RecordFormat.OBJECT)
     override fun serialize(value: Record, gen: JsonGenerator, provider: SerializerProvider) {
-        gen.writeRaw(value.formatJSON(jsonFormat))
+        gen.writeRawValue(value.formatJSON(jsonFormat))
     }
 
     override fun handledType(): Class<Record> {
