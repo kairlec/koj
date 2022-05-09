@@ -59,7 +59,7 @@ class ProblemManagerController(
     @PatchMapping("/problems/{problemId}")
     suspend fun updateProblem(
         @PathVariable problemId: Long,
-        updateModel: UpdateProblemModel
+        @RequestBody updateModel: UpdateProblemModel
     ) {
         problemService.updateProblem(
             problemId,
