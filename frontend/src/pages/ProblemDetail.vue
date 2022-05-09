@@ -36,8 +36,7 @@ export default defineComponent({
     const controller = new AbortController();
     const problemDetailApi = api.withConfig({ signal: controller.signal });
     const route = useRoute();
-
-    watch(() => route.fullPath, () => {
+    const watchHandler = watch(() => route.fullPath, () => {
       if (route.name === 'ProblemDetail') {
         console.log('by watch');
         const id = route.params.id;
@@ -66,6 +65,7 @@ export default defineComponent({
     });
 
     onBeforeUnmount(() => {
+      watchHandler()
       controller.abort();
     });
 

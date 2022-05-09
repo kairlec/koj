@@ -46,7 +46,7 @@
 </template>
 
 <script lang='ts'>
-import { defineComponent, getCurrentInstance, nextTick, ref, watch } from 'vue';
+import { defineComponent, getCurrentInstance, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import LoginDialog from './LoginDialog.vue';
 import RegisterDialog from './RegisterDialog.vue';
 import { ArrowDown } from '@element-plus/icons-vue';
@@ -97,7 +97,7 @@ export default defineComponent({
         name: item.displayName
       };
     }));
-    watch(() => route.fullPath,
+    const routeWatcher = watch(() => route.fullPath,
       (rt) => {
         for (let i = 0; i < manageRoutes.length; i++) {
           const current = manageRoutes[i];
@@ -114,6 +114,25 @@ export default defineComponent({
           }
         }
       });
+    // 用户变动（初始化成功、退出登录、新登录等）
+    const userWatcher = watch(() => user.user,
+      (newUser) => {
+        if (!newUser) {
+          checkManageNeedRouteBack()
+        }
+      });
+    // 监听初始化事件（比如初始化失败）
+    const initWatcher = watch(() => user.initing,
+      (initing) => {
+        if (!initing) {
+          checkManageNeedRouteBack()
+        }
+      });
+    onBeforeUnmount(()=>{
+      routeWatcher();
+      userWatcher();
+      initWatcher();
+    })
     function checkManageNeedRouteBack(){
       const rt = route.fullPath;
       for (let i = 0; i < manageRoutes.length; i++) {
@@ -124,20 +143,6 @@ export default defineComponent({
         }
       }
     }
-    // 用户变动（初始化成功、退出登录、新登录等）
-    watch(() => user.user,
-      (newUser) => {
-        if (!newUser) {
-          checkManageNeedRouteBack()
-        }
-      });
-    // 监听初始化事件（比如初始化失败）
-    watch(() => user.initing,
-      (initing) => {
-        if (!initing) {
-          checkManageNeedRouteBack()
-        }
-      });
     return {
       userMenuRoutes,
       manageMenuRoutes,

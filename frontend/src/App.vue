@@ -5,9 +5,11 @@
     </el-header>
     <el-main style='padding: 0'>
       <el-container :style='bodyStyle'>
-        <keep-alive include='ProblemList'>
-          <router-view />
-        </keep-alive>
+        <router-view v-slot="{ Component }">
+          <keep-alive include='ProblemList'>
+            <component :is="Component" />
+          </keep-alive>
+        </router-view>
       </el-container>
     </el-main>
   </el-container>
