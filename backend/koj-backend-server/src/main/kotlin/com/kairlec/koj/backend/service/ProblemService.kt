@@ -34,6 +34,7 @@ interface ProblemService {
         name: String?,
         content: String?,
         spj: Boolean?,
+        tags: List<Long>?
     ): Boolean
 
     suspend fun removeProblem(id: Long): Boolean

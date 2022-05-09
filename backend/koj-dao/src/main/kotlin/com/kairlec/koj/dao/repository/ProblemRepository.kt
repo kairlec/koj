@@ -219,9 +219,10 @@ class ProblemRepository(
         name: String?,
         content: String?,
         spj: Boolean?,
+        tags: List<Long>?
     ): Boolean {
         if (name == null && content == null && spj == null) return false
-        return dslAccess.with { create ->
+        val ok1 = dslAccess.with { create ->
             create.update(PROBLEM)
                 .setIfNotNull(PROBLEM.NAME, name)
                 .setIfNotNull(PROBLEM.CONTENT, content)
@@ -229,6 +230,25 @@ class ProblemRepository(
                 .where(PROBLEM.ID.eq(id))
                 .awaitBool()
         }
+        if (tags != null) {
+            val ok2 = dslAccess.with { create ->
+                create.deleteFrom(PROBLEM_CONFIG)
+                    .where(PROBLEM_CONFIG.PROBLEM_ID.eq(id))
+                    .awaitBool()
+            }
+            if (ok2 && tags.isNotEmpty()) {
+                dslAccess.with { create ->
+                    create.insertInto(TAG_BELONG_PROBLEM, TAG_BELONG_PROBLEM.PROBLEM_ID, TAG_BELONG_PROBLEM.TAG_ID)
+                        .fold(tags) {
+                            values(id, it)
+                        }
+                        .onDuplicateKeyIgnore()
+                        .awaitBool()
+                }
+            }
+            return ok2 && ok1
+        }
+        return ok1
     }
 
     @Transactional(rollbackFor = [Exception::class])

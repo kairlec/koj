@@ -78,8 +78,14 @@ class ProblemServiceImpl(
         return problemRepository.removeProblemTag(problemId, tagId)
     }
 
-    override suspend fun updateProblem(id: Long, name: String?, content: String?, spj: Boolean?): Boolean {
-        return problemRepository.updateProblem(id, name, content, spj)
+    override suspend fun updateProblem(
+        id: Long,
+        name: String?,
+        content: String?,
+        spj: Boolean?,
+        tags: List<Long>?
+    ): Boolean {
+        return problemRepository.updateProblem(id, name, content, spj, tags)
     }
 
     override suspend fun removeProblem(id: Long): Boolean {

@@ -53,6 +53,7 @@ class ProblemManagerController(
         val name: String?,
         val content: String?,
         val spj: Boolean?,
+        val tags: List<Long>?
     )
 
     @PatchMapping("/problems/{problemId}")
@@ -60,8 +61,13 @@ class ProblemManagerController(
         @PathVariable problemId: Long,
         updateModel: UpdateProblemModel
     ) {
-        problemService.updateProblem(problemId, updateModel.name, updateModel.content, updateModel.spj)
-            .sureEffect("update problem failed")
+        problemService.updateProblem(
+            problemId,
+            updateModel.name,
+            updateModel.content,
+            updateModel.spj,
+            updateModel.tags
+        ).sureEffect("update problem failed")
     }
 
     data class ProblemModel(
