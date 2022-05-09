@@ -15,7 +15,7 @@ export default defineConfig({
     }),
     Components({
       resolvers: [ElementPlusResolver()],
-    })
+    }),
   ],
   server: {
     proxy: {
@@ -23,10 +23,10 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
-      }
-    }
+      },
+    },
   },
   resolve: {
     alias: [{ find: '~', replacement: '/src/utils' }],
-  }
+  },
 })
