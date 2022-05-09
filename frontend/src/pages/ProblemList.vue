@@ -70,6 +70,11 @@
                 :row-style='{cursor: "pointer"}' max-height='100%' :border='true' @row-click='detailProblem'>
                 <el-table-column prop='id' label='ID' width='180' />
                 <el-table-column prop='name' label='题目' />
+                <el-table-column prop='type' label='标签'>
+                  <template #default='scope'>
+                    <el-tag v-for='(item,idx) in scope.row.tags' :key='idx'>{{ item }}</el-tag>
+                  </template>
+                </el-table-column>
               </el-table>
             </template>
           </el-scrollbar>
