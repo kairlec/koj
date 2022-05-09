@@ -37,7 +37,7 @@ class PublicUserController(
         model: LoginModel
     ): RE<UserVO> {
         val user = userService.matchUser(model.usernameOrEmail, model.password)?.let {
-            if (it.blocked == 0.toByte()) {
+            if (it.blocked != 0.toByte()) {
                 throw UserHasBeBlockedException()
             }
             UserVO(it.id, it.username, it.email, it.type, it.createTime)

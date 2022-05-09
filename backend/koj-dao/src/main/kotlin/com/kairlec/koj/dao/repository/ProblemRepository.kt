@@ -71,7 +71,7 @@ class ProblemRepository(
                     SimpleProblem(
                         id = it[PROBLEM.ID],
                         name = it[PROBLEM.NAME],
-                        spj = it[PROBLEM.SPJ] == 0.toByte(),
+                        spj = it[PROBLEM.SPJ] != 0.toByte(),
                         idx = null,
                         tags = it["tag_names"]?.toString()?.split(",") ?: emptyList()
                     )
@@ -114,7 +114,7 @@ class ProblemRepository(
                     SimpleProblem(
                         id = it[PROBLEM.ID],
                         name = it[PROBLEM.NAME],
-                        spj = it[PROBLEM.SPJ] == 0.toByte(),
+                        spj = it[PROBLEM.SPJ] != 0.toByte(),
                         idx = it[PROBLEM_BELONG_COMPETITION.IDX],
                         tags = it["tag_names"]?.toString()?.split(",") ?: emptyList()
                     )
@@ -161,7 +161,7 @@ class ProblemRepository(
                 id = record[PROBLEM.ID],
                 name = record[PROBLEM.NAME],
                 content = record[PROBLEM.CONTENT],
-                spj = record[PROBLEM.SPJ] == 0.toByte(),
+                spj = record[PROBLEM.SPJ] != 0.toByte(),
                 createTime = record[PROBLEM.CREATE_TIME],
                 updateTime = record[PROBLEM.UPDATE_TIME],
                 config = dslAccess.flow {
