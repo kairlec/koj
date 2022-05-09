@@ -172,6 +172,12 @@ interface IApi {
 
   problem(id: number, config?: KOJAxiosRequestConfig): Promise<ProblemDetail>
 
+  updateProblem(
+    id: number,
+    data: { name?: string; content?: string; spj?: boolean; tags?: number[] },
+    config?: KOJAxiosRequestConfig,
+  ): Promise<void>
+
   tags(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<Tag>>
 }
 
@@ -240,6 +246,14 @@ function wrapRecord<T extends Record<string, any>>(base: T, parent = ''): T {
 }
 
 const apiRoute = wrapRecord({
+  admin: {
+    problems: {
+      _base: '',
+      detail(id: number) {
+        return `${this._base}/${id}`
+      },
+    },
+  },
   users: {
     _base: '',
     destroySelf() {
@@ -288,6 +302,13 @@ const apiRoute = wrapRecord({
     },
   },
 })
+
+export class ProblemDetailError extends Error {
+  constructor(message: string, public problem: ProblemDetail) {
+    super(message)
+    this.name = 'ProblemDetailError'
+  }
+}
 
 function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxiosRequestConfig): IApi {
   return {
@@ -393,9 +414,22 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
         try {
           problem.contentObj = JSON.parse(problem.content)
         } catch {
-          return Promise.reject(new Error('content is not json'))
+          return Promise.reject(new ProblemDetailError('content is not json', problem))
         }
         return problem
+      })
+    },
+    updateProblem(
+      id: number,
+      data: { name?: string; content?: string; spj?: boolean; tags?: number[] },
+      config?: KOJAxiosRequestConfig,
+    ): Promise<void> {
+      return this.axios.patch(apiRoute.admin.problems.detail(id), data, {
+        headers: {
+          'content-type': 'application/json',
+        },
+        ...addonConfig,
+        ...config,
       })
     },
     tags(listCondition, config) {

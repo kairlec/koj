@@ -46,6 +46,9 @@ function http(config?: KOJAxiosRequestConfig): KOJAxiosInstance {
           ...config.headers,
         }
       }
+      config.validateStatus = (status) => {
+        return status < 400
+      }
       return config
     },
     (error) => {
