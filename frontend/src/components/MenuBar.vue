@@ -50,7 +50,7 @@ import { defineComponent, getCurrentInstance, nextTick, onBeforeUnmount, ref, wa
 import LoginDialog from './LoginDialog.vue';
 import RegisterDialog from './RegisterDialog.vue';
 import { ArrowDown } from '@element-plus/icons-vue';
-import { User } from '~/api';
+import { User } from '~/apiDeclaration';
 import { getGlobalUser, setGlobalUser } from '~/hooks/globalUser';
 import { KOJStorage } from '~/storage';
 import { useRoute, useRouter } from 'vue-router';

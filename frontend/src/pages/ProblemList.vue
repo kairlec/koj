@@ -103,7 +103,8 @@
 
 <script lang='ts'>
 import { defineComponent, onBeforeMount, onBeforeUnmount, Ref, ref } from 'vue';
-import api, { ListCondition, PageData, SimpleProblem, Tag } from '~/api';
+import api from '~/api';
+import  { ListCondition, PageData, SimpleProblem, Tag } from '~/apiDeclaration';
 import { ArrowLeft, ArrowRight, RefreshRight, Search } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
 

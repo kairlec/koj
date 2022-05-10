@@ -96,10 +96,10 @@ export default defineComponent({
     };
 
     return {
-      rules: loginRules,
+      rules,
       dialogVisible,
       formLabelWidth,
-      form: loginForm,
+      form,
       submitForm,
       ruleFormRef,
       cancel
