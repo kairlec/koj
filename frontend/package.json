@@ -8,27 +8,30 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "axios": "^0.26.1",
-    "element-plus": "^2.1.8",
+    "axios": "^0.27.2",
+    "element-plus": "^2.2.0",
+    "prismjs": "^1.28.0",
     "qs": "^6.10.3",
-    "vue": "^3.2.31",
-    "vue-router": "^4.0.13"
+    "vue": "^3.2.33",
+    "vue-prism-editor": "^2.0.0-alpha.2",
+    "vue-router": "^4.0.15"
   },
   "devDependencies": {
+    "@types/prismjs": "^1.26.0",
     "@types/qs": "^6.9.7",
-    "@typescript-eslint/eslint-plugin": "^5.18.0",
-    "@typescript-eslint/parser": "^5.18.0",
-    "@vitejs/plugin-vue": "^2.3.1",
-    "@vue/cli-plugin-typescript": "~5.0.0",
-    "eslint": "^8.12.0",
+    "@typescript-eslint/eslint-plugin": "^5.23.0",
+    "@typescript-eslint/parser": "^5.23.0",
+    "@vitejs/plugin-vue": "^2.3.2",
+    "@vue/cli-plugin-typescript": "~5.0.4",
+    "eslint": "^8.15.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-vue": "^8.6.0",
+    "eslint-plugin-vue": "^8.7.1",
     "prettier": "^2.6.2",
-    "typescript": "^4.6.3",
-    "unplugin-auto-import": "^0.6.9",
-    "unplugin-vue-components": "^0.18.5",
-    "vite": "^2.9.1",
+    "typescript": "^4.6.4",
+    "unplugin-auto-import": "^0.7.1",
+    "unplugin-vue-components": "^0.19.5",
+    "vite": "^2.9.8",
     "vite-tsconfig-paths": "^3.4.1"
   }
 }
