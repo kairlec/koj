@@ -117,7 +117,7 @@ class ProblemManagerController(
     }
 
     @DeleteMapping("/problems/{problemId}/configs/{languageId}")
-    suspend fun addConfig(
+    suspend fun deleteConfig(
         @PathVariable problemId: Long,
         @PathVariable languageId: String
     ) {
@@ -141,7 +141,7 @@ class ProblemManagerController(
     }
 
     @GetMapping("/problems/{problemId}/runs")
-    suspend fun saveRunConfig(
+    suspend fun getRunConfig(
         @PathVariable problemId: Long
     ): ProblemRunRecord {
         return problemService.getProblemRunConfig(problemId).sureFound("run config not set yet")
