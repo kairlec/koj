@@ -120,7 +120,7 @@ class ProblemManagerController(
 
     @GetMapping("/problems/{problemId}/configs/-")
     fun getConfigs(
-        @PathVariable problemId: Long,q
+        @PathVariable problemId: Long,
     ): Flow<ProblemConfigRecord> {
         return problemService.getProblemConfig(problemId)
     }
