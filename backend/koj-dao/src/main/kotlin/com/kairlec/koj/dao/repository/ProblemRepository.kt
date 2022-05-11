@@ -423,6 +423,16 @@ class ProblemRepository(
         }
     }
 
+    fun getProblemConfigs(
+        problemId: Long,
+    ): Flow<ProblemConfigRecord> {
+        return dslAccess.flow { create ->
+            create.selectFrom(PROBLEM_CONFIG)
+                .where(PROBLEM_CONFIG.PROBLEM_ID.eq(problemId))
+                .asFlow()
+        }
+    }
+
     /**
      * 如果不存在则新增,存在则更新
      */

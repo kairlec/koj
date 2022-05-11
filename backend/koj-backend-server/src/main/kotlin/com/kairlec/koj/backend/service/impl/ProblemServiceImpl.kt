@@ -11,6 +11,7 @@ import com.kairlec.koj.dao.model.SimpleProblem
 import com.kairlec.koj.dao.repository.CompetitionRepository
 import com.kairlec.koj.dao.repository.PageData
 import com.kairlec.koj.dao.repository.ProblemRepository
+import com.kairlec.koj.dao.tables.records.ProblemConfigRecord
 import com.kairlec.koj.dao.tables.records.ProblemRunRecord
 import com.kairlec.koj.dao.tables.records.ProblemTagRecord
 import kotlinx.coroutines.Dispatchers
@@ -118,6 +119,10 @@ class ProblemServiceImpl(
             objectMapper.writeValueAsString(args),
             objectMapper.writeValueAsString(env)
         )
+    }
+
+    override fun getProblemConfig(problemId: Long): Flow<ProblemConfigRecord> {
+        return problemRepository.getProblemConfigs(problemId)
     }
 
     override suspend fun removeProblemConfig(

@@ -4,6 +4,7 @@ import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.model.Problem
 import com.kairlec.koj.dao.model.SimpleProblem
 import com.kairlec.koj.dao.repository.PageData
+import com.kairlec.koj.dao.tables.records.ProblemConfigRecord
 import com.kairlec.koj.dao.tables.records.ProblemRunRecord
 import com.kairlec.koj.dao.tables.records.ProblemTagRecord
 import kotlinx.coroutines.flow.Flow
@@ -52,6 +53,10 @@ interface ProblemService {
         args: List<String>,
         env: List<String>
     ): Boolean
+
+    fun getProblemConfig(
+        problemId: Long,
+    ): Flow<ProblemConfigRecord>
 
     suspend fun removeProblemConfig(
         problemId: Long,

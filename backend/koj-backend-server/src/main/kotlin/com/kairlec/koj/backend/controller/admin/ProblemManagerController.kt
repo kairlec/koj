@@ -3,7 +3,9 @@ package com.kairlec.koj.backend.controller.admin
 import com.kairlec.koj.backend.service.ProblemService
 import com.kairlec.koj.backend.util.sureEffect
 import com.kairlec.koj.backend.util.sureFound
+import com.kairlec.koj.dao.tables.records.ProblemConfigRecord
 import com.kairlec.koj.dao.tables.records.ProblemRunRecord
+import kotlinx.coroutines.flow.Flow
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -17,13 +19,6 @@ class ProblemManagerController(
         @PathVariable tagId: Long
     ) {
         problemService.addProblemTag(problemId, tagId).sureEffect("add problem tag failed")
-    }
-
-    @DeleteMapping("/problems/{problemId}")
-    suspend fun deleteProblem(
-        @PathVariable problemId: Long
-    ) {
-        problemService.removeProblem(problemId).sureEffect("delete problem failed")
     }
 
     @DeleteMapping("/problems/{problemId}/tags/{tagId}")
@@ -70,6 +65,13 @@ class ProblemManagerController(
         ).sureEffect("update problem failed")
     }
 
+    @DeleteMapping("/problems/{problemId}")
+    suspend fun deleteProblem(
+        @PathVariable problemId: Long
+    ) {
+        problemService.removeProblem(problemId).sureEffect("delete problem failed")
+    }
+
     data class ProblemModel(
         val name: String,
         val content: String,
@@ -114,6 +116,13 @@ class ProblemManagerController(
             config.args ?: emptyList(),
             config.env ?: emptyList()
         ).sureEffect()
+    }
+
+    @GetMapping("/problems/{problemId}/configs/-")
+    fun getConfigs(
+        @PathVariable problemId: Long,q
+    ): Flow<ProblemConfigRecord> {
+        return problemService.getProblemConfig(problemId)
     }
 
     @DeleteMapping("/problems/{problemId}/configs/{languageId}")
