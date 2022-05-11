@@ -154,3 +154,67 @@ export function listConditionAsParam(
     }
   }
 }
+
+export type SubmitState =
+  | 'IN_QUEUE'
+  | 'IN_COMPILING'
+  | 'IN_RUNNING'
+  | 'IN_JUDGING'
+  | 'WRONG_ANSWER'
+  | 'ACCEPTED'
+  | 'TIME_LIMIT_EXCEEDED'
+  | 'MEMORY_LIMIT_EXCEEDED'
+  | 'OUTPUT_LIMIT_EXCEEDED'
+  | 'RUNTIME_ERROR'
+  | 'SYSTEM_ERROR'
+  | 'COMPILATION_ERROR'
+  | 'PRESENTATION_ERROR'
+  | 'UNKNOWN'
+  | 'NO_SANDBOX'
+
+export function submitStateToString(state: SubmitState): string {
+  switch (state) {
+    case 'IN_QUEUE':
+      return '队列中'
+    case 'IN_COMPILING':
+      return '编译中'
+    case 'IN_RUNNING':
+      return '运行中'
+    case 'IN_JUDGING':
+      return '评测中'
+    case 'WRONG_ANSWER':
+      return 'WA'
+    case 'ACCEPTED':
+      return 'AC'
+    case 'TIME_LIMIT_EXCEEDED':
+      return 'TLE'
+    case 'MEMORY_LIMIT_EXCEEDED':
+      return 'MLE'
+    case 'OUTPUT_LIMIT_EXCEEDED':
+      return 'OLE'
+    case 'RUNTIME_ERROR':
+      return 'RE'
+    case 'SYSTEM_ERROR':
+      return 'SE'
+    case 'COMPILATION_ERROR':
+      return 'CE'
+    case 'PRESENTATION_ERROR':
+      return 'PE'
+    case 'UNKNOWN':
+      return '未知错误'
+    case 'NO_SANDBOX':
+      return '沙盒不可用'
+  }
+}
+
+export interface SimpleSubmit {
+  id: number
+  state: SubmitState
+  castMemory?: number
+  castTime?: number
+  languageId: string
+  belongUserId: number
+  username: string
+  createTime: Date
+  updateTime: Date
+}

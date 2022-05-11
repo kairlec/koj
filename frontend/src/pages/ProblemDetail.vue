@@ -9,13 +9,16 @@
     <template #default>
       <el-card class='box-card' style='padding: 5px;margin: 0'>
         <template #header>
-          <div style='display: flex'>
+          <div v-if='showMode==="Raw"||showMode==="Detail"' style='display: flex' >
             <span style='align-items: center;'>题目内容</span>
             <el-button
-              v-if='showMode==="Raw"||showMode==="Detail"' type='primary'
+              type='primary'
               style='margin-left: auto' @click='flushDetail() && (showMode = showMode==="Raw"?"Detail":"Raw")'>
               切换{{ showMode === 'Raw' ? '表格视图' : '原始视图' }}
             </el-button>
+          </div>
+          <div v-if='showMode==="Config"' style='display: flex' >
+            <span style='align-items: center;'>语言配置</span>
           </div>
         </template>
         <prism-editor
@@ -58,10 +61,10 @@
                   </div>
                 </template>
                 <el-form-item :label='`样例${idx+1}输入`'>
-                  <el-input v-model='problemContentObjEdit.samples[idx].input' type='textarea' :autosize='true' />
+                  <el-input v-model='sample.input' type='textarea' :autosize='true' />
                 </el-form-item>
                 <el-form-item :label='`样例${idx+1}输出`'>
-                  <el-input v-model='problemContentObjEdit.samples[idx].output' type='textarea' :autosize='true' />
+                  <el-input v-model='sample.output' type='textarea' :autosize='true' />
                 </el-form-item>
               </el-card>
             </template>
@@ -80,6 +83,39 @@
 
         </template>
         <template v-if='showMode==="Config"'>
+            <template v-for='(sample,idx) in problemConfigEdit' :key='idx'>
+              <el-form
+                label-position='top'
+                label-width='100px'
+                :model='problemConfigEdit'
+                :disabled='saving'
+              >
+              <el-card style='margin: 15px 0;'>
+                <template #header>
+                  <div style='display: flex'>
+                    <el-button
+                      :icon='Delete'
+                      type='danger'
+                      style='margin-left: auto;'
+                      @click='problemContentObjEdit.samples.splice(idx,1)'>
+                      删除样例{{ idx + 1 }}
+                    </el-button>
+                  </div>
+                </template>
+                <el-form-item :label='`样例${idx+1}输入`'>
+                  <el-input v-model='sample.input' type='textarea' :autosize='true' />
+                </el-form-item>
+                <el-form-item :label='`样例${idx+1}输出`'>
+                  <el-input v-model='sample.output' type='textarea' :autosize='true' />
+                </el-form-item>
+              </el-card>
+              </el-form>
+            </template>
+          <el-button
+            type='primary' :icon='CirclePlus'
+            style='margin-bottom: 10px;'
+            @click='problemContentObjEdit.samples.push({input:"",output:""})'>新增样例
+          </el-button>
 
         </template>
       </el-card>
@@ -112,87 +148,99 @@
     </template>
   </el-drawer>
   <el-container direction='vertical'>
-     <el-main>
-       <el-scrollbar>
-         <div style='padding-right: 8px'>
-           <template v-if='problemFetchError.length'>
-             <el-result
-               icon='error'
-               title='请求出错'
-               :sub-title='problemFetchError'
-               class='box-card'
-             >
-               <template #extra>
-                 <el-button type='primary' :loading='refreshing' @click='fetchProblem(undefined,true)'>刷新</el-button>
-                 <template v-if='user.user?.type===0 && editAble'>
-                   <el-button :loading='refreshing' @click='drawerShow = true'>编辑内容</el-button>
-                 </template>
-               </template>
-             </el-result>
-           </template>
-           <el-card v-else v-loading='!problemDetailFetchFinished' class='box-card'>
-             <template #header>
-               <div class='card-header'>
-                 <span>{{ `${problemDetail?.id ?? '请求中'} : ${problemDetail?.name ?? '请求中'}` }}</span>
-                 <template v-if='user.user?.type===0'>
-                   <el-button
-                     type='primary' :icon='Edit'
-                     style='margin-left: auto'
-                     @click='(showMode!=="Raw"&&showMode!=="Detail")?(showMode = "Raw"):(""); drawerShow = true'>编辑内容
-                   </el-button>
-                   <el-button
-                     type='primary' :icon='Edit'
-                     @click='showMode = "Run" ; drawerShow = true'>编辑运行
-                   </el-button>
-                   <el-button
-                     type='primary' :icon='Edit'
-                     @click='showMode = "Config" ; drawerShow = true'>编辑配置
-                   </el-button>
-                 </template>
-               </div>
-             </template>
+    <el-main>
+      <el-scrollbar>
+        <div style='padding-right: 8px'>
+          <template v-if='problemFetchError.length'>
+            <el-result
+              icon='error'
+              title='请求出错'
+              :sub-title='problemFetchError'
+              class='box-card'
+            >
+              <template #extra>
+                <el-button type='primary' :loading='refreshing' @click='fetchProblem(undefined,true)'>刷新</el-button>
+                <template v-if='user.user?.type===0 && editAble'>
+                  <el-button :loading='refreshing' @click='drawerShow = true'>编辑内容</el-button>
+                </template>
+              </template>
+            </el-result>
+          </template>
+          <el-card v-else v-loading='!problemDetailFetchFinished' class='box-card'>
+            <template #header>
+              <div class='card-header'>
+                <span>{{ `${problemDetail?.id ?? '请求中'} : ${problemDetail?.name ?? '请求中'}` }}</span>
+                <template v-if='user.user?.type===0'>
+                  <el-button
+                    type='primary' :icon='Edit'
+                    style='margin-left: auto'
+                    @click='(showMode!=="Raw"&&showMode!=="Detail")?(showMode = "Raw"):(""); drawerShow = true'>编辑内容
+                  </el-button>
+                  <el-button
+                    type='primary' :icon='Edit'
+                    @click='showMode = "Run" ; drawerShow = true'>编辑运行
+                  </el-button>
+                  <el-button
+                    type='primary' :icon='Edit'
+                    @click='showMode = "Config" ; drawerShow = true'>编辑配置
+                  </el-button>
+                </template>
+              </div>
+            </template>
 
-             <el-descriptions
-               :column='1'
-               size='large'
-               direction='vertical'
-               style='margin-top: 32px;'
-             >
-               <el-descriptions-item label='题目内容' label-class-name='content-label'>{{ problemDetail?.contentObj?.description }}
-               </el-descriptions-item>
-               <el-descriptions-item label='输入' label-class-name='content-label'>{{ problemDetail?.contentObj?.input }}
-               </el-descriptions-item>
-               <el-descriptions-item label='输出' label-class-name='content-label'>{{ problemDetail?.contentObj?.output }}
-               </el-descriptions-item>
-               <template v-for='(item,index) in problemDetail?.contentObj?.samples' :key='index'>
-                 <el-descriptions-item :label='`样例输入${index+1}`' label-class-name='content-label'>
-                   <prism-editor
-                     v-model='item.input' class='my-editor' style='background-color: #f8f8f9' readonly
-                     :highlight='highlighterNothing'></prism-editor>
-                 </el-descriptions-item>
-                 <el-descriptions-item :label='`样例输出${index+1}`' label-class-name='content-label'>
-                   <prism-editor
-                     v-model='item.output' class='my-editor' style='background-color: #f8f8f9' readonly
-                     :highlight='highlighterNothing'></prism-editor>
-                 </el-descriptions-item>
-               </template>
-               <el-descriptions-item label='提示' label-class-name='content-label'>{{ problemDetail?.contentObj?.hint }}
-               </el-descriptions-item>
-             </el-descriptions>
-           </el-card>
-           <el-card class='box-card'>
-             <template #header>
-               <div class='card-header'>
-                 <span>{{ `${problemDetail?.id ?? '请求中'} : ${problemDetail?.name ?? '请求中'}` }}</span>
-               </div>
-             </template>
-             <prism-editor
-               v-model='userCode' class='my-editor core-editor' style='background-color: #f8f8f9' line-numbers
-               :highlight='highlighterEditorContent'></prism-editor>
-           </el-card>
-         </div>
-       </el-scrollbar>
-     </el-main>
+            <el-descriptions
+              :column='1'
+              size='large'
+              direction='vertical'
+              style='margin-top: 32px;'
+            >
+              <el-descriptions-item label='题目内容' label-class-name='content-label'>
+                {{ problemDetail?.contentObj?.description }}
+              </el-descriptions-item>
+              <el-descriptions-item label='输入' label-class-name='content-label'>{{ problemDetail?.contentObj?.input }}
+              </el-descriptions-item>
+              <el-descriptions-item label='输出' label-class-name='content-label'>{{ problemDetail?.contentObj?.output }}
+              </el-descriptions-item>
+              <template v-for='(item,index) in problemDetail?.contentObj?.samples' :key='index'>
+                <el-descriptions-item :label='`样例输入${index+1}`' label-class-name='content-label'>
+                  <prism-editor
+                    v-model='item.input' class='my-editor' style='background-color: #f8f8f9' readonly
+                    :highlight='highlighterNothing'></prism-editor>
+                </el-descriptions-item>
+                <el-descriptions-item :label='`样例输出${index+1}`' label-class-name='content-label'>
+                  <prism-editor
+                    v-model='item.output' class='my-editor' style='background-color: #f8f8f9' readonly
+                    :highlight='highlighterNothing'></prism-editor>
+                </el-descriptions-item>
+              </template>
+              <el-descriptions-item label='提示' label-class-name='content-label'>{{ problemDetail?.contentObj?.hint }}
+              </el-descriptions-item>
+            </el-descriptions>
+          </el-card>
+          <el-card class='box-card'>
+            <template #header>
+              <div class='card-header'>
+                <el-select v-model='chosenLanguageId' :loading='fetchingLanguageList' placeholder='请选择语言'>
+                  <el-option
+                    v-for='item in languageIds'
+                    :key='item'
+                    :label='item'
+                    :value='item'
+                    :disabled='!(problemDetail?.config?.find((it)=>it.languageId===item))'
+                  />
+                </el-select>
+              </div>
+            </template>
+            <prism-editor
+              v-model='userCode'
+              v-loading='!problemDetailFetchFinished || fetchingLanguageList'
+              :disabled='chosenLanguageId.length===0' class='my-editor core-editor' style='background-color: #f8f8f9'
+              line-numbers
+              :highlight='highlighterEditorContent'></prism-editor>
+          </el-card>
+        </div>
+      </el-scrollbar>
+    </el-main>
   </el-container>
 </template>
 
@@ -204,7 +252,7 @@ import { useRoute } from 'vue-router';
 import { getGlobalUser } from '~/hooks/globalUser';
 import { CirclePlus, Delete, Edit } from '@element-plus/icons-vue';
 import { PrismEditor } from 'vue-prism-editor';
-import Prism, { highlight } from 'prismjs';
+import Prism, { Grammar, highlight } from 'prismjs';
 import 'vue-prism-editor/dist/prismeditor.min.css'; // import the styles somewhere
 // import highlighting library (you can use any library you want just return html string)
 // import { highlight, languages } from 'prismjs/components/prism-core';
@@ -225,6 +273,21 @@ interface Option {
 
 type ShowMode = 'Raw' | 'Detail' | 'Run' | 'Config'
 
+function getLanguage(languageId: string): { language: Grammar, name: string } {
+  if (/kotlin/i.test(languageId)) {
+    return { language: Prism.languages.kotlin, name: 'kotlin' };
+  }
+  if (/java/i.test(languageId)) {
+    return { language: Prism.languages.java, name: 'java' };
+  }
+  if (/python/i.test(languageId)) {
+    return { language: Prism.languages.python, name: 'python' };
+  }
+  if (/c(\+\+)?/i.test(languageId)) {
+    return { language: Prism.languages.cpp, name: 'cpp' };
+  }
+  return { language: Prism.languages.textile, name: 'textile' };
+}
 
 export default defineComponent({
   name: 'ProblemDetail',
@@ -241,6 +304,7 @@ export default defineComponent({
     const refreshing = ref(false);
     const saving = ref(false);
     const fetchingTagList = ref(false);
+    const fetchingLanguageList = ref(false);
     const problemFetchError = ref('');
     const instance = getCurrentInstance()!;
     const user = getGlobalUser(instance.appContext);
@@ -251,7 +315,8 @@ export default defineComponent({
     const route = useRoute();
     const showMode: Ref<ShowMode> = ref('Raw');
     const languageIds = ref(Array<string>());
-    const userCode = ref('')
+    const chosenLanguageId = ref('');
+    const userCode = ref('');
 
     const problemContentObjEdit: ProblemContent = reactive({
       description: '',
@@ -322,11 +387,12 @@ export default defineComponent({
         fetchProblem(problemId);
       }
       fetchTags();
+      fetchLanguages();
     });
 
     function highlighterEditorContent(code: string) {
-      // todo highligh core editor
-      return highlight(code, Prism.languages.textile, 'textile');
+      const { language, name } = getLanguage(chosenLanguageId.value);
+      return highlight(code, language, name);
     }
 
     function fetchTags() {
@@ -358,6 +424,29 @@ export default defineComponent({
       });
     }
 
+    function fetchLanguages() {
+      fetchingLanguageList.value = true;
+      problemDetailApi.languages({
+        ignoreError: true,
+      }).then(res => {
+        fetchingLanguageList.value = false;
+        languageIds.value = res;
+        if (problemDetail.value && chosenLanguageId.value.length === 0) {
+          for (const config of problemDetail.value!.config) {
+            const chosen = res.find((it) => config.languageId === it);
+            if (chosen) {
+              chosenLanguageId.value = chosen;
+              break;
+            }
+          }
+        }
+      }).catch(() => {
+        setTimeout(() => {
+          fetchLanguages();
+        }, 100);
+      });
+    }
+
     onBeforeUnmount(() => {
       watchHandler();
       controller.abort();
@@ -376,7 +465,6 @@ export default defineComponent({
           return;
         }
       }
-      console.log(force);
       if (!force) {
         if (problemDetailFetchFinished.value !== undefined) {
           return;
@@ -405,6 +493,15 @@ export default defineComponent({
         rightValue.value = tagData.value.filter(tag => {
           return data.tags.includes(tag.label);
         }).map(tag => tag.key);
+        if (languageIds.value.length > 0 && chosenLanguageId.value.length === 0) {
+          for (const config of data.config) {
+            const chosen = languageIds.value.find((it) => config.languageId === it);
+            if (chosen) {
+              chosenLanguageId.value = chosen;
+              break;
+            }
+          }
+        }
       }).catch((err) => {
         if (err instanceof Error) {
           if (err instanceof ProblemDetailError) {
@@ -581,6 +678,8 @@ export default defineComponent({
       problemDetail,
       problemDetailFetchFinished,
       fetchProblem,
+      chosenLanguageId,
+      fetchingLanguageList,
     };
   },
 });
@@ -597,7 +696,7 @@ export default defineComponent({
 /*.el-main >>> .el-scrollbar__bar {*/
 /*  display: none;*/
 /*}*/
-.core-editor{
+.core-editor {
   min-height: 400px;
 }
 

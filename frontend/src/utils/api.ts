@@ -2,7 +2,18 @@ import http, { KOJAxiosInstance, KOJAxiosRequestConfig } from './http'
 import { stringify } from 'qs'
 import { KOJStorage } from './storage'
 import { AxiosPromise, AxiosResponse } from 'axios'
-import { ITime, ListCondition, listConditionAsParam, PageData, ProblemDetail, SimpleProblem, Tag, User, UserStat } from '~/apiDeclaration'
+import {
+  ITime,
+  ListCondition,
+  listConditionAsParam,
+  PageData,
+  ProblemDetail,
+  SimpleProblem,
+  SimpleSubmit,
+  Tag,
+  User,
+  UserStat,
+} from '~/apiDeclaration'
 
 interface IApi {
   withConfig(config: KOJAxiosRequestConfig): IApi
@@ -42,6 +53,41 @@ interface IApi {
   ): Promise<void>
 
   tags(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<Tag>>
+
+  submits(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleSubmit>>
+
+  languages(config?: KOJAxiosRequestConfig): Promise<string[]>
+
+  addProblemTag(problemId: number, tagId: number, config?: KOJAxiosRequestConfig): Promise<void>
+
+  deleteProblem(problemId: number, config?: KOJAxiosRequestConfig): Promise<void>
+
+  deleteProblemTag(problemId: number, tagId: number, config?: KOJAxiosRequestConfig): Promise<void>
+
+  updateTag(id: number, name: string, config?: KOJAxiosRequestConfig): Promise<void>
+
+  addProblem(problem: { name: string; content: string; spj: boolean; tags: number[] }, config?: KOJAxiosRequestConfig): Promise<number>
+
+  addConfig(
+    problemId: number,
+    data: {
+      languageId: string
+      time: number
+      memory: number
+      maxOutputSize?: number
+      maxStack?: number
+      maxProcessNumber?: number
+      args?: string[]
+      env?: string[]
+    },
+    config?: KOJAxiosRequestConfig,
+  ): Promise<void>
+
+  deleteConfig(problemId: number, languageId: string, config?: KOJAxiosRequestConfig): Promise<void>
+
+  saveRunConfig(problemId: number, data: { stdin: string; ansout: string }, config?: KOJAxiosRequestConfig): Promise<void>
+
+  getRunConfig(problemId: number, config?: KOJAxiosRequestConfig): Promise<{ stdin: string; ansout: string }>
 }
 
 const _axios = http({
@@ -118,8 +164,32 @@ const apiRoute = wrapRecord({
   admin: {
     problems: {
       _base: '',
+      base() {
+        return this._base
+      },
       detail(id: number) {
         return `${this._base}/${id}`
+      },
+      withTag(problemId: number, tagId: number) {
+        return `${this._base}/${problemId}/tags/${tagId}`
+      },
+      configs(problemId: number) {
+        return `${this._base}/${problemId}/configs`
+      },
+      config(problemId: number, languageId: string) {
+        return `${this._base}/${problemId}/configs/${languageId}`
+      },
+      runs(problemId: number) {
+        return `${this._base}/${problemId}/runs`
+      },
+    },
+    tags: {
+      _base: '',
+      base() {
+        return this._base
+      },
+      detail(tagId: number) {
+        return `${this._base}/${tagId}`
       },
     },
   },
@@ -133,6 +203,18 @@ const apiRoute = wrapRecord({
     },
   },
   public: {
+    submits: {
+      _base: '',
+      list() {
+        return this._base
+      },
+      languages: {
+        _base: '',
+        list() {
+          return `${this._base}/-`
+        },
+      },
+    },
     users: {
       _base: '',
       login() {
@@ -181,6 +263,67 @@ export class ProblemDetailError extends Error {
 
 function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxiosRequestConfig): IApi {
   return {
+    addConfig(
+      problemId: number,
+      data: {
+        languageId: string
+        time: number
+        memory: number
+        maxOutputSize?: number
+        maxStack?: number
+        maxProcessNumber?: number
+        args?: string[]
+        env?: string[]
+      },
+      config?: KOJAxiosRequestConfig,
+    ): Promise<void> {
+      return this.axios.put(apiRoute.admin.problems.configs(problemId), data, {
+        headers: {
+          'content-type': 'application/json',
+        },
+        ...addonConfig,
+        ...config,
+      })
+    },
+    addProblem(problem: { name: string; content: string; spj: boolean; tags: number[] }, config?: KOJAxiosRequestConfig): Promise<number> {
+      return this.axios.put(apiRoute.admin.problems.base(), problem, {
+        headers: {
+          'content-type': 'application/json',
+        },
+        ...addonConfig,
+        ...config,
+      })
+    },
+    addProblemTag(problemId: number, tagId: number, config?: KOJAxiosRequestConfig): Promise<void> {
+      return this.axios.put(apiRoute.admin.problems.withTag(problemId, tagId), null, { ...addonConfig, ...config })
+    },
+    deleteConfig(problemId: number, languageId: string, config?: KOJAxiosRequestConfig): Promise<void> {
+      return this.axios.delete(apiRoute.admin.problems.config(problemId, languageId), { ...addonConfig, ...config })
+    },
+    deleteProblem(problemId: number, config?: KOJAxiosRequestConfig): Promise<void> {
+      return this.axios.delete(apiRoute.admin.problems.base(), { ...addonConfig, ...config })
+    },
+    deleteProblemTag(problemId: number, tagId: number, config?: KOJAxiosRequestConfig): Promise<void> {
+      return this.axios.delete(apiRoute.admin.problems.withTag(problemId, tagId), { ...addonConfig, ...config })
+    },
+    getRunConfig(problemId: number, config?: KOJAxiosRequestConfig): Promise<{ stdin: string; ansout: string }> {
+      return this.axios.get(apiRoute.admin.problems.runs(problemId), { ...addonConfig, ...config })
+    },
+    saveRunConfig(problemId: number, data: { stdin: string; ansout: string }, config?: KOJAxiosRequestConfig): Promise<void> {
+      return this.axios.put(apiRoute.admin.problems.runs(problemId), data, {
+        headers: {
+          'content-type': 'application/json',
+        },
+        ...addonConfig,
+        ...config,
+      })
+    },
+    updateTag(id: number, name: string, config?: KOJAxiosRequestConfig): Promise<void> {
+      return this.axios.patch(apiRoute.admin.tags.base(), stringify({ name }), {
+        ...addonConfig,
+        ...config,
+      })
+    },
     withConfig(config: KOJAxiosRequestConfig): IApi {
       return createAPIInstance(axiosInstance, config)
     },
@@ -305,6 +448,14 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       const cf = { ...addonConfig, ...config }
       cf.params = { ...cf.params, ...listConditionAsParam(listCondition) }
       return page(this.axios.get(apiRoute.public.tags.list(), cf))
+    },
+    submits(listCondition: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleSubmit>> {
+      const cf = { ...addonConfig, ...config }
+      cf.params = { ...cf.params, ...listConditionAsParam(listCondition) }
+      return page(this.axios.get(apiRoute.public.submits.list(), cf), extraTime)
+    },
+    languages(config?: KOJAxiosRequestConfig): Promise<string[]> {
+      return data(this.axios.get(apiRoute.public.submits.languages.list(), { ...addonConfig, ...config }))
     },
   }
 }
