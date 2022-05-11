@@ -9,7 +9,6 @@ import com.kairlec.koj.backend.util.sureFound
 import com.kairlec.koj.dao.model.SubmitDetail
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping
 
 @RestController
 @RequestMapping("/submits")
@@ -51,10 +50,5 @@ class SubmitController(
             submitModel.problemId,
             submitModel.code
         )
-    }
-
-    @GetMapping("/languages/-")
-    suspend fun getSupportLanguages(): List<String> {
-        return submitService.getLanguages()
     }
 }

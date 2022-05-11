@@ -14,10 +14,17 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/public/submits")
 class PublicSubmitController(
-    private val submitService: ReadOnlySubmitService
+    private val readOnlySubmitService: ReadOnlySubmitService,
+    private val submitService: SubmitService?
 ) {
     @GetMapping("/-")
     suspend fun getSubmits(): RE<Flow<SimpleSubmit>> {
-        return submitService.getSubmits(currentListCondition()).re()
+        return readOnlySubmitService.getSubmits(currentListCondition()).re()
+    }
+
+
+    @GetMapping("/languages/-")
+    suspend fun getSupportLanguages(): List<String> {
+        return submitService?.getLanguages() ?: emptyList()
     }
 }
