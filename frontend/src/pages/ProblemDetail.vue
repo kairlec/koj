@@ -253,16 +253,14 @@ import { getGlobalUser } from '~/hooks/globalUser';
 import { CirclePlus, Delete, Edit } from '@element-plus/icons-vue';
 import { PrismEditor } from 'vue-prism-editor';
 import Prism, { Grammar, highlight } from 'prismjs';
-import 'vue-prism-editor/dist/prismeditor.min.css'; // import the styles somewhere
-// import highlighting library (you can use any library you want just return html string)
-// import { highlight, languages } from 'prismjs/components/prism-core';
+import 'vue-prism-editor/dist/prismeditor.min.css';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-kotlin';
 import 'prismjs/components/prism-textile';
 import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-json';
-import 'prismjs/themes/prism.css'; // import syntax highlighting styles
+import 'prismjs/themes/prism.css';
 
 
 interface Option {
