@@ -7,6 +7,7 @@ import {
   ListCondition,
   listConditionAsParam,
   PageData,
+  ProblemConfigManage,
   ProblemDetail,
   SimpleProblem,
   SimpleSubmit,
@@ -82,6 +83,8 @@ interface IApi {
     },
     config?: KOJAxiosRequestConfig,
   ): Promise<void>
+
+  getConfigs(problemId: number, config?: KOJAxiosRequestConfig): Promise<ProblemConfigManage[]>
 
   deleteConfig(problemId: number, languageId: string, config?: KOJAxiosRequestConfig): Promise<void>
 
@@ -174,7 +177,7 @@ const apiRoute = wrapRecord({
         return `${this._base}/${problemId}/tags/${tagId}`
       },
       configs(problemId: number) {
-        return `${this._base}/${problemId}/configs`
+        return `${this._base}/${problemId}/configs/-`
       },
       config(problemId: number, languageId: string) {
         return `${this._base}/${problemId}/configs/${languageId}`
@@ -299,6 +302,9 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
     },
     deleteConfig(problemId: number, languageId: string, config?: KOJAxiosRequestConfig): Promise<void> {
       return this.axios.delete(apiRoute.admin.problems.config(problemId, languageId), { ...addonConfig, ...config })
+    },
+    getConfigs(problemId: number, config?: KOJAxiosRequestConfig): Promise<ProblemConfigManage[]> {
+      return data(this.axios.get(apiRoute.admin.problems.configs(problemId), { ...addonConfig, ...config }))
     },
     deleteProblem(problemId: number, config?: KOJAxiosRequestConfig): Promise<void> {
       return this.axios.delete(apiRoute.admin.problems.base(), { ...addonConfig, ...config })

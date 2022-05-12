@@ -9,7 +9,7 @@
     <template #default>
       <el-card class='box-card' style='padding: 5px;margin: 0'>
         <template #header>
-          <div v-if='showMode==="Raw"||showMode==="Detail"' style='display: flex' >
+          <div v-if='showMode==="Raw"||showMode==="Detail"' style='display: flex'>
             <span style='align-items: center;'>题目内容</span>
             <el-button
               type='primary'
@@ -17,20 +17,13 @@
               切换{{ showMode === 'Raw' ? '表格视图' : '原始视图' }}
             </el-button>
           </div>
-          <div v-if='showMode==="Config"' style='display: flex' >
+          <div v-if='showMode==="Config"' style='display: flex'>
             <span style='align-items: center;'>语言配置</span>
           </div>
         </template>
         <prism-editor
           v-if='showMode==="Raw"' v-model='problemContentEdit' class='my-editor' :highlight='highlighterJson'
           line-numbers></prism-editor>
-        <!--        <el-input-->
-        <!--          v-if='showMode==="Raw"'-->
-        <!--          v-model='problemContentEdit'-->
-        <!--          :disabled='saving'-->
-        <!--          type='textarea'-->
-        <!--          :autosize='{ minRows: 6, maxRows:15 }'-->
-        <!--        />-->
         <template v-if='showMode==="Detail"'>
           <el-form
             label-position='top'
@@ -80,48 +73,84 @@
           </el-form>
         </template>
         <template v-if='showMode==="Run"'>
-
+          <div v-loading='!fetchingFinishState.problemRunConfigManage'>
+            <el-form
+              label-position='top'
+              label-width='100px'
+              :model='problemRunConfigManage'
+              :disabled='saving'
+            >
+              <el-card v-loading='!fetchingFinishState.runConfigUpdating' style='margin: 15px 0;'>
+                <el-form-item :label='`样例${idx+1}输入`'>
+                  <el-input v-model='problemRunConfigManage.stdin' type='textarea' :autosize='true' />
+                </el-form-item>
+                <el-form-item :label='`样例${idx+1}输出`'>
+                  <el-input v-model='problemRunConfigManage.ansout' type='textarea' :autosize='true' />
+                </el-form-item>
+              </el-card>
+            </el-form>
+          </div>
         </template>
         <template v-if='showMode==="Config"'>
-            <template v-for='(sample,idx) in problemConfigEdit' :key='idx'>
+          <div v-loading='!fetchingFinishState.problemConfigManage'>
+            <template v-for='(sample,idx) in problemConfigManage' :key='idx'>
               <el-form
                 label-position='top'
                 label-width='100px'
-                :model='problemConfigEdit'
+                :model='problemConfigManage[idx]'
                 :disabled='saving'
               >
-              <el-card style='margin: 15px 0;'>
-                <template #header>
-                  <div style='display: flex'>
-                    <el-button
-                      :icon='Delete'
-                      type='danger'
-                      style='margin-left: auto;'
-                      @click='problemContentObjEdit.samples.splice(idx,1)'>
-                      删除样例{{ idx + 1 }}
-                    </el-button>
-                  </div>
-                </template>
-                <el-form-item :label='`样例${idx+1}输入`'>
-                  <el-input v-model='sample.input' type='textarea' :autosize='true' />
-                </el-form-item>
-                <el-form-item :label='`样例${idx+1}输出`'>
-                  <el-input v-model='sample.output' type='textarea' :autosize='true' />
-                </el-form-item>
-              </el-card>
+                <el-card
+                  v-loading='!fetchingFinishState.configUpdating || !fetchingFinishState.languageList'
+                  style='margin: 15px 0;'>
+                  <template #header>
+                    <el-select v-model='sample.languageId' placeholder='选择语言'>
+                      <el-option
+                        v-for='item in languageIds'
+                        :key='item'
+                        :label='item'
+                        :value='item'
+                        :disabled='problemConfigManage.find(it => it.languageId === item)'
+                      />
+                    </el-select>
+                    <div style='display: flex'>
+                      <el-button
+                        :icon='Check'
+                        type='success'
+                        @click='saveConfig(sample)'>
+                        保存配置{{ sample.languageId }}
+                      </el-button>
+                      <el-button
+                        :icon='Delete'
+                        type='danger'
+                        style='margin-left: auto;'
+                        @click='deleteConfig(sample)'>
+                        删除配置{{ sample.languageId }}
+                      </el-button>
+                    </div>
+                  </template>
+                  <el-form-item :label='`样例${idx+1}输入`'>
+                    <el-input v-model='sample.languageId' type='textarea' :autosize='true' />
+                  </el-form-item>
+                  <el-form-item :label='`样例${idx+1}输出`'>
+                    <el-input v-model='problemConfigManage.output' type='textarea' :autosize='true' />
+                  </el-form-item>
+                </el-card>
               </el-form>
             </template>
-          <el-button
-            type='primary' :icon='CirclePlus'
-            style='margin-bottom: 10px;'
-            @click='problemContentObjEdit.samples.push({input:"",output:""})'>新增样例
-          </el-button>
-
+            <el-button
+              type='primary' :icon='CirclePlus'
+              style='margin-bottom: 10px;'
+              @click='problemConfigManage.push({languageId:"",time:0,memory:0,})'>新增样例
+            </el-button>
+          </div>
         </template>
       </el-card>
     </template>
     <template #footer>
-      <div v-if='showMode==="Raw" || showMode==="Detail"' v-loading='fetchingTagList' style='text-align: center'>
+      <div
+        v-if='showMode==="Raw" || showMode==="Detail"' v-loading='!fetchingFinishState.tagList'
+        style='text-align: center'>
         <el-transfer
           v-model='rightValue'
           :disabled='saving'
@@ -142,8 +171,8 @@
       </div>
 
       <div style='flex: auto'>
-        <el-button :loading='saving' @click='resetClick'>重置</el-button>
-        <el-button type='primary' :loading='saving' @click='confirmClick'>确定</el-button>
+        <el-button v-if='showMode==="Raw"||showMode==="Detail"' :loading='saving' @click='resetClick'>重置</el-button>
+        <el-button v-if='showMode!=="Config"' type='primary' :loading='saving' @click='confirmClick'>确定</el-button>
       </div>
     </template>
   </el-drawer>
@@ -166,7 +195,7 @@
               </template>
             </el-result>
           </template>
-          <el-card v-else v-loading='!problemDetailFetchFinished' class='box-card'>
+          <el-card v-else v-loading='!fetchingFinishState.problemDetail' class='box-card'>
             <template #header>
               <div class='card-header'>
                 <span>{{ `${problemDetail?.id ?? '请求中'} : ${problemDetail?.name ?? '请求中'}` }}</span>
@@ -178,11 +207,11 @@
                   </el-button>
                   <el-button
                     type='primary' :icon='Edit'
-                    @click='showMode = "Run" ; drawerShow = true'>编辑运行
+                    @click='fetchRunConfigIfNeed(); showMode = "Run" ; drawerShow = true'>编辑运行
                   </el-button>
                   <el-button
                     type='primary' :icon='Edit'
-                    @click='showMode = "Config" ; drawerShow = true'>编辑配置
+                    @click='fetchConfigIfNeed(); showMode = "Config" ; drawerShow = true'>编辑配置
                   </el-button>
                 </template>
               </div>
@@ -220,7 +249,7 @@
           <el-card class='box-card'>
             <template #header>
               <div class='card-header'>
-                <el-select v-model='chosenLanguageId' :loading='fetchingLanguageList' placeholder='请选择语言'>
+                <el-select v-model='chosenLanguageId' :loading='!fetchingFinishState.languageList' placeholder='请选择语言'>
                   <el-option
                     v-for='item in languageIds'
                     :key='item'
@@ -233,7 +262,7 @@
             </template>
             <prism-editor
               v-model='userCode'
-              v-loading='!problemDetailFetchFinished || fetchingLanguageList'
+              v-loading='!fetchingFinishState.problemDetail || !fetchingFinishState.languageList'
               :disabled='chosenLanguageId.length===0' class='my-editor core-editor' style='background-color: #f8f8f9'
               line-numbers
               :highlight='highlighterEditorContent'></prism-editor>
@@ -247,10 +276,10 @@
 <script lang='ts'>
 import { defineComponent, getCurrentInstance, onBeforeMount, onBeforeUnmount, reactive, Ref, ref, watch } from 'vue';
 import api, { ProblemDetailError } from '~/api';
-import { ProblemContent, ProblemDetail } from '~/apiDeclaration';
+import { ProblemConfigManage, ProblemContent, ProblemDetail } from '~/apiDeclaration';
 import { useRoute } from 'vue-router';
 import { getGlobalUser } from '~/hooks/globalUser';
-import { CirclePlus, Delete, Edit } from '@element-plus/icons-vue';
+import { Check, CirclePlus, Delete, Edit } from '@element-plus/icons-vue';
 import { PrismEditor } from 'vue-prism-editor';
 import Prism, { Grammar, highlight } from 'prismjs';
 import 'vue-prism-editor/dist/prismeditor.min.css';
@@ -298,11 +327,18 @@ export default defineComponent({
     const problemContentEdit = ref('');
     const editAble = ref(false);
     const drawerShow = ref(false);
-    const problemDetailFetchFinished: Ref<boolean | undefined> = ref();
     const refreshing = ref(false);
     const saving = ref(false);
-    const fetchingTagList = ref(false);
-    const fetchingLanguageList = ref(false);
+    const fetchingFinishState: {
+      tagList?: boolean,
+      languageList?: boolean,
+      problemDetail?: boolean,
+      problemRunConfigManage?: boolean,
+      configUpdating?: boolean,
+      runConfigUpdating?: boolean,
+      problemConfigManage?: boolean,
+      runConfig?: boolean
+    } = reactive({});
     const problemFetchError = ref('');
     const instance = getCurrentInstance()!;
     const user = getGlobalUser(instance.appContext);
@@ -315,6 +351,8 @@ export default defineComponent({
     const languageIds = ref(Array<string>());
     const chosenLanguageId = ref('');
     const userCode = ref('');
+    const problemConfigManage = ref(Array<ProblemConfigManage & { changed?: boolean, created?: boolean }>());
+    const problemRunConfigManage: Ref<{ stdin: string, ansout: string } | undefined> = ref();
 
     const problemContentObjEdit: ProblemContent = reactive({
       description: '',
@@ -394,7 +432,7 @@ export default defineComponent({
     }
 
     function fetchTags() {
-      fetchingTagList.value = true;
+      fetchingFinishState.tagList = false;
       problemDetailApi.tags({
         limit: 99999,
       }, {
@@ -407,7 +445,7 @@ export default defineComponent({
             disabled: false,
           };
         });
-        fetchingTagList.value = false;
+        fetchingFinishState.tagList = true;
         if (!problemDetail.value?.tags) {
           rightValue.value = [];
         } else {
@@ -423,11 +461,11 @@ export default defineComponent({
     }
 
     function fetchLanguages() {
-      fetchingLanguageList.value = true;
+      fetchingFinishState.languageList = false;
       problemDetailApi.languages({
         ignoreError: true,
       }).then(res => {
-        fetchingLanguageList.value = false;
+        fetchingFinishState.languageList = true;
         languageIds.value = res;
         if (problemDetail.value && chosenLanguageId.value.length === 0) {
           for (const config of problemDetail.value!.config) {
@@ -464,10 +502,10 @@ export default defineComponent({
         }
       }
       if (!force) {
-        if (problemDetailFetchFinished.value !== undefined) {
+        if (fetchingFinishState.problemDetail !== undefined) {
           return;
         }
-        problemDetailFetchFinished.value = false;
+        fetchingFinishState.problemDetail = false;
       }
       editAble.value = false;
       refreshing.value = true;
@@ -475,7 +513,7 @@ export default defineComponent({
         ignoreError: true,
       }).then((data) => {
         editAble.value = true;
-        problemDetailFetchFinished.value = true;
+        fetchingFinishState.problemDetail = true;
         problemDetail.value = data;
         problemNameEdit.value = data.name;
         problemFetchError.value = '';
@@ -597,36 +635,80 @@ export default defineComponent({
       });
     }
 
-    function saveRunConfig(): Promise<any> {
-      let obj;
-      try {
-        obj = JSON.parse(problemContentEdit.value);
-      } catch (e) {
-        console.log(e);
-        ElMessageBox.alert('内容不是合法的json', {
-          type: 'error',
-        });
-        return Promise.reject(e);
-      }
+    function saveConfig(config: ProblemConfigManage & { changed?: boolean, created?: boolean }) {
       saving.value = true;
-      return problemDetailApi.updateProblem(problemDetail.value!.id, {
-        name: problemNameEdit.value,
-        content: JSON.stringify(obj),
-        tags: rightValue.value,
-      }).then(() => {
+      problemDetailApi.addConfig(problemDetail.value!.id, config).finally(() => {
+        saving.value = false;
+        config.created = false;
+        config.changed = false;
+      });
+    }
+
+    function deleteConfig(config: ProblemConfigManage) {
+      saving.value = true;
+      problemDetailApi.deleteConfig(problemDetail.value!.id, config.languageId).then(() => {
+        const idx = problemConfigManage.value.findIndex(c => c.languageId === config.languageId);
+        problemConfigManage.value = problemConfigManage.value.splice(idx, 1);
+      }).finally(() => {
+        saving.value = false;
+      });
+    }
+
+    function fetchConfigIfNeed() {
+      if (problemConfigManage.value.length > 0) {
+        return;
+      }
+      fetchingFinishState.configUpdating = false;
+      problemDetailApi.getConfigs(problemDetail.value!.id, {
+        ignoreError: true,
+      }).then((data) => {
+        problemConfigManage.value = data;
+      }).catch(() => {
+        setTimeout(() => {
+          fetchConfigIfNeed();
+        }, 100);
+      }).finally(() => {
+        fetchingFinishState.configUpdating = true;
+      });
+    }
+
+    function fetchRunConfigIfNeed() {
+      if (problemRunConfigManage.value !== undefined) {
+        return;
+      }
+      fetchingFinishState.runConfig = false;
+      problemDetailApi.getRunConfig(problemDetail.value!.id, {
+        ignoreError: true,
+      }).then((data) => {
+        problemRunConfigManage.value = data;
+      }).catch(() => {
+        setTimeout(() => {
+          fetchRunConfigIfNeed();
+        }, 100);
+      }).finally(() => {
+        fetchingFinishState.runConfig = true;
+      });
+    }
+
+    function saveRunConfig(): Promise<any> {
+      if (problemRunConfigManage.value === undefined) {
+        ElMessage({
+          type: 'error',
+          message: '运行内容为空',
+        });
+        return Promise.reject();
+      }
+      fetchingFinishState.runConfigUpdating = false;
+      saving.value = true;
+      return problemDetailApi.saveRunConfig(problemDetail.value!.id, problemRunConfigManage.value).then(() => {
         ElMessage({
           type: 'success',
           message: '保存成功',
         });
-        problemDetail.value!.tags = tagData.value.filter(tag => {
-          return rightValue.value.includes(tag.key);
-        }).map(tag => tag.label);
-        problemDetail.value!.content = problemContentEdit.value;
-        problemDetail.value!.name = problemNameEdit.value;
-        problemDetail.value!.contentObj = JSON.parse(problemContentEdit.value);
         drawerShow.value = false;
       }).finally(() => {
         saving.value = false;
+        fetchingFinishState.runConfigUpdating = true;
       });
     }
 
@@ -662,7 +744,7 @@ export default defineComponent({
       problemNameEdit,
       Edit,
       saving,
-      fetchingTagList,
+      fetchingFinishState,
       tagData,
       rightValue,
       user,
@@ -674,10 +756,15 @@ export default defineComponent({
       refreshing,
       problemFetchError,
       problemDetail,
-      problemDetailFetchFinished,
       fetchProblem,
       chosenLanguageId,
-      fetchingLanguageList,
+      problemConfigManage,
+      Check,
+      saveConfig,
+      deleteConfig,
+      problemRunConfigManage,
+      fetchRunConfigIfNeed,
+      fetchConfigIfNeed,
     };
   },
 });

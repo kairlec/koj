@@ -41,6 +41,7 @@ declare module '@vue/runtime-core' {
     Loading: typeof import('element-plus/es')['ElLoadingDirective']
     LoginDialog: typeof import('./src/components/LoginDialog.vue')['default']
     MenuBar: typeof import('./src/components/MenuBar.vue')['default']
+    ProblemEditDrawer: typeof import('./src/components/ProblemEditDrawer.vue')['default']
     RegisterDialog: typeof import('./src/components/RegisterDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
