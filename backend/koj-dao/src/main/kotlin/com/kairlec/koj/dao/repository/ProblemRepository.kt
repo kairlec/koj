@@ -347,7 +347,7 @@ class ProblemRepository(
     }
 
     @Transactional(rollbackFor = [Exception::class])
-    suspend fun addProblemConfig(
+    suspend fun saveProblemConfig(
         problemId: Long,
         languageId: String,
         time: Int,
@@ -376,21 +376,33 @@ class ProblemRepository(
                     DSL.value(time),
                     DSL.value(memory),
                     DSL.value(languageId),
-                    DSL.nvl(
-                        maxOutputSize?.let { org.jooq.types.ULong.valueOf(it) },
-                        DSL.defaultValue(PROBLEM_CONFIG.MAX_OUTPUT_SIZE)
-                    ),
-                    DSL.nvl(
-                        maxStack?.let { org.jooq.types.ULong.valueOf(it) },
-                        DSL.defaultValue(PROBLEM_CONFIG.MAX_STACK)
-                    ),
-                    DSL.nvl(
-                        maxProcessNumber?.let { org.jooq.types.UShort.valueOf(it) },
-                        DSL.defaultValue(PROBLEM_CONFIG.MAX_PROCESS_NUMBER)
-                    ),
+                    maxOutputSize?.let { DSL.value(org.jooq.types.ULong.valueOf(it)) }
+                        ?: DSL.defaultValue(PROBLEM_CONFIG.MAX_OUTPUT_SIZE),
+                    maxStack?.let { DSL.value(org.jooq.types.ULong.valueOf(it)) }
+                        ?: DSL.defaultValue(PROBLEM_CONFIG.MAX_STACK),
+                    maxProcessNumber?.let { DSL.value(org.jooq.types.UShort.valueOf(it)) }
+                        ?: DSL.defaultValue(PROBLEM_CONFIG.MAX_PROCESS_NUMBER),
                     DSL.value(args),
                     DSL.value(env)
                 )
+                .onDuplicateKeyUpdate()
+                .set(PROBLEM_CONFIG.TIME, time)
+                .set(PROBLEM_CONFIG.MEMORY, memory)
+                .set(
+                    PROBLEM_CONFIG.MAX_OUTPUT_SIZE, maxOutputSize?.let { DSL.value(org.jooq.types.ULong.valueOf(it)) }
+                        ?: DSL.defaultValue(PROBLEM_CONFIG.MAX_OUTPUT_SIZE)
+                )
+                .set(
+                    PROBLEM_CONFIG.MAX_STACK, maxStack?.let { DSL.value(org.jooq.types.ULong.valueOf(it)) }
+                        ?: DSL.defaultValue(PROBLEM_CONFIG.MAX_STACK)
+                )
+                .set(
+                    PROBLEM_CONFIG.MAX_PROCESS_NUMBER,
+                    maxProcessNumber?.let { DSL.value(org.jooq.types.UShort.valueOf(it)) }
+                        ?: DSL.defaultValue(PROBLEM_CONFIG.MAX_PROCESS_NUMBER)
+                )
+                .set(PROBLEM_CONFIG.ARGS, args)
+                .set(PROBLEM_CONFIG.ENV, env)
                 .awaitBool()
         }
     }
