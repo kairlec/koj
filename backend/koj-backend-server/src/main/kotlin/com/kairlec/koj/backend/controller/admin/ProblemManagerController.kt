@@ -101,11 +101,11 @@ class ProblemManagerController(
     )
 
     @PutMapping("/problems/{problemId}/configs")
-    suspend fun addConfig(
+    suspend fun saveConfig(
         @PathVariable problemId: Long,
         @RequestBody config: ConfigModel
     ) {
-        problemService.addProblemConfig(
+        problemService.saveProblemConfig(
             problemId,
             config.languageId,
             config.time,

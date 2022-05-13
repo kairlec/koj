@@ -42,7 +42,7 @@ interface ProblemService {
 
     suspend fun updateTag(tagId: Long, name: String): Boolean
 
-    suspend fun addProblemConfig(
+    suspend fun saveProblemConfig(
         problemId: Long,
         languageId: String,
         time: Int,

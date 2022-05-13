@@ -97,7 +97,7 @@ class ProblemServiceImpl(
         return problemRepository.updateTag(tagId, name)
     }
 
-    override suspend fun addProblemConfig(
+    override suspend fun saveProblemConfig(
         problemId: Long,
         languageId: String,
         time: Int,
@@ -108,7 +108,7 @@ class ProblemServiceImpl(
         args: List<String>,
         env: List<String>
     ): Boolean {
-        return problemRepository.addProblemConfig(
+        return problemRepository.saveProblemConfig(
             problemId,
             languageId,
             time,
