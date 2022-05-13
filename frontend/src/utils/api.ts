@@ -176,8 +176,11 @@ const apiRoute = wrapRecord({
       withTag(problemId: number, tagId: number) {
         return `${this._base}/${problemId}/tags/${tagId}`
       },
-      configs(problemId: number) {
+      configList(problemId: number) {
         return `${this._base}/${problemId}/configs/-`
+      },
+      configs(problemId: number) {
+        return `${this._base}/${problemId}/configs`
       },
       config(problemId: number, languageId: string) {
         return `${this._base}/${problemId}/configs/${languageId}`
@@ -304,7 +307,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       return this.axios.delete(apiRoute.admin.problems.config(problemId, languageId), { ...addonConfig, ...config })
     },
     getConfigs(problemId: number, config?: KOJAxiosRequestConfig): Promise<ProblemConfigManage[]> {
-      return data(this.axios.get(apiRoute.admin.problems.configs(problemId), { ...addonConfig, ...config }))
+      return data(this.axios.get(apiRoute.admin.problems.configList(problemId), { ...addonConfig, ...config }))
     },
     deleteProblem(problemId: number, config?: KOJAxiosRequestConfig): Promise<void> {
       return this.axios.delete(apiRoute.admin.problems.base(), { ...addonConfig, ...config })

@@ -1,10 +1,11 @@
 <template>
-  <el-drawer v-model='show' direction='rtl' size='100%' :before-close='handleDrawerClose'>
+  <el-drawer
+    v-model='showDrawer' direction='rtl' size='100%'
+    :before-close='handleDrawerClose'>
     <template #title>
       <el-input v-model='problemNameEdit'>
         <template #prepend>{{ `标题: ${problemDetail?.id} - ` }}</template>
       </el-input>
-      <h4 v-else>{{ `${problemDetail?.id} : ${problemDetail?.name}` }}</h4>
     </template>
     <template #default>
       <el-card class='box-card' style='padding: 5px;margin: 0'>
@@ -13,18 +14,18 @@
             <span style='align-items: center;'>题目内容</span>
             <el-button
               type='primary'
-              style='margin-left: auto' @click='flushDetail() && (showMode = showMode==="Raw"?"Detail":"Raw")'>
-              切换{{ showMode === 'Raw' ? '表格视图' : '原始视图' }}
+              style='margin-left: auto' @click='flushDetail() && (showRawMode = !showRawMode)'>
+              切换{{ showRawMode ? '表格视图' : '原始视图' }}
             </el-button>
           </div>
-          <div v-if='showMode==="Config"' style='display: flex'>
+          <div v-if='!showRawMode' style='display: flex'>
             <span style='align-items: center;'>语言配置</span>
           </div>
         </template>
         <prism-editor
-          v-if='showMode==="Raw"' v-model='problemContentEdit' class='my-editor' :highlight='highlighterJson'
+          v-if='showRawMode' v-model='problemContentEdit' class='my-editor' :highlight='highlighterJson'
           line-numbers></prism-editor>
-        <template v-if='showMode==="Detail"'>
+        <template v-else>
           <el-form
             label-position='top'
             label-width='100px'
@@ -106,12 +107,12 @@
 </template>
 
 <script lang='ts' setup>
-import { onBeforeMount, onBeforeUnmount, PropType, reactive, ref } from 'vue';
+import { computed, onBeforeMount, onBeforeUnmount, PropType, reactive, ref } from 'vue';
 import api from '~/api';
 import { ProblemContent, ProblemDetail } from '~/apiDeclaration';
-import { CirclePlus, Delete, Edit } from '@element-plus/icons-vue';
-import { PrismEditor } from 'vue-prism-editor';
+import { CirclePlus, Delete } from '@element-plus/icons-vue';
 import Prism, { highlight } from 'prismjs';
+import { PrismEditor } from 'vue-prism-editor';
 import 'vue-prism-editor/dist/prismeditor.min.css';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-textile';
@@ -123,7 +124,7 @@ interface Option {
   disabled: boolean;
 }
 
-const { problemDetail, show:showDrawer } = defineProps({
+const props = defineProps({
   problemDetail: {
     type: Object as PropType<ProblemDetail>,
     required: true,
@@ -135,15 +136,29 @@ const { problemDetail, show:showDrawer } = defineProps({
   },
 });
 
-defineEmits({
-  closeDrawer(ok: boolean) {
-    return ok;
+const emit = defineEmits(['update:problemDetail', 'update:show']);
+
+const problemDetail = computed<ProblemDetail>({
+  get() {
+    return props.problemDetail;
+  },
+  set(value) {
+    emit('update:problemDetail', value);
+  },
+});
+
+const showDrawer = computed<boolean>({
+  get() {
+    return props.show;
+  },
+  set(value) {
+    emit('update:show', value);
   },
 });
 
 
-const problemNameEdit = ref(problemDetail.name);
-const problemContentEdit = ref(problemDetail.content);
+const problemNameEdit = ref(problemDetail.value.name);
+const problemContentEdit = ref(problemDetail.value.content);
 const saving = ref(false);
 const fetchingFinishState: {
   tagList?: boolean,
@@ -197,7 +212,6 @@ function handleDrawerClose(done: () => void) {
 }
 
 onBeforeMount(() => {
-  fetchProblem();
   fetchTags();
 });
 
@@ -216,11 +230,11 @@ function fetchTags() {
       };
     });
     fetchingFinishState.tagList = true;
-    if (!problemDetail.tags) {
+    if (!problemDetail.value.tags) {
       rightValue.value = [];
     } else {
       rightValue.value = tagData.value.filter(tag => {
-        return problemDetail.tags.includes(tag.label);
+        return problemDetail.value.tags.includes(tag.label);
       }).map(tag => tag.key);
     }
   }).catch(() => {
@@ -234,24 +248,28 @@ onBeforeUnmount(() => {
   controller.abort();
 });
 
+function highlighterJson(code: string) {
+  return highlight(code, Prism.languages.json, 'json');
+}
+
 function resetClick() {
   ElMessageBox.confirm('确定重置初始内容?')
     .then(() => {
-      if (problemDetail.contentObj) {
+      if (problemDetail.value.contentObj) {
         try {
-          problemContentEdit.value = JSON.stringify(problemDetail.contentObj, null, 2);
+          problemContentEdit.value = JSON.stringify(problemDetail.value.contentObj, null, 2);
         } catch (e) {
-          problemContentEdit.value = problemDetail.content ?? '';
+          problemContentEdit.value = problemDetail.value.content ?? '';
         }
       } else {
-        problemContentEdit.value = problemDetail.content ?? '';
+        problemContentEdit.value = problemDetail.value.content ?? '';
       }
-      problemNameEdit.value = problemDetail.name ?? '';
-      if (!problemDetail.tags) {
+      problemNameEdit.value = problemDetail.value.name ?? '';
+      if (!problemDetail.value.tags) {
         rightValue.value = [];
       } else {
         rightValue.value = tagData.value.filter(tag => {
-          return problemDetail.tags.includes(tag.label);
+          return problemDetail.value.tags.includes(tag.label);
         }).map(tag => tag.key);
       }
     });
@@ -283,13 +301,13 @@ function saveProblemDetail(): Promise<any> {
       type: 'success',
       message: '保存成功',
     });
-    problemDetail.tags = tagData.value.filter(tag => {
+    problemDetail.value.tags = tagData.value.filter(tag => {
       return rightValue.value.includes(tag.key);
     }).map(tag => tag.label);
-    problemDetail.content = realContent;
-    problemDetail.name = problemNameEdit.value;
-    problemDetail.contentObj = obj;
-    emit('close', true);
+    problemDetail.value.content = realContent;
+    problemDetail.value.name = problemNameEdit.value;
+    problemDetail.value.contentObj = obj;
+    showDrawer.value = false;
   }).finally(() => {
     saving.value = false;
   });
@@ -301,38 +319,7 @@ function confirmClick(): Promise<any> {
 
 </script>
 
-
-<style scoped>
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/*.el-main >>> .el-scrollbar__bar {*/
-/*  display: none;*/
-/*}*/
-.core-editor {
-  min-height: 400px;
-}
-
-</style>
-
 <style>
-
-.el-drawer__body {
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-.content-label {
-  color: deepskyblue !important;
-  font-weight: bold !important;;
-  left: 20px !important;;
-  font-size: 20px !important;;
-}
-
-/* required class */
 .my-editor {
   /* you must provide font-family font-size line-height. Example: */
   font-family: Fira code, Fira Mono, Consolas, Menlo, Courier, monospace;
@@ -341,7 +328,6 @@ function confirmClick(): Promise<any> {
   padding: 5px;
 }
 
-/* optional class for removing the outline */
 .prism-editor__textarea:focus {
   outline: none;
 }
