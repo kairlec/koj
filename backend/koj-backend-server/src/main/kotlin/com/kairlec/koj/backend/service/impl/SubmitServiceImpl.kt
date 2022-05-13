@@ -14,6 +14,7 @@ import com.kairlec.koj.dao.repository.ProblemRepository
 import com.kairlec.koj.dao.repository.SubmitRepository
 import com.kairlec.koj.model.task
 import com.kairlec.koj.model.taskConfig
+import mu.KotlinLogging
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Service
@@ -97,7 +98,13 @@ class SubmitServiceImpl(
     }
 
     override fun getLanguages(): List<String> {
-        return languageIdSupporter.supportLanguageChanges.replayCache.lastOrNull() ?: emptyList()
+        val last = languageIdSupporter.supportLanguageChanges.replayCache.lastOrNull()
+        if (last == null) {
+            log.warn { "language id list never published. so just get empty list." }
+            return emptyList()
+        } else {
+            return last
+        }
     }
 
     private val applicationName = applicationContext.applicationName.ifBlank {
@@ -107,7 +114,7 @@ class SubmitServiceImpl(
     private val consumerNameSuffix = "$hostname-${Random.nextLong()}-${applicationName}"
 
     companion object {
-
+        private val log = KotlinLogging.logger { }
         private val hostname = InetAddress.getLocalHost().hostName
     }
 }

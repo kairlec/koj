@@ -15,7 +15,6 @@ import org.springframework.data.redis.core.ReactiveRedisOperations
 import org.springframework.data.redis.core.deleteAndAwait
 import org.springframework.data.redis.core.rangeAsFlow
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Component
 import pro.chenggang.project.reactive.lock.core.ReactiveLockRegistry
 
 class LanguageIdSupporter(
@@ -59,6 +58,7 @@ class LanguageIdSupporter(
                     supportLanguages.map { languageId ->
                         async { listOperations.leftPush(LANGUAGE_IDS_KEY, languageId).awaitSingle() }
                     }.toList().awaitAll()
+                    log.debug { "emit language id list" }
                     _supportLanguageChanges.emit(supportLanguages.toList())
                 }
             } else {

@@ -7,6 +7,7 @@ import com.kairlec.koj.backend.util.currentListCondition
 import com.kairlec.koj.backend.util.re
 import com.kairlec.koj.dao.model.SimpleSubmit
 import kotlinx.coroutines.flow.Flow
+import mu.KotlinLogging
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -25,6 +26,14 @@ class PublicSubmitController(
 
     @GetMapping("/languages/-")
     suspend fun getSupportLanguages(): List<String> {
-        return submitService?.getLanguages() ?: emptyList()
+        if (submitService == null) {
+            log.warn { "submit service is unavailable, return empty list." }
+            return emptyList()
+        }
+        return submitService.getLanguages()
+    }
+
+    companion object {
+        private val log = KotlinLogging.logger { }
     }
 }
