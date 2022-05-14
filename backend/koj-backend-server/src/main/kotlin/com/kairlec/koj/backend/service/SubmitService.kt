@@ -1,12 +1,7 @@
 package com.kairlec.koj.backend.service
 
 import com.kairlec.koj.common.InternalApi
-import com.kairlec.koj.dao.extended.ListCondition
-import com.kairlec.koj.dao.model.SimpleSubmit
-import com.kairlec.koj.dao.model.SubmitDetail
 import com.kairlec.koj.dao.model.SubmitState
-import com.kairlec.koj.dao.repository.PageData
-import kotlinx.coroutines.flow.Flow
 
 interface SubmitService {
     @InternalApi
@@ -36,6 +31,11 @@ interface SubmitService {
         stderr: String? = null,
         stdout: String? = null
     ): Boolean
+
+    @InternalApi
+    suspend fun getProblemIdOfSubmit(
+        id: Long,
+    ): Long?
 
     fun getLanguages(): List<String>
 }

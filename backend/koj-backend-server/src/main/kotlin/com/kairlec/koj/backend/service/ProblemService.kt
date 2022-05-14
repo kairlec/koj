@@ -1,5 +1,6 @@
 package com.kairlec.koj.backend.service
 
+import com.kairlec.koj.common.InternalApi
 import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.model.Problem
 import com.kairlec.koj.dao.model.SimpleProblem
@@ -72,4 +73,9 @@ interface ProblemService {
     suspend fun getProblemRunConfig(
         problemId: Long
     ): ProblemRunRecord?
+
+    @OptIn(InternalApi::class)
+    suspend fun getProblemAnsout(
+        problemId: Long
+    ): String?
 }

@@ -97,6 +97,11 @@ class SubmitServiceImpl(
         return submitRepository.updateSubmit(id, state, castMemory, castTime, stderr, stdout)
     }
 
+    @InternalApi
+    override suspend fun getProblemIdOfSubmit(id: Long): Long? {
+        return submitRepository.getProblemIdOfSubmit(id)
+    }
+
     override fun getLanguages(): List<String> {
         val last = languageIdSupporter.supportLanguageChanges.replayCache.lastOrNull()
         if (last == null) {

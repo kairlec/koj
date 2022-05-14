@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.kairlec.koj.backend.exp.PermissionDeniedException
 import com.kairlec.koj.backend.service.ProblemService
 import com.kairlec.koj.backend.util.sureFound
+import com.kairlec.koj.common.InternalApi
 import com.kairlec.koj.dao.exception.CompetitionNotStartedYetException
 import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.model.Problem
@@ -141,5 +142,10 @@ class ProblemServiceImpl(
 
     override suspend fun getProblemRunConfig(problemId: Long): ProblemRunRecord? {
         return problemRepository.getProblemRunConfig(problemId)
+    }
+
+    @OptIn(InternalApi::class)
+    override suspend fun getProblemAnsout(problemId: Long): String? {
+        return problemRepository.getProblemAnsOut(problemId)
     }
 }

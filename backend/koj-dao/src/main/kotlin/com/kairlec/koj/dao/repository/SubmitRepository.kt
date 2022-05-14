@@ -163,6 +163,16 @@ class SubmitRepository(
         return timeOk && stdOk
     }
 
+    @InternalApi
+    suspend fun getProblemIdOfSubmit(id: Long): Long? {
+        return dslAccess.with { create ->
+            create.select(SUBMIT.PROBLEM_ID)
+                .from(SUBMIT)
+                .where(SUBMIT.ID.eq(id))
+                .awaitFirstOrNull()?.value1()
+        }
+    }
+
     @Transactional(rollbackFor = [Exception::class])
     suspend fun createSubmit(
         id: Long,
