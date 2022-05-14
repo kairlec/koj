@@ -13,8 +13,6 @@ import com.kairlec.koj.dao.model.SubmitState
 import com.kairlec.koj.dao.with
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
@@ -26,8 +24,6 @@ import org.springframework.transaction.annotation.Transactional
 class SubmitRepository(
     private val dslAccess: DSLAccess,
 ) {
-    private val coroutineScope = CoroutineScope(Dispatchers.IO)
-
     @Transactional(rollbackFor = [Exception::class])
     suspend fun getSubmitRank(
         listCondition: ListCondition
@@ -183,38 +179,33 @@ class SubmitRepository(
         code: String
     ) {
         val submitResult = dslAccess.with { create ->
-            coroutineScope.async {
-                create.insertInto(SUBMIT)
-                    .columns(
-                        SUBMIT.ID,
-                        SUBMIT.BELONG_USER_ID,
-                        SUBMIT.BELONG_COMPETITION_ID,
-                        SUBMIT.STATE,
-                        SUBMIT.LANGUAGE_ID,
-                        SUBMIT.PROBLEM_ID
-                    )
-                    .values(id, userId, competition, SubmitState.IN_QUEUE.value, languageId, problemId)
-                    .awaitBool()
-            }
+            create.insertInto(SUBMIT)
+                .columns(
+                    SUBMIT.ID,
+                    SUBMIT.BELONG_USER_ID,
+                    SUBMIT.BELONG_COMPETITION_ID,
+                    SUBMIT.STATE,
+                    SUBMIT.LANGUAGE_ID,
+                    SUBMIT.PROBLEM_ID
+                )
+                .values(id, userId, competition, SubmitState.IN_QUEUE.value, languageId, problemId)
+                .awaitBool()
         }
         val codeResult = dslAccess.with { create ->
-            coroutineScope.async {
-                create.insertInto(SUBMIT_EXTEND)
-                    .columns(
-                        SUBMIT_EXTEND.ID,
-                        SUBMIT_EXTEND.CODE,
-                        SUBMIT_EXTEND.STDOUT,
-                        SUBMIT_EXTEND.STDERR
-                    )
-                    .values(id, code, "", "")
-                    .awaitBool()
-            }
+            create.insertInto(SUBMIT_EXTEND)
+                .columns(
+                    SUBMIT_EXTEND.ID,
+                    SUBMIT_EXTEND.CODE,
+                    SUBMIT_EXTEND.STDOUT,
+                    SUBMIT_EXTEND.STDERR
+                )
+                .values(id, code, "", "")
+                .awaitBool()
         }
-        val (submitOk, codeOk) = awaitAll(submitResult, codeResult)
-        if (!submitOk) {
+        if (!submitResult) {
             throw CreateSubmitException()
         }
-        if (!codeOk) {
+        if (!codeResult) {
             throw CreateCodeRecordException()
         }
     }
