@@ -8,6 +8,8 @@ import com.kairlec.koj.backend.util.re
 import com.kairlec.koj.dao.model.SimpleSubmit
 import kotlinx.coroutines.flow.Flow
 import mu.KotlinLogging
+import org.springframework.beans.factory.NoSuchBeanDefinitionException
+import org.springframework.context.ApplicationContext
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -16,11 +18,19 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/public/submits")
 class PublicSubmitController(
     private val readOnlySubmitService: ReadOnlySubmitService,
-    private val submitService: SubmitService?
+    private val applicationContext: ApplicationContext
 ) {
     @GetMapping("/-")
     suspend fun getSubmits(): RE<Flow<SimpleSubmit>> {
         return readOnlySubmitService.getSubmits(currentListCondition()).re()
+    }
+
+    val submitService by lazy {
+        try {
+            applicationContext.getBean(SubmitService::class.java)
+        } catch (e: NoSuchBeanDefinitionException) {
+            null
+        }
     }
 
 
@@ -30,7 +40,7 @@ class PublicSubmitController(
             log.warn { "submit service is unavailable, return empty list." }
             return emptyList()
         }
-        return submitService.getLanguages()
+        return submitService!!.getLanguages()
     }
 
     companion object {

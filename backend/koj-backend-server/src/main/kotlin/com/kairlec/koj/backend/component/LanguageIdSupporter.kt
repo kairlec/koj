@@ -10,6 +10,7 @@ import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.springframework.beans.factory.DisposableBean
+import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.ReactiveRedisOperations
 import org.springframework.data.redis.core.deleteAndAwait
@@ -21,7 +22,7 @@ class LanguageIdSupporter(
     private val pulsarAdmin: PulsarAdmin,
     private val redisReactiveLockRegistry: ReactiveLockRegistry,
     private val redisOperations: ReactiveRedisOperations<String, String>,
-) : DisposableBean {
+) : DisposableBean, InitializingBean {
     @Value("\${koj.namespace:public/default}")
     private lateinit var namespace: String
 
@@ -82,6 +83,10 @@ class LanguageIdSupporter(
             log.debug { "close language supporter" }
             coroutineScope.cancel()
         }
+    }
+
+    override fun afterPropertiesSet() {
+        updateLanguageIds()
     }
 }
 
