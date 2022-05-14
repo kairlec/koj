@@ -3,19 +3,14 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            version("protobuf") {
-                strictly("[3.19, 3.20[")
-                prefer("3.19.4")
-            }
+            version("protobuf","3.20.+")
             version("kotlin", "1.6.21")
             version("spring", "2.6.+")
             version("pulsar-starter") {
                 strictly("[1, 2[")
-                prefer("1.1.0")
             }
             version("docker-java") {
                 strictly("[3, 4[")
-                prefer("3.2.13")
             }
             version("kotest", "5.+")
             version("kotest-ext-spring", "1.1.+")
@@ -24,7 +19,7 @@ dependencyResolutionManagement {
             version("kotlin-logging", "2.+")
             version("coroutines", "1.6.+")
             version("reflections", "0.10.+")
-            version("pulsar", "2.9.+")
+            version("pulsar", "2.+")
             version("jooq", "3.16.+")
             version("jooq-codegen", "7.+")
             version("pgsql", "42.+")

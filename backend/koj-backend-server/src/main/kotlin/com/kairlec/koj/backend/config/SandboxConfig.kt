@@ -10,6 +10,7 @@ import com.kairlec.koj.model.*
 import io.github.majusko.pulsar.producer.ProducerCollector
 import io.github.majusko.pulsar.producer.ProducerFactory
 import io.github.majusko.pulsar.producer.PulsarTemplate
+import io.github.majusko.pulsar.properties.PulsarProperties
 import io.github.majusko.pulsar.reactor.FluxConsumerFactory
 import io.github.majusko.pulsar.reactor.PulsarFluxConsumer
 import io.github.majusko.pulsar.utils.UrlBuildService
@@ -19,8 +20,8 @@ import kotlinx.coroutines.reactive.collect
 import mu.KotlinLogging
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
-import org.apache.pulsar.client.api.PulsarClientException
 import org.apache.pulsar.client.api.SubscriptionType
+import org.apache.pulsar.client.api.interceptor.ProducerInterceptor
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.getBean
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -39,9 +40,17 @@ class SandboxConfig {
     fun customProducer(
         pulsarClient: PulsarClient,
         urlBuildService: UrlBuildService,
+        pulsarProperties: PulsarProperties,
+        producerInterceptor: ProducerInterceptor,
         languageIdSupporter: LanguageIdSupporter,
     ): ProducerCollector {
-        return CustomProducerCollector(pulsarClient, urlBuildService, languageIdSupporter)
+        return CustomProducerCollector(
+            pulsarClient,
+            urlBuildService,
+            pulsarProperties,
+            producerInterceptor,
+            languageIdSupporter,
+        )
     }
 
     @Bean
@@ -121,6 +130,17 @@ class SandboxMQ(
             .build()
     )
 
+    private val dlqConsumer = fluxConsumerFactory.newConsumer<ByteArray>(
+        PulsarFluxConsumer.builder()
+            .setTopic(deadLetterTopic())
+            .setConsumerName("koj-backend-dlq-${hostname}-${Random.nextLong()}")
+            .setSubscriptionName("koj-backend")
+            .setSubscriptionType(SubscriptionType.Shared)
+            .setMessageClass(ByteArray::class.java)
+            .setSimple(false)
+            .build()
+    )
+
     @EventListener(ApplicationReadyEvent::class)
     fun subscribe() {
         coroutineScope.launch {
@@ -129,8 +149,9 @@ class SandboxMQ(
                     val data = (msg.message.value as ByteArray).decompress()
                     taskStatus(data)
                     msg.consumer.acknowledge(msg.message)
-                } catch (e: PulsarClientException) {
+                } catch (e: Throwable) {
                     msg.consumer.negativeAcknowledge(msg.message)
+                    log.error(e) { "receive status error:${e.message}" }
                 }
             }
         }
@@ -140,8 +161,21 @@ class SandboxMQ(
                     val data = (msg.message.value as ByteArray).decompress()
                     taskResult(data)
                     msg.consumer.acknowledge(msg.message)
-                } catch (e: PulsarClientException) {
+                } catch (e: Throwable) {
                     msg.consumer.negativeAcknowledge(msg.message)
+                    log.error(e) { "receive result error:${e.message}" }
+                }
+            }
+        }
+        coroutineScope.launch {
+            dlqConsumer.asFlux().collect { msg ->
+                try {
+                    val data = (msg.message.value as ByteArray).decompress()
+                    taskDead(data)
+                    msg.consumer.acknowledge(msg.message)
+                } catch (e: Throwable) {
+                    msg.consumer.negativeAcknowledge(msg.message)
+                    log.error(e) { "receive dlq error:${e.message}" }
                 }
             }
         }
@@ -156,6 +190,13 @@ class SandboxMQ(
         val status = TaskStatus.parseFrom(data)
         log.info { "task status(${status.status}):${status}" }
         submitService.updateSubmit(status.id, status.status.asSubmitState(), null, null)
+    }
+
+    @OptIn(InternalApi::class)
+    private suspend fun taskDead(data: ByteArray) {
+        val status = Task.parseFrom(data)
+        log.info { "task status(failed of dlq):${status}" }
+        submitService.updateSubmit(status.id, SubmitState.NO_SANDBOX, null, null)
     }
 
     @OptIn(InternalApi::class)

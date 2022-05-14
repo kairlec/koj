@@ -24,3 +24,8 @@ logging:
     org.apache.pulsar.common.protocol: INFO
     sun.rmi: ERROR
     javax.management.remote.rmi: ERROR
+
+pulsar:
+  consumer:
+    default:
+      ack-timeout-ms: 900_000 # 15 minutes

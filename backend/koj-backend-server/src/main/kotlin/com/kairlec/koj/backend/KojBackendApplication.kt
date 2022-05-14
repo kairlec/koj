@@ -20,7 +20,7 @@ import reactor.core.publisher.Hooks
 )
 @EnableScheduling
 @EnableTransactionManagement
-private class KojBackendApplication
+class KojBackendApplication
 
 
 fun main(args: Array<String>) {

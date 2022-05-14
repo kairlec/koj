@@ -19,6 +19,10 @@ fun statusTopic(): String {
     return statusTopicPrefix
 }
 
+fun deadLetterTopic(): String {
+    return "sandbox-task-dlq"
+}
+
 interface LanguageIdContent {
     val id: String
 }

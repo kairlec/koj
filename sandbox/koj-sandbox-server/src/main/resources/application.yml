@@ -1,2 +1,11 @@
 pulsar:
   service-url: ${PULSAR_URL}
+  consumer:
+    default:
+      ack-timeout-ms: 900_000 # 15 minutes
+
+debug: true
+
+logging:
+  level:
+    com.kairlec.koj.sandbox: DEBUG
