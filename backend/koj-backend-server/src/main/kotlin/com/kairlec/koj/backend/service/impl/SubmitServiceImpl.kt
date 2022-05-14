@@ -82,6 +82,7 @@ class SubmitServiceImpl(
             this.debug = false
             this.processorName = consumerNameSuffix
         })
+        log.info { "submit create of $id" }
         return id
     }
 
