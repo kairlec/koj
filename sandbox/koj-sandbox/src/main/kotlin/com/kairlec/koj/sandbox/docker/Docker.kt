@@ -72,6 +72,19 @@ object Docker {
             try {
                 val stdin = tempDirectory.createFileWithContent("stdin", runConfig.input)
                 log.debug { "create stdin file:${stdin} with content:${runConfig.input}" }
+                log.debug {
+                    """
+                             create image:${runConfig.image}
+                             bind:${tempDirectory.absolutePathString()} -> $containerPathPrefix (rw)
+                             bind:${runConfig.exeMount.first} -> ${resolve(runConfig.exeMount.second)} (ro)
+                             bind:${stdin.absolutePathString()} -> ${resolve("stdin")} (ro)
+                             autoRemove(!debug):${runConfig.debug}
+                             workingDir:${containerPathPrefix}
+                             env:${runConfig.kojEnv.asList()}
+                             disableNetwork:true
+                             name:${runConfig.namespace}-execute
+                """.trimIndent()
+                }
                 val createResult = dockerClient.createContainerCmd(runConfig.image)
                     .withHostConfig(
                         HostConfig.newHostConfig()
@@ -92,7 +105,7 @@ object Docker {
                     .withWorkingDir(containerPathPrefix)
                     .exec()
                 dockerClient.startContainerCmd(createResult.id).exec()
-                log.debug { "container started:${createResult.id} with name:${runConfig.namespace}-compile" }
+                log.debug { "container started:${createResult.id} with name:${runConfig.namespace}-execute" }
                 val exitCode = try {
                     val waitResult = dockerClient.waitContainerCmd(createResult.id).start()
                     waitResult.awaitStatusCode()
@@ -128,6 +141,18 @@ object Docker {
                 val sourceFile =
                     tempDirectory.createFileWithContent(compileConfig.sourceFileName, compileConfig.sourceContent)
                 log.debug { "create source file:${sourceFile} with content:${compileConfig.sourceContent}" }
+                log.debug {
+                    """
+                             create image:${compileConfig.image}
+                             bind:${tempDirectory.absolutePathString()} -> $containerPathPrefix (rw)
+                             bind:${sourceFile.absolutePathString()} -> ${resolve(compileConfig.sourceFileName)} (ro)
+                             autoRemove(!debug):${compileConfig.debug}
+                             workingDir:${containerPathPrefix}
+                             env:${compileConfig.kojEnv.asList()}
+                             disableNetwork:true
+                             name:${compileConfig.namespace}-compile
+                """.trimIndent()
+                }
                 val createResult = dockerClient.createContainerCmd(compileConfig.image)
                     .withHostConfig(
                         HostConfig.newHostConfig()

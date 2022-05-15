@@ -30,8 +30,8 @@ data class GCCCompileFailure(
 
 data class GCCCompileConfig(
     override val source: CompileSource,
-    override val compileImage: String = "kairlec/koj-support:clike",
-    override val compileImageVersion: String = "latest",
+    override val compileImage: String = "kairlec/koj-support",
+    override val compileImageVersion: String = "clike",
     override val debug: Boolean = false
 ) : AbstractCompileConfig()
 

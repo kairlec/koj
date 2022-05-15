@@ -21,17 +21,20 @@ import kotlinx.coroutines.reactive.awaitSingle
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigInteger
+
+
 
 @Repository
 class ProblemRepository(
     private val dslAccess: DSLAccess,
 ) {
-
     @Transactional(rollbackFor = [Exception::class])
     suspend fun getProblems(
         tags: List<String> = emptyList(),
         listCondition: ListCondition
     ): PageData<SimpleProblem> {
+
         val count = dslAccess.with { create ->
             create.selectCount()
                 .from(PROBLEM)
@@ -352,9 +355,9 @@ class ProblemRepository(
         languageId: String,
         time: Int,
         memory: Int,
-        maxOutputSize: Long?,
-        maxStack: Long?,
-        maxProcessNumber: Short?,
+        maxOutputSize: BigInteger?,
+        maxStack: BigInteger?,
+        maxProcessNumber: Int?,
         args: String,
         env: String
     ): Boolean {

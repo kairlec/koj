@@ -29,6 +29,12 @@ class GlobalExceptionHandler {
         return e.errorCode.asErrorResult()
     }
 
+    @ExceptionHandler
+    fun handleException(e: Exception): ErrorResult {
+        log.error(e) { "ExceptionHandler: ${e.message}" }
+        return ErrorResult.failed(e)
+    }
+
     companion object {
         private val log = KotlinLogging.logger { }
     }

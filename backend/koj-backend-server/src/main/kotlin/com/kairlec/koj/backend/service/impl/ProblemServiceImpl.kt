@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigInteger
 import java.time.LocalDateTime
 
 @Service
@@ -103,12 +104,14 @@ class ProblemServiceImpl(
         languageId: String,
         time: Int,
         memory: Int,
-        maxOutputSize: Long?,
-        maxStack: Long?,
-        maxProcessNumber: Short?,
+        maxOutputSize: BigInteger?,
+        maxStack: BigInteger?,
+        maxProcessNumber: Int?,
         args: List<String>,
         env: List<String>
     ): Boolean {
+        val argsString = objectMapper.writeValueAsString(args)
+        val envString = objectMapper.writeValueAsString(env)
         return problemRepository.saveProblemConfig(
             problemId,
             languageId,
@@ -117,8 +120,8 @@ class ProblemServiceImpl(
             maxOutputSize,
             maxStack,
             maxProcessNumber,
-            objectMapper.writeValueAsString(args),
-            objectMapper.writeValueAsString(env)
+            argsString,
+            envString
         )
     }
 

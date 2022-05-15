@@ -9,6 +9,7 @@ import com.kairlec.koj.dao.tables.records.ProblemConfigRecord
 import com.kairlec.koj.dao.tables.records.ProblemRunRecord
 import com.kairlec.koj.dao.tables.records.ProblemTagRecord
 import kotlinx.coroutines.flow.Flow
+import java.math.BigInteger
 
 interface ProblemService {
     suspend fun getProblems(tags: List<String>, listCondition: ListCondition): PageData<SimpleProblem>
@@ -48,9 +49,9 @@ interface ProblemService {
         languageId: String,
         time: Int,
         memory: Int,
-        maxOutputSize: Long?,
-        maxStack: Long?,
-        maxProcessNumber: Short?,
+        maxOutputSize: BigInteger?,
+        maxStack: BigInteger?,
+        maxProcessNumber: Int?,
         args: List<String>,
         env: List<String>
     ): Boolean
