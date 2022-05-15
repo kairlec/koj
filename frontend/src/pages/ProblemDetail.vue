@@ -396,7 +396,7 @@ export default defineComponent({
   padding-bottom: 0;
 }
 
-.box-card >>> .content-label {
+.box-card :deep(.content-label) {
   color: deepskyblue !important;
   font-weight: bold !important;;
   left: 20px !important;;
@@ -411,7 +411,7 @@ export default defineComponent({
   padding: 5px;
 }
 
-.my-editor >>> .prism-editor__textarea:focus {
+.my-editor :deep(.prism-editor__textarea):focus {
   outline: none;
 }
 

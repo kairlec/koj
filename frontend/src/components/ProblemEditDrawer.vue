@@ -325,7 +325,7 @@ function confirmClick(): Promise<any> {
   padding: 5px;
 }
 
-.my-editor >>> .prism-editor__textarea:focus {
+.my-editor :deep(.prism-editor__textarea):focus {
   outline: none;
 }
 </style>

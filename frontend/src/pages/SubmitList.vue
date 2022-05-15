@@ -415,20 +415,20 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.el-table >>> .error-submit {
+.el-table :deep(.error-submit) {
   --el-table-tr-bg-color: var(--el-color-error-light-7);
 }
 
-.el-table >>> .accept-submit {
+.el-table :deep(.accept-submit) {
   --el-table-tr-bg-color: var(--el-color-success-light-7);
 }
 
-.el-table >>> .cell {
+.el-table :deep(.cell) {
   display: flex !important;
   justify-content: center;
 }
 
-.el-table >>> .myself-submit {
+.el-table :deep(.myself-submit) {
   color: blue;
   text-decoration: underline;
   cursor: pointer;
@@ -498,7 +498,7 @@ export default defineComponent({
   padding: 5px;
 }
 
-.my-editor >>> .prism-editor__textarea:focus {
+.my-editor :deep(.prism-editor__textarea):focus {
   outline: none;
 }
 </style>
