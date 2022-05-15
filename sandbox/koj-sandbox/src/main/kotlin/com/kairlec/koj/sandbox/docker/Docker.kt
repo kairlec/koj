@@ -43,9 +43,11 @@ object Docker {
                 val dockerVersion = dockerClient.versionCmd().exec()
                 log.debug { "Sandbox of docker engine connect success using docker version: ${dockerVersion.version}" }
                 initConfig.prepareImages.map {
+                    log.debug { "pulling image[${it}] for prepare support" }
                     val imagePullResult = dockerClient.pullImageCmd(it).start()
                     try {
                         imagePullResult.awaitCompletion()
+                        log.debug { "pull image[${it}] completed" }
                     } catch (e: Exception) {
                         log.error(e) { "prepare image for $it failed" }
                         throw DockerSandboxInitImageFailedException(it, e)

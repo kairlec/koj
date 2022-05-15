@@ -54,8 +54,8 @@ abstract class GCC : KojCompiler {
             )
         }
         val (define, compiler, suffix) = when (language) {
-            is C -> Triple(language.preDefine, "gcc", "c")
-            is CPP -> Triple(language.preDefine, "g++", "cc")
+            is C -> Triple(language.preDefine, "/usr/local/bin/gcc", "c")
+            is CPP -> Triple(language.preDefine, "/usr/local/bin/g++", "cc")
             else -> Triple(emptyList(), "", "")
         }
         val sourceFileName = "main.${suffix}"
