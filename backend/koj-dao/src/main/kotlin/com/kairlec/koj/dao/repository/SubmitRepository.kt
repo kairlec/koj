@@ -11,8 +11,6 @@ import com.kairlec.koj.dao.model.SimpleSubmit
 import com.kairlec.koj.dao.model.SubmitDetail
 import com.kairlec.koj.dao.model.SubmitState
 import com.kairlec.koj.dao.with
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
@@ -44,6 +42,7 @@ class SubmitRepository(
                 .map { submit ->
                     SimpleSubmit(
                         id = submit[SUBMIT.ID],
+                        problemId = submit[SUBMIT.PROBLEM_ID],
                         state = SubmitState.parse(submit[SUBMIT.STATE]),
                         castMemory = submit[SUBMIT.CAST_MEMORY],
                         castTime = submit[SUBMIT.CAST_TIME],
@@ -72,6 +71,7 @@ class SubmitRepository(
                 .map { submit ->
                     SimpleSubmit(
                         id = submit[SUBMIT.ID],
+                        problemId = submit[SUBMIT.PROBLEM_ID],
                         state = SubmitState.parse(submit[SUBMIT.STATE]),
                         castMemory = submit[SUBMIT.CAST_MEMORY],
                         castTime = submit[SUBMIT.CAST_TIME],
@@ -114,6 +114,7 @@ class SubmitRepository(
         }
         return SubmitDetail(
             id = submit[SUBMIT.ID],
+            problemId = submit[SUBMIT.PROBLEM_ID],
             state = state,
             castMemory = submit[SUBMIT.CAST_MEMORY],
             castTime = submit[SUBMIT.CAST_TIME],
