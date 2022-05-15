@@ -92,6 +92,11 @@
                     :disabled='!(problemDetail?.config?.find((it)=>it.languageId===item))'
                   />
                 </el-select>
+                <el-button
+                  :loading='!fetchingFinishState.problemDetail || !fetchingFinishState.languageList'
+                  :disabled='userCode.length===0'
+                  type='primary' style='margin-left: auto' @click='submitCode'>提交
+                </el-button>
               </div>
             </template>
             <prism-editor
@@ -150,7 +155,13 @@ export default defineComponent({
   components: {
     PrismEditor,
   },
-  setup() {
+  props: {
+    competitionId: {
+      type: Number,
+      required: false,
+    },
+  },
+  setup(prop) {
     const problemDetail: Ref<ProblemDetail | undefined> = ref();
     const editAble = ref(false);
     const refreshing = ref(false);
@@ -312,14 +323,39 @@ export default defineComponent({
       });
     }
 
+    function submitCode() {
+      if (!user.user) {
+        ElMessage.error('请先登录');
+        return;
+      }
+      if (userCode.value.length === 0) {
+        ElMessage({
+          message: '请输入代码',
+          type: 'error',
+        });
+        return;
+      }
+      console.log(userCode);
+      problemDetailApi.submit({
+        competitionId: prop.competitionId,
+        code: userCode.value,
+        problemId: problemDetail.value!.id,
+        languageId: chosenLanguageId.value,
+      }).then(() => {
+        ElMessage({
+          message: '提交成功',
+          type: 'success',
+        });
+        userCode.value = '';
+      });
+    }
+
     return {
+      submitCode,
       showEdit,
       showManager,
       userCode,
       languageIds,
-      highlighterJson(code: string) {
-        return highlight(code, Prism.languages.json, 'json');
-      },
       highlighterNothing(code: string) {
         return highlight(code, Prism.languages.textile, 'textile');
       },

@@ -218,3 +218,10 @@ export interface SimpleSubmit {
   createTime: Date
   updateTime: Date
 }
+
+export interface SubmitRequest {
+  competitionId?: number
+  languageId: string
+  problemId: number
+  code: string
+}

@@ -10,14 +10,14 @@
         <el-form
           label-position='top'
           label-width='100px'
-          :model='problemConfigManage[idx]'
+          :model='sample'
           :disabled='updating'
         >
           <el-card
             style='margin: 15px 0;'>
             <template #header>
               <div class='card-header'>
-                <el-select v-model='sample.languageId' placeholder='选择语言' :disabled='sample.created===false'>
+                <el-select v-model='sample.languageId' placeholder='选择语言' :disabled='sample.created!==true'>
                   <el-option
                     v-for='item in languageIds'
                     :key='item'

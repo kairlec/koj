@@ -11,6 +11,7 @@ import {
   ProblemDetail,
   SimpleProblem,
   SimpleSubmit,
+  SubmitRequest,
   Tag,
   User,
   UserStat,
@@ -56,6 +57,8 @@ interface IApi {
   tags(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<Tag>>
 
   submits(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleSubmit>>
+
+  submit(submitRequest: SubmitRequest, config?: KOJAxiosRequestConfig): Promise<void>
 
   languages(config?: KOJAxiosRequestConfig): Promise<string[]>
 
@@ -107,7 +110,11 @@ function defaultExtra<T = any>(res: AxiosResponse<T>): T {
 
 function data<T = any>(promise: AxiosPromise<T>, extra: (res: AxiosResponse<T>) => T = defaultExtra): Promise<T> {
   return promise.then((res) => {
-    return extra(res)
+    if (res) {
+      return extra(res)
+    } else {
+      return res
+    }
   })
 }
 
@@ -206,6 +213,12 @@ const apiRoute = wrapRecord({
     },
     self() {
       return `${this._base}/self`
+    },
+  },
+  submits: {
+    _base: '',
+    request() {
+      return `${this._base}`
     },
   },
   public: {
@@ -316,7 +329,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       return this.axios.delete(apiRoute.admin.problems.withTag(problemId, tagId), { ...addonConfig, ...config })
     },
     getRunConfig(problemId: number, config?: KOJAxiosRequestConfig): Promise<{ stdin: string; ansout: string }> {
-      return this.axios.get(apiRoute.admin.problems.runs(problemId), { ...addonConfig, ...config })
+      return data(this.axios.get(apiRoute.admin.problems.runs(problemId), { ...addonConfig, ...config }))
     },
     saveRunConfig(problemId: number, data: { stdin: string; ansout: string }, config?: KOJAxiosRequestConfig): Promise<void> {
       return this.axios.put(apiRoute.admin.problems.runs(problemId), data, {
@@ -364,7 +377,6 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
           { ...addonConfig, ...config },
         ),
         (res) => {
-          console.log(res)
           KOJStorage.identity(res.headers[KOJStorage.xIdentity])
           res.data.createTime = new Date(res.data.createTime)
           return res.data
@@ -463,7 +475,17 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       cf.params = { ...cf.params, ...listConditionAsParam(listCondition) }
       return page(this.axios.get(apiRoute.public.submits.list(), cf), extraTime)
     },
+    submit(submitRequest: SubmitRequest, config?: KOJAxiosRequestConfig): Promise<void> {
+      return this.axios.put(apiRoute.submits.request(), submitRequest, {
+        headers: {
+          'content-type': 'application/json',
+        },
+        ...addonConfig,
+        ...config,
+      })
+    },
     languages(config?: KOJAxiosRequestConfig): Promise<string[]> {
+      // debugger
       return data(this.axios.get(apiRoute.public.submits.languages.list(), { ...addonConfig, ...config }))
     },
   }

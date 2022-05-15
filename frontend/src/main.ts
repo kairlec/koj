@@ -6,6 +6,11 @@ import { setGlobalUser } from '~/hooks/globalUser'
 
 const app = createApp(App)
 
+// @ts-ignore
+BigInt.prototype.toJSON = function () {
+  return this.toString()
+}
+
 app.use(router)
 
 setGlobalUser(app, null, true)
