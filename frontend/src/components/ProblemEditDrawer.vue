@@ -18,9 +18,6 @@
               切换{{ showRawMode ? '表格视图' : '原始视图' }}
             </el-button>
           </div>
-          <div v-if='!showRawMode' style='display: flex'>
-            <span style='align-items: center;'>语言配置</span>
-          </div>
         </template>
         <prism-editor
           v-if='showRawMode' v-model='problemContentEdit' class='my-editor' :highlight='highlighterJson'
@@ -119,7 +116,7 @@ import 'prismjs/components/prism-textile';
 import 'prismjs/themes/prism.css';
 
 interface Option {
-  key: number;
+  key: string;
   label: string;
   disabled: boolean;
 }
@@ -165,7 +162,7 @@ const fetchingFinishState: {
 } = reactive({});
 const controller = new AbortController();
 const tagData = ref(Array<Option>());
-const rightValue = ref(Array<number>());
+const rightValue = ref(Array<string>());
 const problemEditDrawerApi = api.withConfig({ signal: controller.signal });
 const showRawMode = ref(true);
 
@@ -319,16 +316,16 @@ function confirmClick(): Promise<any> {
 
 </script>
 
-<style>
+<style scoped>
 .my-editor {
-  /* you must provide font-family font-size line-height. Example: */
+  background-color: #f8f8f9;
   font-family: Fira code, Fira Mono, Consolas, Menlo, Courier, monospace;
   font-size: 14px;
   line-height: 1.5;
   padding: 5px;
 }
 
-.prism-editor__textarea:focus {
+.my-editor >>> .prism-editor__textarea:focus {
   outline: none;
 }
 </style>

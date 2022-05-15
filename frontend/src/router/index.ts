@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import Home from '../pages/Home.vue'
-import Submit from '../pages/Submit.vue'
+import Submit from '../pages/SubmitList.vue'
 import ProblemList from '../pages/ProblemList.vue'
 import ProblemDetail from '../pages/ProblemDetail.vue'
 

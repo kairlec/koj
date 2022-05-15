@@ -102,8 +102,7 @@
             <prism-editor
               v-model='userCode'
               v-loading='!fetchingFinishState.problemDetail || !fetchingFinishState.languageList'
-              :disabled='chosenLanguageId.length===0' class='my-editor core-editor' style='background-color: #f8f8f9'
-              line-numbers
+              :disabled='chosenLanguageId.length===0' class='my-editor core-editor' line-numbers
               :highlight='highlighterEditorContent'></prism-editor>
           </el-card>
         </div>
@@ -157,8 +156,9 @@ export default defineComponent({
   },
   props: {
     competitionId: {
-      type: Number,
+      type: String,
       required: false,
+      default: undefined,
     },
   },
   setup(prop) {
@@ -207,9 +207,9 @@ export default defineComponent({
         const id = route.params.id;
         let problemId;
         if (typeof id === 'string') {
-          problemId = parseInt(id);
+          problemId = id;
         } else {
-          problemId = parseInt(id[0]);
+          problemId = id[0];
         }
         fetchProblem(problemId);
       }
@@ -221,9 +221,9 @@ export default defineComponent({
         const id = route.params.id;
         let problemId;
         if (typeof id === 'string') {
-          problemId = parseInt(id);
+          problemId = id;
         } else {
-          problemId = parseInt(id[0]);
+          problemId = id[0];
         }
         fetchProblem(problemId);
       }
@@ -241,7 +241,7 @@ export default defineComponent({
         ignoreError: true,
       }).then(res => {
         fetchingFinishState.languageList = true;
-        languageIds.value = res;
+        languageIds.value = res || [];
         if (problemDetail.value && chosenLanguageId.value.length === 0) {
           for (const config of problemDetail.value!.config) {
             const chosen = res.find((it) => config.languageId === it);
@@ -263,14 +263,14 @@ export default defineComponent({
       controller.abort();
     });
 
-    function fetchProblem(problemId?: number, force = false) {
+    function fetchProblem(problemId?: string, force = false) {
       if (problemId === undefined) {
         if (route.name === 'ProblemDetail') {
           const id = route.params.id;
           if (typeof id === 'string') {
-            problemId = parseInt(id);
+            problemId = id;
           } else {
-            problemId = parseInt(id[0]);
+            problemId = id[0];
           }
         } else {
           return;
@@ -387,40 +387,32 @@ export default defineComponent({
   align-items: center;
 }
 
-/*.el-main >>> .el-scrollbar__bar {*/
-/*  display: none;*/
-/*}*/
 .core-editor {
   min-height: 400px;
 }
-
-</style>
-
-<style>
 
 .el-drawer__body {
   padding-top: 0;
   padding-bottom: 0;
 }
 
-.content-label {
+.box-card >>> .content-label {
   color: deepskyblue !important;
   font-weight: bold !important;;
   left: 20px !important;;
   font-size: 20px !important;;
 }
 
-/* required class */
 .my-editor {
-  /* you must provide font-family font-size line-height. Example: */
+  background-color: #f8f8f9;
   font-family: Fira code, Fira Mono, Consolas, Menlo, Courier, monospace;
   font-size: 14px;
   line-height: 1.5;
   padding: 5px;
 }
 
-/* optional class for removing the outline */
-.prism-editor__textarea:focus {
+.my-editor >>> .prism-editor__textarea:focus {
   outline: none;
 }
+
 </style>
