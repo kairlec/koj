@@ -2,7 +2,6 @@ package com.kairlec.koj.backend.controller.internal
 
 import com.kairlec.koj.backend.config.userIdAttributes
 import com.kairlec.koj.backend.service.CompetitionService
-import com.kairlec.koj.backend.service.ReadOnlySubmitService
 import com.kairlec.koj.dao.model.SimpleSubmit
 import kotlinx.coroutines.flow.Flow
 import org.springframework.web.bind.annotation.*

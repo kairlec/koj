@@ -21,7 +21,7 @@ import pro.chenggang.project.reactive.lock.core.ReactiveLockRegistry
 class LanguageIdSupporter(
     private val pulsarAdmin: PulsarAdmin,
     private val redisReactiveLockRegistry: ReactiveLockRegistry,
-    private val redisOperations: ReactiveRedisOperations<String, String>,
+    redisOperations: ReactiveRedisOperations<String, String>,
 ) : DisposableBean, InitializingBean {
     @Value("\${koj.namespace:public/default}")
     private lateinit var namespace: String
@@ -31,12 +31,19 @@ class LanguageIdSupporter(
             "(?:non-)?persistent://${namespace}/$taskTopicPrefix(.*)".toRegex()
                 .matchEntire(it)?.groupValues?.get(1)
         }.asFlow().filter { languageId ->
-            pulsarAdmin.topics().getStatsAsync(taskTopic(languageId))
+            (pulsarAdmin.topics().getStatsAsync(taskTopic(languageId))
                 .await()
                 .subscriptions
                 .filterKeys { it == "koj-sandbox" }
                 .values
-                .sumOf { it.consumers.size } > 0
+                .sumOf {
+                    log.debug { "language:${languageId} has consumer:[${it.consumers.joinToString { it.consumerName }}](active:${it.activeConsumerName})" }
+                    it.consumers.size
+                } > 0).also {
+                if (!it) {
+                    log.warn { "language:${languageId} subscriptions of koj-sandbox is empty, ignore it." }
+                }
+            }
         }
     }
 
