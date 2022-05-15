@@ -5,7 +5,7 @@
     @register-cancel='onRegisterCancel'></register-dialog>
 
   <el-menu v-if='showMenu' :id='id' :default-active='activeIndex' mode='horizontal' :router='true'>
-    <el-image class='logo' src='/src/assets/logo.svg'></el-image>
+    <el-image class='logo' :src='logo'></el-image>
     <template
       v-for='(item,idx) in userMenuRoutes' :key='idx'>
       <el-menu-item :index='`1${idx}`' :route='item.path'>{{ item.name }}</el-menu-item>
@@ -168,7 +168,8 @@ export default defineComponent({
         setGlobalUser(instance.appContext, null);
         KOJStorage.identity(null);
         reload();
-      }
+      },
+      logo: new URL('../assets/logo.svg', import.meta.url).href
     };
   }
 });
