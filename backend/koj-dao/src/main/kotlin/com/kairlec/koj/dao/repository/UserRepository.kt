@@ -227,7 +227,12 @@ class UserRepository(
                 .asFlow()
                 .withIndex()
                 .map { (index, record) ->
-                    RankInfo(record[User.USER.ID], record[User.USER.USERNAME], index + 1, record.get("acc", Int::class.java))
+                    RankInfo(
+                        record[User.USER.ID],
+                        record[User.USER.USERNAME],
+                        index + 1,
+                        record.get("acc", Int::class.java)
+                    )
                 }
         }
     }

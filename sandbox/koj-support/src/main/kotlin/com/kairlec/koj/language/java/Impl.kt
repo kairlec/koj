@@ -6,7 +6,7 @@ object Java8 : Java() {
         get() = "1.8"
 }
 
-object Java11: Java() {
+object Java11 : Java() {
     override val version: String
         get() = "11"
 }

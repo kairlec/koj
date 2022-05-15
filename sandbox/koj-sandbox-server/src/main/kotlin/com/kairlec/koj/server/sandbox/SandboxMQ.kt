@@ -11,7 +11,6 @@ import io.github.majusko.pulsar.reactor.FluxConsumer
 import io.github.majusko.pulsar.reactor.FluxConsumerFactory
 import io.github.majusko.pulsar.reactor.PulsarFluxConsumer
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.reactive.asFlow
 import mu.KotlinLogging
 import org.apache.pulsar.client.api.SubscriptionType

@@ -8,8 +8,10 @@ import org.springframework.web.server.ServerWebExchangeDecorator
 
 
 class PayloadServerWebExchangeDecorator(delegate: ServerWebExchange) : ServerWebExchangeDecorator(delegate) {
-    private val requestDecorator: PartnerServerHttpRequestDecorator = PartnerServerHttpRequestDecorator(delegate.request)
-    private val responseDecorator: PartnerServerHttpResponseDecorator = PartnerServerHttpResponseDecorator(delegate.response)
+    private val requestDecorator: PartnerServerHttpRequestDecorator =
+        PartnerServerHttpRequestDecorator(delegate.request)
+    private val responseDecorator: PartnerServerHttpResponseDecorator =
+        PartnerServerHttpResponseDecorator(delegate.response)
 
     override fun getRequest(): ServerHttpRequest {
         return requestDecorator

@@ -19,7 +19,7 @@ dependencies {
     api(libs.coroutines.reactive)
     api(libs.coroutines.reactor)
     api(libs.spring.boot.starter)
-    implementation(libs.spring.boot.starter.jooq){
+    implementation(libs.spring.boot.starter.jooq) {
         exclude(libs.jooq)
     }
 }
