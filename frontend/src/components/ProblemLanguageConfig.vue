@@ -51,7 +51,7 @@
             </el-form-item>
             <el-form-item label='内存限制(B)'>
               <el-input-number
-                v-model='sample.memory' :step='100' :min='100' :max='9999999'
+                v-model='sample.memory' :step='100' :min='100' :max='999999999999999'
                 @input='sample.changed=true' />
             </el-form-item>
           </el-card>
@@ -61,7 +61,7 @@
         type='primary' :icon='CirclePlus'
         style='margin-bottom: 10px;'
         :disabled='updating'
-        @click='problemConfigManage.push({languageId:"",time:100,memory:100,created:true,changed:true})'>新增样例
+        @click='problemConfigManage.push({languageId:"",time:2000,memory:5242880,created:true,changed:true})'>新增样例
       </el-button>
     </div>
   </el-card>
