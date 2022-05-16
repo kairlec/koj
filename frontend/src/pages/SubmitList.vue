@@ -244,7 +244,7 @@ export default defineComponent({
       } as ListCondition;
       if (searchText.value) {
         res.search = {
-          name: {
+          id: {
             mode: 'Fuzzy',
             value: searchText.value,
           },

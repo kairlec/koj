@@ -160,6 +160,7 @@ export default defineComponent({
       },
       onRegisterSuccess() {
         showRegisterDialog.value = false;
+        showLoginDialog.value = true;
       },
       onRegisterCancel() {
         showRegisterDialog.value = false;

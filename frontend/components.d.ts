@@ -42,6 +42,7 @@ declare module '@vue/runtime-core' {
     Loading: typeof import('element-plus/es')['ElLoadingDirective']
     LoginDialog: typeof import('./src/components/LoginDialog.vue')['default']
     MenuBar: typeof import('./src/components/MenuBar.vue')['default']
+    ProblemAddDrawer: typeof import('./src/components/ProblemAddDrawer.vue')['default']
     ProblemEditDrawer: typeof import('./src/components/ProblemEditDrawer.vue')['default']
     ProblemLanguageConfig: typeof import('./src/components/ProblemLanguageConfig.vue')['default']
     ProblemManageEditDrawer: typeof import('./src/components/ProblemManageEditDrawer.vue')['default']
