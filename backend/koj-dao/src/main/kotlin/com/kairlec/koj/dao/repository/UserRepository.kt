@@ -140,6 +140,25 @@ class UserRepository(
     }
 
     @Transactional(rollbackFor = [Exception::class])
+    suspend fun getsCount(
+        type: UserType? = null,
+        listCondition: ListCondition,
+    ): Int {
+        return dslAccess.with { create ->
+            if (type == null) {
+                create.selectCount()
+                    .from(USER)
+                    .list(USER, listCondition).awaitOrNull(0)
+            } else {
+                create.selectCount()
+                    .from(USER)
+                    .where(USER.TYPE.eq(type.value))
+                    .list(USER, listCondition).awaitOrNull(0)
+            }
+        }
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun existAdminUser(): Boolean {
         return dslAccess.with { create ->
             create.selectCount()
@@ -196,9 +215,23 @@ class UserRepository(
     }
 
     @Transactional(rollbackFor = [Exception::class])
-    suspend fun updateUser(id: Long, username: String?, password: String?, email: String?, type: UserType?): Boolean {
-        if (username == null && password == null && email == null && type == null) {
+    suspend fun updateUser(
+        id: Long,
+        username: String?,
+        password: String?,
+        email: String?,
+        type: UserType?,
+        blocked: Boolean?
+    ): Boolean {
+        if (username == null && password == null && email == null && type == null && blocked == null) {
             return false
+        }
+        val record = get(id) ?: return false
+        if (record.type == UserType.ADMIN.value && type != UserType.USER && blocked == true) {
+            throw IllegalArgumentException("Admin can't be blocked")
+        }
+        if (type == UserType.ADMIN && record.blocked != 0.toByte() && blocked != false) {
+            throw IllegalArgumentException("Admin can't be unblocked")
         }
         return dslAccess.with { create ->
             val next = create.update(USER)
@@ -206,8 +239,22 @@ class UserRepository(
                 .let { if (username != null) it.set(USER.USERNAME, username) else it }
                 .let { if (email != null) it.set(USER.EMAIL, email) else it }
                 .let { if (type != null) it.set(USER.TYPE, type.value) else it }
+                .let { if (blocked != null) it.set(USER.BLOCKED, if (blocked) 1.toByte() else 0.toByte()) else it }
             (next as org.jooq.UpdateSetMoreStep<UserRecord>)
                 .where(USER.ID.eq(id))
+                .awaitSingle() > 0
+        }
+    }
+
+    suspend fun changePassword(userId: Long, oldPassword: String, newPassword: String): Boolean {
+        val record = get(userId) ?: return false
+        if (!hasher.check(oldPassword, record.password)) {
+            throw IllegalArgumentException("Old password is incorrect")
+        }
+        return dslAccess.with { create ->
+            create.update(USER)
+                .set(USER.PASSWORD, hasher.hash(newPassword))
+                .where(USER.ID.eq(userId))
                 .awaitSingle() > 0
         }
     }
@@ -281,7 +328,16 @@ class UserRepositoryDSL(
 
         override operator fun getValue(thisRef: Any?, property: KProperty<*>): Mono<Boolean> {
             dslContext.remove(this)
-            return mono { userRepository.updateUser(id, _username.value, _password.value, _email.value, _type.value) }
+            return mono {
+                userRepository.updateUser(
+                    id,
+                    _username.value,
+                    _password.value,
+                    _email.value,
+                    _type.value,
+                    null
+                )
+            }
         }
     }
 
@@ -326,7 +382,8 @@ class UserRepositoryDSL(
                     it._username.value,
                     it._password.value,
                     it._email.value,
-                    it._type.value
+                    it._type.value,
+                    null
                 )
             }
         }
@@ -343,7 +400,8 @@ class UserRepositoryDSL(
                     it._username.value,
                     it._password.value,
                     it._email.value,
-                    it._type.value
+                    it._type.value,
+                    null
                 )
             }
         }

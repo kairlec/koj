@@ -10,6 +10,7 @@ import com.kairlec.koj.common.util.randomString
 import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.model.RankInfo
 import com.kairlec.koj.dao.model.UserStat
+import com.kairlec.koj.dao.repository.PageData
 import com.kairlec.koj.dao.repository.UserRepository
 import com.kairlec.koj.dao.repository.UserType
 import com.kairlec.koj.dao.tables.records.UserRecord
@@ -51,11 +52,24 @@ class UserServiceImpl(
             throw ResetPasswordCodeWrongException()
         }
         clearResetPasswordCode(email)
-        return userRepository.updateUser(id = user.id, password = newPwd, email = null, username = null, type = null)
+        return userRepository.updateUser(
+            id = user.id,
+            password = newPwd,
+            email = null,
+            username = null,
+            type = null,
+            blocked = null
+        )
     }
 
-    override fun getUsers(type: UserType?, listCondition: ListCondition): Flow<UserRecord> {
-        return userRepository.gets(type, listCondition)
+    override suspend fun changePassword(userId: Long, oldPassword: String, newPassword: String): Boolean {
+        return userRepository.changePassword(userId, oldPassword, newPassword)
+    }
+
+    override suspend fun getUsers(type: UserType?, listCondition: ListCondition): PageData<UserRecord> {
+        val data = userRepository.gets(type, listCondition)
+        val count = userRepository.getsCount(type, listCondition)
+        return PageData(data, count)
     }
 
     @InternalApi
@@ -89,8 +103,9 @@ class UserServiceImpl(
         password: String?,
         email: String?,
         type: UserType?,
+        blocked: Boolean?,
     ): Boolean {
-        return userRepository.updateUser(id, username, password, email, type)
+        return userRepository.updateUser(id, username, password, email, type, blocked)
     }
 
     override suspend fun stat(username: String): UserStat? {
