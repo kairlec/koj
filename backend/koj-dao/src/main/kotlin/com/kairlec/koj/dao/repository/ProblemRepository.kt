@@ -234,8 +234,8 @@ class ProblemRepository(
         }
         if (tags != null) {
             val ok2 = dslAccess.with { create ->
-                create.deleteFrom(PROBLEM_CONFIG)
-                    .where(PROBLEM_CONFIG.PROBLEM_ID.eq(id))
+                create.deleteFrom(TAG_BELONG_PROBLEM)
+                    .where(TAG_BELONG_PROBLEM.PROBLEM_ID.eq(id))
                     .awaitBool()
             }
             if (ok2 && tags.isNotEmpty()) {
