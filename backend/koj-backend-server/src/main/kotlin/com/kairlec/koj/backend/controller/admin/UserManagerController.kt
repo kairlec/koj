@@ -1,11 +1,14 @@
 package com.kairlec.koj.backend.controller.admin
 
 import com.kairlec.koj.backend.service.UserService
+import com.kairlec.koj.backend.util.RE
 import com.kairlec.koj.backend.util.currentListCondition
+import com.kairlec.koj.backend.util.re
 import com.kairlec.koj.backend.util.sureEffect
 import com.kairlec.koj.dao.repository.PageData
 import com.kairlec.koj.dao.repository.UserType
 import com.kairlec.koj.dao.tables.records.UserRecord
+import kotlinx.coroutines.flow.Flow
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -21,8 +24,8 @@ class UserManagerController(
     }
 
     @GetMapping("/-")
-    suspend fun list(@RequestParam type: UserType?): PageData<UserRecord> {
-        return userService.getUsers(type, currentListCondition())
+    suspend fun list(@RequestParam type: UserType?): RE<Flow<UserRecord>> {
+        return userService.getUsers(type, currentListCondition()).re()
     }
 
     @PatchMapping("/{userId}")

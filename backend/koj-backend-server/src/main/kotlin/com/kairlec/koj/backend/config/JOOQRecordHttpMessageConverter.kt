@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.kairlec.koj.dao.tables.records.ProblemConfigRecord
+import com.kairlec.koj.dao.tables.records.UserRecord
 import org.jooq.Record
 import org.springframework.boot.jackson.JsonComponent
 import org.springframework.context.annotation.Configuration
@@ -34,6 +35,10 @@ fun ProblemConfigRecord.toMap(objectMapper: ObjectMapper): Map<String, Any> {
     }
 }
 
+fun UserRecord.toMap(): Map<String, Any> {
+    return intoMap().filterKeys { it != "password" }.camelCase()
+}
+
 @Configuration
 class JOOQRecordHttpMessageConverter(private val objectMapper: ObjectMapper) : AbstractHttpMessageConverter<Record>() {
     override fun canRead(clazz: Class<*>, mediaType: MediaType?): Boolean {
@@ -53,14 +58,13 @@ class JOOQRecordHttpMessageConverter(private val objectMapper: ObjectMapper) : A
     }
 
     override fun writeInternal(record: Record, outputMessage: HttpOutputMessage) {
-        if (record is ProblemConfigRecord) {
-            objectMapper.writeValue(outputMessage.body, record.toMap(objectMapper))
-        } else {
-            objectMapper.writeValue(
-                outputMessage.body,
-                record.intoMap().camelCase()
-            )
-        }
+        objectMapper.writeValue(
+            outputMessage.body, when (record) {
+                is ProblemConfigRecord -> record.toMap(objectMapper)
+                is UserRecord -> record.toMap()
+                else -> record.intoMap().camelCase()
+            }
+        )
     }
 
     companion object {
@@ -71,11 +75,13 @@ class JOOQRecordHttpMessageConverter(private val objectMapper: ObjectMapper) : A
 @JsonComponent
 class JOOQRecordStdSerializer : StdSerializer<Record>(Record::class.java) {
     override fun serialize(value: Record, gen: JsonGenerator, provider: SerializerProvider) {
-        if (value is ProblemConfigRecord) {
-            gen.writePOJO(value.toMap(gen.codec as ObjectMapper))
-        } else {
-            gen.writePOJO(value.intoMap().camelCase())
-        }
+        gen.writePOJO(
+            when (value) {
+                is ProblemConfigRecord -> value.toMap(gen.codec as ObjectMapper)
+                is UserRecord -> value.toMap()
+                else -> value.intoMap().camelCase()
+            }
+        )
     }
 
     override fun handledType(): Class<Record> {
