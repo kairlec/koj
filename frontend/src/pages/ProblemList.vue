@@ -1,4 +1,10 @@
 <template>
+  <ProblemAddDrawer
+    v-if='!fetchingTagList'
+    v-model:tag-data='tags'
+    v-model:show='showAdd'
+    @add-problem='addProblem'
+  />
   <el-container class='problem-container'>
     <el-header style='text-align: right; font-size: 12px'>
       <div class='toolbar'>
@@ -75,6 +81,29 @@
                     <el-tag v-for='(item,idx) in scope.row.tags' :key='idx'>{{ item }}</el-tag>
                   </template>
                 </el-table-column>
+                <template v-if='user.user?.type===0'>
+                  <el-table-column prop='type' label='操作'>
+                    <template #default='scope'>
+                      <el-button type='danger' @click.stop='deleteProblem(scope.row)'>
+                        删除
+                      </el-button>
+                    </template>
+                  </el-table-column>
+                </template>
+                <template v-if='user.user?.type===0' #append>
+                  <tr class='el-table__row el-table__row--striped' style='display: flex;justify-content: center;'>
+                    <td class='el-table_1_column_1 el-table__cell' rowspan='1' :colspan='user.user?.type===0?"4":"3"'>
+                      <div class='cell'>
+                        <el-button type='primary' @click='showAdd = true'>
+                          <el-icon style='margin-right: 5px'>
+                            <plus></plus>
+                          </el-icon>
+                          添 加 题 目
+                        </el-button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
               </el-table>
             </template>
           </el-scrollbar>
@@ -102,15 +131,17 @@
 </template>
 
 <script lang='ts'>
-import { defineComponent, onBeforeMount, onBeforeUnmount, Ref, ref } from 'vue';
+import { defineComponent, getCurrentInstance, onBeforeMount, onBeforeUnmount, Ref, ref } from 'vue';
 import api from '~/api';
-import  { ListCondition, PageData, SimpleProblem, Tag } from '~/apiDeclaration';
-import { ArrowLeft, ArrowRight, RefreshRight, Search } from '@element-plus/icons-vue';
+import { ListCondition, PageData, SimpleProblem, Tag } from '~/apiDeclaration';
+import { ArrowLeft, ArrowRight, Plus, RefreshRight, Search } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
+import { getGlobalUser } from '~/hooks/globalUser';
 
 export default defineComponent({
   name: 'ProblemList',
   components: {
+    Plus,
     ArrowRight,
   },
   setup() {
@@ -124,6 +155,9 @@ export default defineComponent({
     const havePrev = ref(false);
     const haveNext = ref(false);
     const tags = ref<({ selected?: boolean } & Tag)[]>([]);
+    const showAdd = ref(false);
+    const instance = getCurrentInstance()!
+    const user = getGlobalUser(instance.appContext)
 
     function tagOnChange(idx: number) {
       tags.value[idx].selected = !tags.value[idx].selected;
@@ -140,7 +174,7 @@ export default defineComponent({
     });
 
 
-    const pageLimit = 13;
+    const pageLimit = 4;
 
     function buildListCondition(fetchMode: FetchMode): ListCondition {
       if (fetchMode == 'Refresh' && lastFetchCondition) {
@@ -211,16 +245,15 @@ export default defineComponent({
       problemApi.problems(tags.value.filter(it => it.selected).map((it) => it.name), condition).then((data) => {
         if (data.record.length) {
           lastFetchCondition = condition;
-          if (fetchMode == 'Prev') {
-            data.record = data.record.reverse();
-          }
           problemList.value = data;
           if (data.record.length < pageLimit) {
             if (fetchMode === 'Next') {
               haveNext.value = false;
+              havePrev.value = true;
             }
             if (fetchMode === 'Prev') {
               havePrev.value = false;
+              haveNext.value = true;
             }
           } else {
             haveNext.value = true;
@@ -246,7 +279,41 @@ export default defineComponent({
       });
     }
 
+    function addProblem(simpleProblem: SimpleProblem) {
+      if (problemList.value!.totalCount < pageLimit) {
+        if (currentSortMode == 'Asc') {
+          problemList.value!.record.unshift(simpleProblem);
+        } else {
+          problemList.value!.record.push(simpleProblem);
+        }
+      }else{
+        if (currentSortMode == 'Asc') {
+          havePrev.value = true;
+        } else {
+          haveNext.value = true;
+        }
+      }
+    }
+
+    function deleteProblem(simpleProblem:SimpleProblem){
+      ElMessageBox.confirm('确定要删除该题目吗？', '警告', {
+        confirmButtonText: '删除',
+        confirmButtonClass: 'el-button--danger',
+        cancelButtonText: '算了',
+        type: 'warning'
+      }).then(() => {
+        problemApi.deleteProblem(simpleProblem.id).then(() => {
+          ElMessage.success('删除成功');
+          fetchProblemList('Refresh');
+        });
+      });
+    }
+
     return {
+      deleteProblem,
+      user,
+      addProblem,
+      showAdd,
       detailProblem,
       fetchingProblemListError,
       fetchingTagList,
@@ -279,6 +346,11 @@ export default defineComponent({
   border-radius: 4px;
   background: var(--el-color-primary-light-9);
   color: var(--el-color-primary);
+}
+
+.el-table :deep(.cell) {
+  display: flex !important;
+  justify-content: center;
 }
 
 .problem-container .el-header {

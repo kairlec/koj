@@ -59,8 +59,8 @@ export interface ProblemDetail {
   content: string
   contentObj: ProblemContent
   spj: boolean
-  createTime: string
-  updateTime: string
+  createTime: Moment
+  updateTime: Moment
   config: ProblemConfig[]
   idx?: number
   tags: string[]
@@ -242,4 +242,19 @@ export interface SubmitDetail {
   updateTime: Moment
   code: string
   stderr?: string
+}
+
+export enum UserType {
+  ADMIN = 0,
+  USER = 1,
+}
+
+export interface UserManageDetail {
+  id: string
+  username: string
+  email: string
+  type: UserType
+  createTime: Moment
+  updateTime: Moment
+  blocked: number
 }

@@ -336,7 +336,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       return data(this.axios.get(apiRoute.admin.problems.configList(problemId), { ...addonConfig, ...config }))
     },
     deleteProblem(problemId: string, config?: KOJAxiosRequestConfig): Promise<void> {
-      return this.axios.delete(apiRoute.admin.problems.base(), { ...addonConfig, ...config })
+      return this.axios.delete(apiRoute.admin.problems.detail(problemId), { ...addonConfig, ...config })
     },
     deleteProblemTag(problemId: string, tagId: string, config?: KOJAxiosRequestConfig): Promise<void> {
       return this.axios.delete(apiRoute.admin.problems.withTag(problemId, tagId), { ...addonConfig, ...config })
