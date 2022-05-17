@@ -269,7 +269,7 @@ class UserRepository(
                 .where(SUBMIT.BELONG_COMPETITION_ID.isNull)
                 .and(SUBMIT.STATE.eq(SubmitState.ACCEPTED.value))
                 .groupBy(User.USER.ID)
-                .orderBy(DSL.field("acc"))
+                .orderBy(DSL.field("acc").desc())
                 .limit(max)
                 .asFlow()
                 .withIndex()
