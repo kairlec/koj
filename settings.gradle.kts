@@ -19,7 +19,7 @@ dependencyResolutionManagement {
             version("kotlin-logging", "2.+")
             version("coroutines", "1.6.+")
             version("reflections", "0.10.+")
-            version("pulsar", "2.+")
+            version("pulsar", "2.9.+")
             version("jooq", "3.16.+")
             version("jooq-codegen", "7.+")
             version("pgsql", "42.+")
@@ -51,7 +51,7 @@ dependencyResolutionManagement {
             bundle("protobuf", listOf("protobuf-java", "protobuf-kotlin", "protobuf-java-util"))
 
             library("pulsar", "io.github.majusko", "pulsar-java-spring-boot-starter").versionRef("pulsar-starter")
-            library("pulsar.admin", "org.apache.pulsar", "pulsar-client-admin").versionRef("pulsar")
+            library("pulsar.admin", "org.apache.pulsar", "pulsar-client-admin-original").versionRef("pulsar")
             library(
                 "coroutines-reactive",
                 "org.jetbrains.kotlinx",
