@@ -16,6 +16,7 @@ import {
   Tag,
   User,
   UserManageDetail,
+  UserRankInfo,
   UserStat,
   UserType,
 } from '~/apiDeclaration'
@@ -108,6 +109,8 @@ interface IApi {
     data: { username?: string; email?: string; password?: string; type?: UserType; blocked?: boolean },
     config?: KOJAxiosRequestConfig,
   ): Promise<AxiosResponse>
+
+  rank(limit?: number, config?: KOJAxiosRequestConfig): Promise<UserRankInfo[]>
 }
 
 const _axios = http({
@@ -276,6 +279,9 @@ const apiRoute = wrapRecord({
       },
       stat(usernameOrEmail: string) {
         return `${this._base}/${usernameOrEmail}`
+      },
+      rank() {
+        return `${this._base}/rank`
       },
       pwd: {
         _base: '',
@@ -544,6 +550,13 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
         ...addonConfig,
         ...config,
       })
+    },
+    rank(limit?: number, config?: KOJAxiosRequestConfig): Promise<UserRankInfo[]> {
+      if (limit === undefined) {
+        return data(this.axios.get(apiRoute.public.users.rank(), { ...addonConfig, ...config }))
+      } else {
+        return data(this.axios.get(apiRoute.public.users.rank(), { ...addonConfig, ...config, params: { limit } }))
+      }
     },
   }
 }

@@ -113,12 +113,6 @@ import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-textile';
 import 'prismjs/themes/prism.css';
 
-interface Option {
-  key: string;
-  label: string;
-  disabled: boolean;
-}
-
 const props = defineProps({
   show: {
     type: Boolean,

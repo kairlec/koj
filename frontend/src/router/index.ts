@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import Home from '../pages/Home.vue'
+import KojHome from '../pages/KojHome.vue'
 import Submit from '../pages/SubmitList.vue'
 import ProblemList from '../pages/ProblemList.vue'
 import ProblemDetail from '../pages/ProblemDetail.vue'
@@ -11,7 +11,7 @@ export const routes: Array<RouteRecordRaw & { displayName?: String; manage?: boo
     path: '/home',
     name: 'Home',
     displayName: '首页',
-    component: Home,
+    component: KojHome,
   },
   {
     path: '/problem',

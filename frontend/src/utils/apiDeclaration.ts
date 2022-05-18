@@ -258,3 +258,10 @@ export interface UserManageDetail {
   updateTime: Moment
   blocked: number
 }
+
+export interface UserRankInfo {
+  userId: string
+  username: string
+  rank: number
+  ac: number
+}

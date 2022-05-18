@@ -397,10 +397,10 @@ export default defineComponent({
 }
 
 .box-card :deep(.content-label) {
-  color: deepskyblue !important;
-  font-weight: bold !important;;
-  left: 20px !important;;
-  font-size: 20px !important;;
+  color: #7CA9ED !important;
+  font-weight: bold !important;
+  left: 20px !important;
+  font-size: 18px !important;
 }
 
 .my-editor {
