@@ -15,7 +15,9 @@ import {
   SubmitRequest,
   Tag,
   User,
+  UserManageDetail,
   UserStat,
+  UserType,
 } from '~/apiDeclaration'
 import moment from 'moment'
 
@@ -98,6 +100,14 @@ interface IApi {
   saveRunConfig(problemId: string, data: { stdin: string; ansout: string }, config?: KOJAxiosRequestConfig): Promise<void>
 
   getRunConfig(problemId: string, config?: KOJAxiosRequestConfig): Promise<{ stdin: string; ansout: string }>
+
+  userList(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<UserManageDetail>>
+
+  manageUpdateUser(
+    userId: string,
+    data: { username?: string; email?: string; password?: string; type?: UserType; blocked?: boolean },
+    config?: KOJAxiosRequestConfig,
+  ): Promise<AxiosResponse>
 }
 
 const _axios = http({
@@ -182,6 +192,15 @@ function wrapRecord<T extends Record<string, any>>(base: T, parent = ''): T {
 
 const apiRoute = wrapRecord({
   admin: {
+    users: {
+      _base: '',
+      list() {
+        return `${this._base}/-`
+      },
+      update(userId: string) {
+        return `${this._base}/${userId}`
+      },
+    },
     problems: {
       _base: '',
       base() {
@@ -503,6 +522,28 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
     languages(config?: KOJAxiosRequestConfig): Promise<string[]> {
       // debugger
       return data(this.axios.get(apiRoute.public.submits.languages.list(), { ...addonConfig, ...config }))
+    },
+    userList(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<UserManageDetail>> {
+      return page(
+        this.axios.get(apiRoute.admin.users.list(), {
+          ...addonConfig,
+          ...config,
+          params: {
+            ...listConditionAsParam(listCondition),
+          },
+        }),
+      )
+    },
+    manageUpdateUser(
+      userId: string,
+      data: { username?: string; email?: string; password?: string; type?: UserType; blocked?: boolean },
+      config?: KOJAxiosRequestConfig,
+    ): Promise<AxiosResponse> {
+      return this.axios.patch(apiRoute.admin.users.update(userId), null, {
+        params: data,
+        ...addonConfig,
+        ...config,
+      })
     },
   }
 }

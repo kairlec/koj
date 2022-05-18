@@ -3,6 +3,7 @@ import Home from '../pages/Home.vue'
 import Submit from '../pages/SubmitList.vue'
 import ProblemList from '../pages/ProblemList.vue'
 import ProblemDetail from '../pages/ProblemDetail.vue'
+import UserList from '../pages/UserList.vue'
 
 export const routes: Array<RouteRecordRaw & { displayName?: String; manage?: boolean }> = [
   { path: '/', redirect: '/home' },
@@ -33,7 +34,7 @@ export const routes: Array<RouteRecordRaw & { displayName?: String; manage?: boo
     path: '/userManage',
     name: 'UserManage',
     displayName: '用户管理',
-    component: Submit,
+    component: UserList,
     manage: true,
   },
 ]

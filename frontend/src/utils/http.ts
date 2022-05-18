@@ -53,8 +53,14 @@ function http(config?: KOJAxiosRequestConfig): KOJAxiosInstance {
 
   _http.interceptors.response.use(
     (res) => {
-      if (res.status / 100 == 2 || res.status == 304) {
+      if (~~(res.status / 100) === 2 || res.status === 304) {
         return Promise.resolve(res)
+      } else {
+        if (res.status >= 400) {
+          return Promise.reject(res)
+        } else {
+          return Promise.resolve(res)
+        }
       }
     },
     (error) => {
