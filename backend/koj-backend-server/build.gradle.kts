@@ -30,9 +30,7 @@ dependencies {
     implementation(libs.spring.boot.starter.redis.reactive)
     implementation(libs.coroutines.reactive)
     implementation(libs.coroutines.reactor)
-    implementation(libs.pulsar) {
-        exclude("org.apache.pulsar", "pulsar-common")
-    }
+    implementation(libs.pulsar)
     implementation(libs.pulsar.admin)
     implementation(libs.reactive.lock)
     runtimeOnly(libs.driver.mysql.r2dbc)
@@ -51,18 +49,7 @@ kapt {
 }
 
 tasks.withType<BootJar> {
-    enabled = false
-}
-
-tasks.shadowJar {
-    mergeServiceFiles()
-    append("META-INF/spring.handlers")
-    append("META-INF/spring.schemas")
-    append("META-INF/spring.tooling")
-    transform(PropertiesFileTransformer::class.java) {
-        paths = listOf("META-INF/spring.factories")
-        mergeStrategy = "append"
-    }
+    enabled = true
     doLast {
         copy {
             val jarFilePath = "${project.buildDir}/libs/${project.name}-${project.version}.jar"
@@ -74,6 +61,17 @@ tasks.shadowJar {
         }
     }
 }
+
+//tasks.shadowJar {
+//    mergeServiceFiles()
+//    append("META-INF/spring.handlers")
+//    append("META-INF/spring.schemas")
+//    append("META-INF/spring.tooling")
+//    transform(PropertiesFileTransformer::class.java) {
+//        paths = listOf("META-INF/spring.factories")
+//        mergeStrategy = "append"
+//    }
+//}
 
 application {
     mainClass.set("com.kairlec.koj.backend.KojBackendApplicationKt")

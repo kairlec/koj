@@ -13,18 +13,7 @@ application{
 }
 
 tasks.withType<BootJar> {
-    enabled = false
-}
-
-tasks.shadowJar {
-    mergeServiceFiles()
-    append("META-INF/spring.handlers")
-    append("META-INF/spring.schemas")
-    append("META-INF/spring.tooling")
-    transform(PropertiesFileTransformer::class.java) {
-        paths = listOf("META-INF/spring.factories")
-        mergeStrategy = "append"
-    }
+    enabled = true
     doLast {
         copy {
             val jarFilePath = "${project.buildDir}/libs/${project.name}-${project.version}.jar"
@@ -36,6 +25,27 @@ tasks.shadowJar {
         }
     }
 }
+
+//tasks.shadowJar {
+//    mergeServiceFiles()
+//    append("META-INF/spring.handlers")
+//    append("META-INF/spring.schemas")
+//    append("META-INF/spring.tooling")
+//    transform(PropertiesFileTransformer::class.java) {
+//        paths = listOf("META-INF/spring.factories")
+//        mergeStrategy = "append"
+//    }
+//    doLast {
+//        copy {
+//            val jarFilePath = "${project.buildDir}/libs/${project.name}-${project.version}.jar"
+//            val targetPath = "${rootProject.buildDir}/libs/"
+//            println("$jarFilePath --> $targetPath")
+//            from(jarFilePath)
+//            into(targetPath)
+//            rename { "${project.name}.jar" }
+//        }
+//    }
+//}
 
 dependencies {
     implementation(projects.sandbox.kojCore)

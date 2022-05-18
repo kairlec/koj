@@ -6,7 +6,7 @@ WORKDIR /data
 
 RUN chmod +x gradlew && \
     chmod +x init.sh && \
-    ./init.sh && ./gradlew backend:koj-backend-server:shadowJar -PJOOQ_CACHE
+    ./init.sh && ./gradlew backend:koj-backend-server:bootJar -PJOOQ_CACHE
 
 
 FROM openjdk:17

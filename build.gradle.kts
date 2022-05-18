@@ -43,9 +43,9 @@ subprojects {
             sourceCompatibility = targetJavaVersion.toString()
             targetCompatibility = targetJavaVersion.toString()
         }
-        tasks.withType<ShadowJar> {
-            archiveBaseName.set(project.name)
-            archiveClassifier.set("")
-        }
+//        tasks.withType<ShadowJar> {
+//            archiveBaseName.set(project.name)
+//            archiveClassifier.set("")
+//        }
     }
 }
