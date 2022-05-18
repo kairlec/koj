@@ -343,13 +343,15 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       })
     },
     addProblem(problem: { name: string; content: string; spj: boolean; tags: string[] }, config?: KOJAxiosRequestConfig): Promise<string> {
-      return this.axios.put(apiRoute.admin.problems.base(), problem, {
-        headers: {
-          'content-type': 'application/json',
-        },
-        ...addonConfig,
-        ...config,
-      })
+      return data(
+        this.axios.put(apiRoute.admin.problems.base(), problem, {
+          headers: {
+            'content-type': 'application/json',
+          },
+          ...addonConfig,
+          ...config,
+        }),
+      )
     },
     addProblemTag(problemId: string, tagId: string, config?: KOJAxiosRequestConfig): Promise<void> {
       return this.axios.put(apiRoute.admin.problems.withTag(problemId, tagId), null, { ...addonConfig, ...config })
