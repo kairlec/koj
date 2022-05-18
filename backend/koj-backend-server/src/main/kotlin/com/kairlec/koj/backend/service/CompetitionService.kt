@@ -1,12 +1,13 @@
 package com.kairlec.koj.backend.service
 
 import com.kairlec.koj.dao.extended.ListCondition
+import com.kairlec.koj.dao.model.SimpleCompetition
 import com.kairlec.koj.dao.repository.PageData
 import com.kairlec.koj.dao.tables.records.CompetitionRecord
 import java.time.LocalDateTime
 
 interface CompetitionService {
-    suspend fun getCompetitions(listCondition: ListCondition): PageData<CompetitionRecord>
+    suspend fun getCompetitions(userId: Long?, listCondition: ListCondition): PageData<SimpleCompetition>
 
     suspend fun getCompetition(id: Long): CompetitionRecord?
 

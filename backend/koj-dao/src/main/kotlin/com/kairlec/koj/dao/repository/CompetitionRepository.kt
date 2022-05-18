@@ -8,12 +8,17 @@ import com.kairlec.koj.dao.exception.CompetitionPwdWrongException
 import com.kairlec.koj.dao.exception.NoSuchContentException
 import com.kairlec.koj.dao.extended.*
 import com.kairlec.koj.dao.flow
+import com.kairlec.koj.dao.model.SimpleCompetition
 import com.kairlec.koj.dao.tables.records.CompetitionRecord
 import com.kairlec.koj.dao.with
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import org.jooq.impl.DSL
+import org.jooq.kotlin.`as`
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import reactor.core.publisher.Flux
 import java.time.LocalDateTime
 
 @Repository
@@ -22,8 +27,9 @@ class CompetitionRepository(
 ) {
     @Transactional(rollbackFor = [Exception::class])
     suspend fun getCompetitions(
+        userId: Long?,
         listCondition: ListCondition
-    ): PageData<CompetitionRecord> {
+    ): PageData<SimpleCompetition> {
         val count = dslAccess.with { create ->
             create.selectCount()
                 .from(COMPETITION)
@@ -31,9 +37,39 @@ class CompetitionRepository(
                 .awaitOrNull(0)
         }
         val data = dslAccess.flow { create ->
-            create.selectFrom(COMPETITION)
-                .list(COMPETITION, listCondition)
-                .asFlow()
+            // 这个不用Flux包装一次的话直接出去的Flow会调用iterator的Fetch,不知道为什么
+            if (userId == null) {
+                Flux.from(
+                    create.selectFrom(COMPETITION)
+                        .list(COMPETITION, listCondition)
+                ).asFlow().map {
+                    SimpleCompetition(
+                        it[COMPETITION.ID],
+                        it[COMPETITION.NAME],
+                        it[COMPETITION.START_TIME],
+                        it[COMPETITION.END_TIME],
+                        false
+                    )
+                }
+            } else {
+                Flux.from(
+                    create.select(
+                        *COMPETITION.fields(),
+                        create.select(CONTESTANTS.USER_ID).from(CONTESTANTS).where(
+                            CONTESTANTS.COMPETITION_ID.eq(COMPETITION.ID).and(CONTESTANTS.USER_ID.eq(userId))
+                        ).limit(1).`as`("joined")
+                    )
+                        .from(COMPETITION)
+                ).asFlow().map {
+                    SimpleCompetition(
+                        it[COMPETITION.ID],
+                        it[COMPETITION.NAME],
+                        it[COMPETITION.START_TIME],
+                        it[COMPETITION.END_TIME],
+                        it["joined"] != null
+                    )
+                }
+            }
         }
         return data pg count
     }

@@ -2,6 +2,7 @@ package com.kairlec.koj.backend.service.impl
 
 import com.kairlec.koj.backend.service.CompetitionService
 import com.kairlec.koj.dao.extended.ListCondition
+import com.kairlec.koj.dao.model.SimpleCompetition
 import com.kairlec.koj.dao.repository.CompetitionRepository
 import com.kairlec.koj.dao.repository.PageData
 import com.kairlec.koj.dao.tables.records.CompetitionRecord
@@ -12,8 +13,8 @@ import java.time.LocalDateTime
 class CompetitionServiceImpl(
     private val competitionRepository: CompetitionRepository
 ) : CompetitionService {
-    override suspend fun getCompetitions(listCondition: ListCondition): PageData<CompetitionRecord> {
-        return competitionRepository.getCompetitions(listCondition)
+    override suspend fun getCompetitions(userId: Long?, listCondition: ListCondition): PageData<SimpleCompetition> {
+        return competitionRepository.getCompetitions(userId, listCondition)
     }
 
     override suspend fun getCompetition(id: Long): CompetitionRecord? {

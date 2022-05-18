@@ -8,9 +8,15 @@ import org.jooq.Record
 import org.jooq.UpdateSetFirstStep
 import org.jooq.UpdateSetMoreStep
 import org.jooq.impl.DSL
+import reactor.core.publisher.Flux
 
 data class PageData<T>(
     val data: Flow<T>,
+    val total: Int,
+)
+
+data class FluxPageData<T>(
+    val data: Flux<T>,
     val total: Int,
 )
 
