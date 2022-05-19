@@ -58,7 +58,7 @@ jooq {
     }
 }
 
-if (project.hasProperty("JOOQ_CACHE")) {
+if (project.hasProperty("JOOQ_CACHE") || project.gradle.startParameter.isOffline) {
     sourceSets {
         main {
             java {

@@ -14,7 +14,6 @@ import com.kairlec.koj.dao.with
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import org.jooq.impl.DSL
 import org.jooq.kotlin.`as`
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
@@ -86,6 +85,17 @@ class CompetitionRepository(
     }
 
     @Transactional(rollbackFor = [Exception::class])
+    suspend fun deleteCompetition(
+        competitionId: Long
+    ): Boolean {
+        return dslAccess.with { create ->
+            create.deleteFrom(COMPETITION)
+                .where(COMPETITION.ID.eq(competitionId))
+                .awaitBool()
+        }
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
     suspend fun joinCompetition(
         userId: Long,
         competitionId: Long,
@@ -99,8 +109,8 @@ class CompetitionRepository(
         if (competition.isOver) {
             throw CompetitionOverException("competition is over")
         }
-        if (competition.pwd != null) {
-            if (pwd == null || pwd != competition.pwd) {
+        if (!competition.pwd.isNullOrBlank()) {
+            if (pwd != competition.pwd) {
                 throw CompetitionPwdWrongException()
             }
         }

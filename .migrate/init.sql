@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS koj.competition
 (
     id          BIGINT                 NOT NULL AUTO_INCREMENT COMMENT '比赛id',
     `name`      VARCHAR(64)            NOT NULL COMMENT '比赛名称',
-    pwd         CHAR(64)               NOT NULL COMMENT '比赛密码(脱敏后)',
+    pwd         CHAR(64) DEFAULT NULL  NULL COMMENT '比赛密码(脱敏后)',
     start_time  DATETIME               NOT NULL COMMENT '比赛开始时间',
     end_time    DATETIME               NOT NULL COMMENT '比赛结束时间',
     create_time DATETIME DEFAULT NOW() NOT NULL COMMENT '创建时间',
