@@ -11,6 +11,8 @@ interface CompetitionService {
 
     suspend fun getCompetition(id: Long): CompetitionRecord?
 
+    suspend fun deleteCompetition(id: Long): Boolean
+
     suspend fun addCompetition(name: String, start: LocalDateTime, end: LocalDateTime, pwd: String?): Long?
 
     suspend fun joinCompetition(userId: Long, competitionId: Long, pwd: String?)

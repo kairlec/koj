@@ -21,6 +21,10 @@ class CompetitionServiceImpl(
         return competitionRepository.getCompetition(id)
     }
 
+    override suspend fun deleteCompetition(id: Long): Boolean {
+        return competitionRepository.deleteCompetition(id)
+    }
+
     override suspend fun addCompetition(name: String, start: LocalDateTime, end: LocalDateTime, pwd: String?): Long? {
         return competitionRepository.createCompetition(name, pwd, start, end)
     }
