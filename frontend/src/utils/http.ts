@@ -1,14 +1,18 @@
-import axios, { AxiosInstance, AxiosInterceptorManager, AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosInstance, AxiosInterceptorManager, AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { KOJStorage } from './storage'
 
 export interface KOJAxiosRequestConfig<D = any> extends AxiosRequestConfig<D> {
   ignoreError?: boolean
 }
 
+export interface KOJAxiosResponse<D = any> extends AxiosResponse<D> {
+  config: KOJAxiosRequestConfig<D>
+}
+
 export interface KOJAxiosInstance extends AxiosInstance {
   interceptors: {
     request: AxiosInterceptorManager<KOJAxiosRequestConfig>
-    response: AxiosInterceptorManager<AxiosResponse>
+    response: AxiosInterceptorManager<KOJAxiosResponse>
   }
 
   (config: KOJAxiosRequestConfig): AxiosPromise
@@ -17,21 +21,68 @@ export interface KOJAxiosInstance extends AxiosInstance {
 
   getUri(config?: KOJAxiosRequestConfig): string
 
-  request<T = any, R = AxiosResponse<T>, D = any>(config: KOJAxiosRequestConfig<D>): Promise<R>
+  request<T = any, R = KOJAxiosResponse<T>, D = any>(config: KOJAxiosRequestConfig<D>): Promise<R>
 
-  get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: KOJAxiosRequestConfig<D>): Promise<R>
+  get<T = any, R = KOJAxiosResponse<T>, D = any>(url: string, config?: KOJAxiosRequestConfig<D>): Promise<R>
 
-  delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: KOJAxiosRequestConfig<D>): Promise<R>
+  delete<T = any, R = KOJAxiosResponse<T>, D = any>(url: string, config?: KOJAxiosRequestConfig<D>): Promise<R>
 
-  head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: KOJAxiosRequestConfig<D>): Promise<R>
+  head<T = any, R = KOJAxiosResponse<T>, D = any>(url: string, config?: KOJAxiosRequestConfig<D>): Promise<R>
 
-  options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: KOJAxiosRequestConfig<D>): Promise<R>
+  options<T = any, R = KOJAxiosResponse<T>, D = any>(url: string, config?: KOJAxiosRequestConfig<D>): Promise<R>
 
-  post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: KOJAxiosRequestConfig<D>): Promise<R>
+  post<T = any, R = KOJAxiosResponse<T>, D = any>(url: string, data?: D, config?: KOJAxiosRequestConfig<D>): Promise<R>
 
-  put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: KOJAxiosRequestConfig<D>): Promise<R>
+  put<T = any, R = KOJAxiosResponse<T>, D = any>(url: string, data?: D, config?: KOJAxiosRequestConfig<D>): Promise<R>
 
-  patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: KOJAxiosRequestConfig<D>): Promise<R>
+  patch<T = any, R = KOJAxiosResponse<T>, D = any>(url: string, data?: D, config?: KOJAxiosRequestConfig<D>): Promise<R>
+}
+
+function showError(error: AxiosError) {
+  if (!error.response) {
+    if (error.message !== 'canceled') {
+      ElMessage({
+        type: 'error',
+        message: error.message,
+      })
+    }
+    return Promise.reject(error)
+  }
+  const data = error.response.data as any
+  if (data?.code) {
+    ElMessage({
+      type: 'error',
+      message: `[${data.code}] ${data.message}`,
+    })
+    return Promise.reject(error)
+  }
+  switch (error.response.status) {
+    case 404:
+      ElMessage({
+        type: 'error',
+        message: '资源不存在',
+      })
+      break
+    case 500:
+      ElMessage({
+        type: 'error',
+        message: '服务器故障',
+      })
+      break
+    case 502:
+      ElMessage({
+        type: 'error',
+        message: '服务器正在维护',
+      })
+      break
+    default:
+      ElMessage({
+        type: 'error',
+        message: '请求出错',
+      })
+      break
+  }
+  return Promise.reject(error)
 }
 
 function http(config?: KOJAxiosRequestConfig): KOJAxiosInstance {
@@ -64,51 +115,11 @@ function http(config?: KOJAxiosRequestConfig): KOJAxiosInstance {
     },
     (error) => {
       console.debug(error)
-      if (error.config?.ignoreError) {
-        return Promise.reject(error)
+      error.showError = () => {
+        return showError(error)
       }
-      if (!error.response) {
-        if (error.message !== 'canceled') {
-          ElMessage({
-            type: 'error',
-            message: error.message,
-          })
-        }
-        return Promise.reject(error)
-      }
-      const data = error.response.data
-      if (data?.code) {
-        ElMessage({
-          type: 'error',
-          message: `[${data.code}] ${data.message}`,
-        })
-        return Promise.reject(error)
-      }
-      switch (error.response.status) {
-        case 404:
-          ElMessage({
-            type: 'error',
-            message: '资源不存在',
-          })
-          break
-        case 500:
-          ElMessage({
-            type: 'error',
-            message: '服务器故障',
-          })
-          break
-        case 502:
-          ElMessage({
-            type: 'error',
-            message: '服务器正在维护',
-          })
-          break
-        default:
-          ElMessage({
-            type: 'error',
-            message: '请求出错',
-          })
-          break
+      if (error?.config?.ignoreError === true) {
+        return error.showError()
       }
       return Promise.reject(error)
     },

@@ -218,3 +218,27 @@ export interface SimpleSubmit {
   createTime: Date
   updateTime: Date
 }
+
+export interface SimpleCompetition {
+  id: string
+  name: string
+  startTime: Moment
+  endTime: Moment
+  joined: boolean
+}
+
+export interface ManageCompetition {
+  id: string
+  name: string
+  pwd: string | null
+  startTime: Moment
+  endTime: Moment
+  createTime: Moment
+}
+
+export interface ManageCompetitionCreateRequest {
+  name: string
+  pwd: string | null
+  startTime: string
+  endTime: string
+}

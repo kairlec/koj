@@ -1,261 +1,27 @@
-import http, { KOJAxiosInstance, KOJAxiosRequestConfig } from './http'
-import { stringify } from 'qs'
-import { KOJStorage } from './storage'
-import { AxiosPromise, AxiosResponse } from 'axios'
 import {
-  ITime,
   ListCondition,
   listConditionAsParam,
+  ManageCompetition,
+  ManageCompetitionCreateRequest,
   PageData,
   ProblemConfigManage,
   ProblemDetail,
+  SimpleCompetition,
   SimpleProblem,
   SimpleSubmit,
-  Tag,
-  User,
-  UserStat,
+  SubmitDetail,
+  SubmitRequest,
+  UserManageDetail,
+  UserRankInfo,
+  UserType,
 } from '~/apiDeclaration'
-
-interface IApi {
-  withConfig(config: KOJAxiosRequestConfig): IApi
-
-  axios: KOJAxiosInstance
-
-  registerUser(username: string, password: string, email: string, config?: KOJAxiosRequestConfig): Promise<number>
-
-  loginUser(usernameOrEmail: string, password: string, config?: KOJAxiosRequestConfig): Promise<User>
-
-  destroy(config?: KOJAxiosRequestConfig): Promise<undefined>
-
-  stat(username: string, config?: KOJAxiosRequestConfig): Promise<UserStat>
-
-  existsUsernameOrEmail(usernameOrEmail: string, config?: KOJAxiosRequestConfig): Promise<boolean>
-
-  self(config?: KOJAxiosRequestConfig): Promise<User>
-
-  forgetPassword(username: string, email: string, config?: KOJAxiosRequestConfig): Promise<undefined>
-
-  resetPassword(
-    username: string,
-    email: string,
-    verifyCode: string,
-    newPassword: string,
-    config?: KOJAxiosRequestConfig,
-  ): Promise<undefined>
-
-  problems(tags?: string[], listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleProblem>>
-
-  problem(id: number, config?: KOJAxiosRequestConfig): Promise<ProblemDetail>
-
-  updateProblem(
-    id: number,
-    data: { name?: string; content?: string; spj?: boolean; tags?: number[] },
-    config?: KOJAxiosRequestConfig,
-  ): Promise<void>
-
-  tags(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<Tag>>
-
-  submits(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleSubmit>>
-
-  languages(config?: KOJAxiosRequestConfig): Promise<string[]>
-
-  addProblemTag(problemId: number, tagId: number, config?: KOJAxiosRequestConfig): Promise<void>
-
-  deleteProblem(problemId: number, config?: KOJAxiosRequestConfig): Promise<void>
-
-  deleteProblemTag(problemId: number, tagId: number, config?: KOJAxiosRequestConfig): Promise<void>
-
-  updateTag(id: number, name: string, config?: KOJAxiosRequestConfig): Promise<void>
-
-  addProblem(problem: { name: string; content: string; spj: boolean; tags: number[] }, config?: KOJAxiosRequestConfig): Promise<number>
-
-  addConfig(
-    problemId: number,
-    data: {
-      languageId: string
-      time: number
-      memory: number
-      maxOutputSize?: number
-      maxStack?: number
-      maxProcessNumber?: number
-      args?: string[]
-      env?: string[]
-    },
-    config?: KOJAxiosRequestConfig,
-  ): Promise<void>
-
-  getConfigs(problemId: number, config?: KOJAxiosRequestConfig): Promise<ProblemConfigManage[]>
-
-  deleteConfig(problemId: number, languageId: string, config?: KOJAxiosRequestConfig): Promise<void>
-
-  saveRunConfig(problemId: number, data: { stdin: string; ansout: string }, config?: KOJAxiosRequestConfig): Promise<void>
-
-  getRunConfig(problemId: number, config?: KOJAxiosRequestConfig): Promise<{ stdin: string; ansout: string }>
-}
-
-const _axios = http({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
-  },
-  timeout: 5000,
-})
-
-function defaultExtra<T = any>(res: AxiosResponse<T>): T {
-  return res.data
-}
-
-function data<T = any>(promise: AxiosPromise<T>, extra: (res: AxiosResponse<T>) => T = defaultExtra): Promise<T> {
-  return promise.then((res) => {
-    return extra(res)
-  })
-}
-
-function defaultExtraPage<T = any>(res: AxiosResponse<T[]>): PageData<T> {
-  const totalCount = parseInt(res.headers['x-total-count'])
-  return {
-    totalCount,
-    record: res.data,
-  }
-}
-
-function page<T = any>(
-  promise: AxiosPromise<T[]>,
-  extra: (res: AxiosResponse<T[]>) => PageData<T> = defaultExtraPage,
-): Promise<PageData<T>> {
-  return promise.then((res) => {
-    return extra(res)
-  })
-}
-
-function setTime(obj: Record<string, any>) {
-  for (const key in obj) {
-    if (typeof obj[key] === 'object') {
-      setTime(obj[key])
-    }
-    if (key === 'createTime' || key === 'updateTime') {
-      obj[key] = new Date(obj[key])
-    }
-  }
-}
-
-function extraTime<T>(res: AxiosResponse): T & ITime {
-  const data = res.data
-  setTime(data)
-  return data
-}
-
-function wrapRecord<T extends Record<string, any>>(base: T, parent = ''): T {
-  for (const key in base) {
-    const value = base[key] as any
-    if (typeof value === 'string') {
-      if (value.length === 0) {
-        ;(base[key] as any) = `${parent}`
-      } else if (value.startsWith('/')) {
-        ;(base[key] as any) = `${parent}${key}`
-      } else {
-        ;(base[key] as any) = `${parent}/${key}`
-      }
-    } else if (typeof value === 'object') {
-      wrapRecord(value, `${parent}/${key}`)
-    }
-  }
-  return base
-}
-
-const apiRoute = wrapRecord({
-  admin: {
-    problems: {
-      _base: '',
-      base() {
-        return this._base
-      },
-      detail(id: number) {
-        return `${this._base}/${id}`
-      },
-      withTag(problemId: number, tagId: number) {
-        return `${this._base}/${problemId}/tags/${tagId}`
-      },
-      configs(problemId: number) {
-        return `${this._base}/${problemId}/configs/-`
-      },
-      config(problemId: number, languageId: string) {
-        return `${this._base}/${problemId}/configs/${languageId}`
-      },
-      runs(problemId: number) {
-        return `${this._base}/${problemId}/runs`
-      },
-    },
-    tags: {
-      _base: '',
-      base() {
-        return this._base
-      },
-      detail(tagId: number) {
-        return `${this._base}/${tagId}`
-      },
-    },
-  },
-  users: {
-    _base: '',
-    destroySelf() {
-      return `${this._base}`
-    },
-    self() {
-      return `${this._base}/self`
-    },
-  },
-  public: {
-    submits: {
-      _base: '',
-      list() {
-        return this._base
-      },
-      languages: {
-        _base: '',
-        list() {
-          return `${this._base}/-`
-        },
-      },
-    },
-    users: {
-      _base: '',
-      login() {
-        return this._base
-      },
-      register() {
-        return this._base
-      },
-      stat(usernameOrEmail: string) {
-        return `${this._base}/${usernameOrEmail}`
-      },
-      pwd: {
-        _base: '',
-        forget() {
-          return `${this._base}:forget`
-        },
-        reset() {
-          return `${this._base}:reset`
-        },
-      },
-    },
-    problems: {
-      _base: '',
-      list() {
-        return `${this._base}/-`
-      },
-      detail(id: number) {
-        return `${this._base}/${id}`
-      },
-    },
-    tags: {
-      _base: '',
-      list() {
-        return `${this._base}/-`
-      },
-    },
-  },
-})
+import http, { KOJAxiosInstance, KOJAxiosRequestConfig } from '~/http'
+import { stringify } from 'qs'
+import { KOJStorage } from '~/storage'
+import { AxiosResponse } from 'axios'
+import apiRoute from '~/api/requestRoute'
+import { data, page, setTime } from '~/api/extra'
+import { IApi } from '~/api/api'
 
 export class ProblemDetailError extends Error {
   constructor(message: string, public problem: ProblemDetail) {
@@ -266,6 +32,26 @@ export class ProblemDetailError extends Error {
 
 function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxiosRequestConfig): IApi {
   return {
+    createCompetition(request: ManageCompetitionCreateRequest, config?: KOJAxiosRequestConfig): Promise<string> {
+      return this.axios.put(apiRoute.admin.competitions.base(), request, { ...addonConfig, ...config })
+    },
+    deleteCompetition(id: string, config?: KOJAxiosRequestConfig): Promise<void> {
+      return this.axios.delete(apiRoute.admin.competitions.single(id), { ...addonConfig, ...config })
+    },
+    getCompetition(id: string, config?: KOJAxiosRequestConfig): Promise<ManageCompetition> {
+      return data(this.axios.get(apiRoute.admin.competitions.single(id), { ...addonConfig, ...config }))
+    },
+    getCompetitionList(listCondition: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleCompetition>> {
+      return page(
+        this.axios.get(apiRoute.public.competitions.list(), { ...addonConfig, params: listConditionAsParam(listCondition), ...config }),
+      )
+    },
+    joinCompetition(id: string, pwd?: string, config?: KOJAxiosRequestConfig): Promise<void> {
+      return this.axios.post(apiRoute.competitions.join(id), { ...addonConfig, params: { password: pwd }, ...config })
+    },
+    updateCompetition(id: string, data: { name?: string; pwd?: string }, config?: KOJAxiosRequestConfig): Promise<void> {
+      return this.axios.patch(apiRoute.admin.competitions.single(id), data, { ...addonConfig, ...config })
+    },
     addConfig(
       problemId: number,
       data: {
@@ -335,7 +121,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
     },
     axios: axiosInstance,
     self(config?: KOJAxiosRequestConfig) {
-      return data(this.axios.get(apiRoute.users.self(), { ignoreError: true, ...config }), extraTime)
+      return data(this.axios.get(apiRoute.users.self(), { ignoreError: true, ...config }))
     },
     registerUser(username: string, password: string, email: string, config?: KOJAxiosRequestConfig) {
       return data(
@@ -386,7 +172,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
         })
     },
     stat(username: string, config?: KOJAxiosRequestConfig) {
-      return data(this.axios.get(apiRoute.public.users.stat(username), { ...addonConfig, ...config }), extraTime)
+      return data(this.axios.get(apiRoute.public.users.stat(username), { ...addonConfig, ...config }))
     },
     forgetPassword(username: string, email: string, config?: KOJAxiosRequestConfig): Promise<undefined> {
       return this.axios.post(
@@ -427,8 +213,8 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       }
       return page(this.axios.get(apiRoute.public.problems.list(), cf))
     },
-    problem(id: number, config?: KOJAxiosRequestConfig): Promise<ProblemDetail> {
-      return data(this.axios.get(apiRoute.public.problems.detail(id), { ...addonConfig, ...config }), extraTime).then((problem) => {
+    problem(id: string, config?: KOJAxiosRequestConfig): Promise<ProblemDetail> {
+      return data(this.axios.get(apiRoute.public.problems.detail(id), { ...addonConfig, ...config })).then((problem) => {
         try {
           problem.contentObj = JSON.parse(problem.content)
         } catch {
@@ -463,7 +249,49 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
     languages(config?: KOJAxiosRequestConfig): Promise<string[]> {
       return data(this.axios.get(apiRoute.public.submits.languages.list(), { ...addonConfig, ...config }))
     },
+    userList(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<UserManageDetail>> {
+      return page(
+        this.axios.get(apiRoute.admin.users.list(), {
+          ...addonConfig,
+          ...config,
+          params: {
+            ...listConditionAsParam(listCondition),
+          },
+        }),
+      )
+    },
+    manageUpdateUser(
+      userId: string,
+      data: { username?: string; email?: string; password?: string; type?: UserType; blocked?: boolean },
+      config?: KOJAxiosRequestConfig,
+    ): Promise<AxiosResponse> {
+      return this.axios.patch(apiRoute.admin.users.update(userId), null, {
+        params: data,
+        ...addonConfig,
+        ...config,
+      })
+    },
+    rank(limit?: number, config?: KOJAxiosRequestConfig): Promise<UserRankInfo[]> {
+      if (limit === undefined) {
+        return data(this.axios.get(apiRoute.public.users.rank(), { ...addonConfig, ...config }))
+      } else {
+        return data(
+          this.axios.get(apiRoute.public.users.rank(), {
+            ...addonConfig,
+            ...config,
+            params: { limit },
+          }),
+        )
+      }
+    },
   }
 }
 
+const _axios = http({
+  baseURL: '/api',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  },
+  timeout: 5000,
+})
 export default createAPIInstance(_axios)
