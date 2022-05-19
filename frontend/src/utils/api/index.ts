@@ -32,8 +32,17 @@ export class ProblemDetailError extends Error {
 
 function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxiosRequestConfig): IApi {
   return {
+    addCompetitionProblem(id: string, problemId: string, config?: KOJAxiosRequestConfig): Promise<void> {
+      return Promise.resolve(undefined)
+    },
+    competitionProblems(id: string, config?: KOJAxiosRequestConfig): Promise<SimpleProblem[]> {
+      return Promise.resolve([])
+    },
+    deleteCompetitionProblem(id: string, problemId: string, config?: KOJAxiosRequestConfig): Promise<void> {
+      return Promise.resolve(undefined)
+    },
     createCompetition(request: ManageCompetitionCreateRequest, config?: KOJAxiosRequestConfig): Promise<string> {
-      return this.axios.put(apiRoute.admin.competitions.base(), request, { ...addonConfig, ...config })
+      return data(this.axios.put(apiRoute.admin.competitions.base(), request, { ...addonConfig, ...config }))
     },
     deleteCompetition(id: string, config?: KOJAxiosRequestConfig): Promise<void> {
       return this.axios.delete(apiRoute.admin.competitions.single(id), { ...addonConfig, ...config })
@@ -43,7 +52,11 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
     },
     getCompetitionList(listCondition: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleCompetition>> {
       return page(
-        this.axios.get(apiRoute.public.competitions.list(), { ...addonConfig, params: listConditionAsParam(listCondition), ...config }),
+        this.axios.get(apiRoute.public.competitions.list(), {
+          ...addonConfig,
+          params: listConditionAsParam(listCondition),
+          ...config,
+        }),
       )
     },
     joinCompetition(id: string, pwd?: string, config?: KOJAxiosRequestConfig): Promise<void> {
@@ -119,7 +132,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       })
     },
     withConfig(config: KOJAxiosRequestConfig): IApi {
-      return createAPIInstance(axiosInstance, config)
+      return createAPIInstance(axiosInstance, { ...addonConfig, ...config })
     },
     axios: axiosInstance,
     self(config?: KOJAxiosRequestConfig) {
@@ -129,12 +142,18 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       return data(
         this.axios.put(
           apiRoute.public.users.register(),
-          stringify({
+          {
             username,
             password,
             email,
-          }),
-          { ...addonConfig, ...config },
+          },
+          {
+            ...addonConfig,
+            ...config,
+            headers: {
+              'content-type': 'application/json',
+            },
+          },
         ),
       )
     },
@@ -142,11 +161,17 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       return data(
         this.axios.post(
           apiRoute.public.users.login(),
-          stringify({
+          {
             usernameOrEmail,
             password,
-          }),
-          { ...addonConfig, ...config },
+          },
+          {
+            ...addonConfig,
+            ...config,
+            headers: {
+              'content-type': 'application/json',
+            },
+          },
         ),
         (res) => {
           KOJStorage.identity(res.headers[KOJStorage.xIdentity])
@@ -178,11 +203,17 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
     forgetPassword(username: string, email: string, config?: KOJAxiosRequestConfig): Promise<undefined> {
       return this.axios.post(
         apiRoute.public.users.pwd.forget(),
-        stringify({
+        {
           username,
           email,
-        }),
-        { ...addonConfig, ...config },
+        },
+        {
+          ...addonConfig,
+          ...config,
+          headers: {
+            'content-type': 'application/json',
+          },
+        },
       )
     },
     resetPassword(
@@ -194,15 +225,18 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
     ): Promise<undefined> {
       return this.axios.post(
         apiRoute.public.users.pwd.reset(),
-        stringify({
+        {
           username,
           email,
           code: verifyCode,
           newPwd: newPassword,
-        }),
+        },
         {
           ...addonConfig,
           ...config,
+          headers: {
+            'content-type': 'application/json',
+          },
         },
       )
     },
@@ -252,9 +286,6 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
     },
     submit(submitRequest: SubmitRequest, config?: KOJAxiosRequestConfig): Promise<void> {
       return this.axios.put(apiRoute.submits.request(), submitRequest, {
-        headers: {
-          'content-type': 'application/json',
-        },
         ...addonConfig,
         ...config,
       })
@@ -303,9 +334,6 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
 
 const _axios = http({
   baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
-  },
   timeout: 5000,
 })
 export default createAPIInstance(_axios)

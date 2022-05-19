@@ -1,6 +1,7 @@
 <template>
   <el-dialog
     v-model='dialogVisible'
+    custom-class='register-dialog'
     title='注册'
     @close='cancel'
   >

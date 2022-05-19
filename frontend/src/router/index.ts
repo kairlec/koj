@@ -3,19 +3,21 @@ import KojHome from '../pages/KojHome.vue'
 import Submit from '../pages/SubmitList.vue'
 import ProblemList from '../pages/ProblemList.vue'
 import ProblemDetail from '../pages/ProblemDetail.vue'
+import UserList from '../pages/UserList.vue'
 import CompetitionList from '../pages/CompetitionList.vue'
+import CompetitionProblemList from '../pages/CompetitionProblemList.vue'
 
 export const routes: Array<RouteRecordRaw & { displayName?: String; manage?: boolean }> = [
   { path: '/', redirect: '/home' },
   {
     path: '/home',
-    name: 'Home',
+    name: 'KojHome',
     displayName: '首页',
     component: KojHome,
   },
   {
     path: '/problem',
-    name: 'Problem',
+    name: 'ProblemList',
     displayName: '题目',
     component: ProblemList,
   },
@@ -25,6 +27,11 @@ export const routes: Array<RouteRecordRaw & { displayName?: String; manage?: boo
     component: ProblemDetail,
   },
   {
+    path: '/competition/:id/problem',
+    name: 'CompetitionProblemList',
+    component: CompetitionProblemList,
+  },
+  {
     path: '/submit',
     name: 'Submit',
     displayName: '提交',
@@ -32,7 +39,7 @@ export const routes: Array<RouteRecordRaw & { displayName?: String; manage?: boo
   },
   {
     path: '/competition',
-    name: 'Competition',
+    name: 'CompetitionList',
     displayName: '比赛',
     component: CompetitionList,
   },

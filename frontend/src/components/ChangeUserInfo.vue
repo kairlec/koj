@@ -45,7 +45,7 @@ export default defineComponent({
 
     const form = reactive({
       usernameOrEmail: '',
-      password: ''
+      password: '',
     });
 
     const validateUsernameOrEmail = (rule: any, value: any, callback: any) => {
@@ -64,13 +64,13 @@ export default defineComponent({
       }
     };
 
-    onBeforeMount(()=>{
-      api.self()
-    })
+    onBeforeMount(() => {
+      api.self();
+    });
 
     const rules = reactive({
       usernameOrEmail: [{ validator: validateUsernameOrEmail, trigger: 'blur' }],
-      password: [{ validator: validatePassword, trigger: 'blur' }]
+      password: [{ validator: validatePassword, trigger: 'blur' }],
     });
 
 
@@ -102,9 +102,9 @@ export default defineComponent({
       form,
       submitForm,
       ruleFormRef,
-      cancel
+      cancel,
     };
-  }
+  },
 });
 </script>
 <style scoped>

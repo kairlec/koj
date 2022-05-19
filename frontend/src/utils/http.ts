@@ -119,7 +119,7 @@ function http(config?: KOJAxiosRequestConfig): KOJAxiosInstance {
       error.showError = () => {
         return showError(error)
       }
-      if (error?.config?.ignoreError === true) {
+      if (error?.config?.ignoreError !== true) {
         return error.showError()
       }
       return Promise.reject(error)

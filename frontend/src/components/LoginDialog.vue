@@ -1,6 +1,7 @@
 <template>
   <el-dialog
     v-model='dialogVisible'
+    custom-class='login-dialog'
     :title='loginMode ? "登录" : "忘记密码"'
     @close='cancel'
   >
@@ -278,10 +279,5 @@ export default defineComponent({
 <style scoped>
 .dialog-footer button:first-child {
   margin-right: 10px;
-}
-</style>
-<style>
-.el-dialog {
-  --el-dialog-width: 450px;
 }
 </style>

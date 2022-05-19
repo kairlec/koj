@@ -46,3 +46,15 @@ useResize(() => {
 //endregion
 
 </script>
+
+<style>
+.login-dialog {
+  --el-dialog-width: 450px;
+}
+.register-dialog{
+  --el-dialog-width: 480px;
+}
+.competition-dialog{
+  --el-dialog-width: 600px;
+}
+</style>

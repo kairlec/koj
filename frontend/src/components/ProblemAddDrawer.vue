@@ -102,7 +102,7 @@
 </template>
 
 <script lang='ts' setup>
-import { computed, onBeforeUnmount, PropType, reactive, ref } from 'vue';
+import { computed, onBeforeMount, onBeforeUnmount, PropType, reactive, ref } from 'vue';
 import api from '~/api';
 import { ProblemContent, ProblemDetail, SimpleProblem, Tag } from '~/apiDeclaration';
 import { CirclePlus, Delete } from '@element-plus/icons-vue';
@@ -216,7 +216,7 @@ function highlighterJson(code: string) {
 }
 
 function saveProblemDetail(): Promise<any> {
-  if(problemNameEdit.value.length===0){
+  if (problemNameEdit.value.length === 0) {
     ElMessage({
       type: 'error',
       message: '题目名称不能为空',
@@ -259,8 +259,24 @@ function saveProblemDetail(): Promise<any> {
       id: id,
       name: problemNameEdit.value,
       spj: problemDetail.spj,
-      tags: rightValue.value
+      tags: rightValue.value,
     });
+    ///
+    problemContentObjEdit.description = '';
+    problemContentObjEdit.input = '';
+    problemContentObjEdit.output = '';
+    problemContentObjEdit.samples = [];
+    problemContentObjEdit.hint = '';
+    problemNameEdit.value = '';
+    problemContentEdit.value = '';
+    rightValue.value = [];
+    problemDetail.name = '';
+    problemDetail.content = '';
+    problemDetail.contentObj = {} as ProblemContent;
+    problemDetail.spj = false;
+    problemDetail.config = [];
+    problemDetail.tags = [];
+    ///
     showDrawer.value = false;
   }).finally(() => {
     saving.value = false;

@@ -92,6 +92,9 @@ export interface CompetitionApi {
   createCompetition(request: ManageCompetitionCreateRequest, config?: KOJAxiosRequestConfig): Promise<string>
   updateCompetition(id: string, data: { name?: string; pwd?: string }, config?: KOJAxiosRequestConfig): Promise<void>
   deleteCompetition(id: string, config?: KOJAxiosRequestConfig): Promise<void>
+  competitionProblems(id: string, config?: KOJAxiosRequestConfig): Promise<SimpleProblem[]>
+  addCompetitionProblem(id: string, problemId: string, config?: KOJAxiosRequestConfig): Promise<void>
+  deleteCompetitionProblem(id: string, problemId: string, config?: KOJAxiosRequestConfig): Promise<void>
 }
 
 export interface IApi extends SubmitApi, ProblemApi, UserApi, CompetitionApi {
