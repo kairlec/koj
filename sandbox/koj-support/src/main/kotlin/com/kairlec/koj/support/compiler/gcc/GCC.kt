@@ -30,8 +30,8 @@ data class GCCCompileFailure(
 
 data class GCCCompileConfig(
     override val source: CompileSource,
-    override val compileImage: String = "kairlec/koj-support:clike",
-    override val compileImageVersion: String = "latest",
+    override val compileImage: String = "kairlec/koj-support",
+    override val compileImageVersion: String = "clike",
     override val debug: Boolean = false
 ) : AbstractCompileConfig()
 
@@ -54,8 +54,8 @@ abstract class GCC : KojCompiler {
             )
         }
         val (define, compiler, suffix) = when (language) {
-            is C -> Triple(language.preDefine, "gcc", "c")
-            is CPP -> Triple(language.preDefine, "g++", "cc")
+            is C -> Triple(language.preDefine, "/usr/local/bin/gcc", "c")
+            is CPP -> Triple(language.preDefine, "/usr/local/bin/g++", "cc")
             else -> Triple(emptyList(), "", "")
         }
         val sourceFileName = "main.${suffix}"

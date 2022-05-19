@@ -31,10 +31,20 @@ class UserController(
     @DeleteMapping("")
     suspend fun destroy(
         @RequestAttribute(userIdAttributes) userId: Long
-    ): RE<Void> {
-        if (!userService.removeUser(userId)) {
-            return voidNotMidified()
-        }
-        return voidOk()
+    ) {
+        userService.removeUser(userId).sureEffect()
+    }
+
+    data class ChangePasswordModel(
+        val oldPassword: String,
+        val newPassword: String
+    )
+
+    @PatchMapping("")
+    suspend fun changePassword(
+        @RequestAttribute(userIdAttributes) userId: Long,
+        @RequestBody model: ChangePasswordModel
+    ) {
+        userService.changePassword(userId, model.oldPassword, model.newPassword).sureEffect()
     }
 }

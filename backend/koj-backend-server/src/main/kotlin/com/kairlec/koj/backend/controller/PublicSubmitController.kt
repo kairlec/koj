@@ -1,6 +1,5 @@
 package com.kairlec.koj.backend.controller
 
-import com.kairlec.koj.backend.service.ReadOnlySubmitService
 import com.kairlec.koj.backend.service.SubmitService
 import com.kairlec.koj.backend.util.RE
 import com.kairlec.koj.backend.util.currentListCondition
@@ -14,17 +13,15 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/public/submits")
 class PublicSubmitController(
-    private val readOnlySubmitService: ReadOnlySubmitService,
-    private val submitService: SubmitService?
+    private val submitService: SubmitService
 ) {
     @GetMapping("/-")
     suspend fun getSubmits(): RE<Flow<SimpleSubmit>> {
-        return readOnlySubmitService.getSubmits(currentListCondition()).re()
+        return submitService.getSubmits(currentListCondition()).re()
     }
-
 
     @GetMapping("/languages/-")
     suspend fun getSupportLanguages(): List<String> {
-        return submitService?.getLanguages() ?: emptyList()
+        return submitService.getLanguages()
     }
 }

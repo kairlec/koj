@@ -4,7 +4,9 @@ import mu.KotlinLogging
 import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.*
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.writeBytes
+import kotlin.io.path.writeText
 
 class TempDirectory private constructor(
     private val path: Path
@@ -26,7 +28,7 @@ class TempDirectory private constructor(
     }
 
     companion object {
-        private val log = KotlinLogging.logger {  }
+        private val log = KotlinLogging.logger { }
         private val tempDir = Path.of(System.getProperty("java.io.tmpdir"))
         fun createOrUse(
             id: String,

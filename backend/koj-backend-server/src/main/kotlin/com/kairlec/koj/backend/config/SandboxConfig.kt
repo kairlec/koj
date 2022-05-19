@@ -1,6 +1,8 @@
 package com.kairlec.koj.backend.config
 
 import com.kairlec.koj.backend.component.LanguageIdSupporter
+import com.kairlec.koj.backend.service.JudgeService
+import com.kairlec.koj.backend.service.ProblemService
 import com.kairlec.koj.backend.service.SubmitService
 import com.kairlec.koj.common.*
 import com.kairlec.koj.dao.model.SubmitState
@@ -8,20 +10,19 @@ import com.kairlec.koj.model.*
 import io.github.majusko.pulsar.producer.ProducerCollector
 import io.github.majusko.pulsar.producer.ProducerFactory
 import io.github.majusko.pulsar.producer.PulsarTemplate
+import io.github.majusko.pulsar.properties.PulsarProperties
 import io.github.majusko.pulsar.reactor.FluxConsumerFactory
 import io.github.majusko.pulsar.reactor.PulsarFluxConsumer
 import io.github.majusko.pulsar.utils.UrlBuildService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.collect
-import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.apache.pulsar.client.api.PulsarClient
-import org.apache.pulsar.client.api.PulsarClientException
 import org.apache.pulsar.client.api.SubscriptionType
+import org.apache.pulsar.client.api.interceptor.ProducerInterceptor
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.getBean
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationContext
@@ -39,9 +40,17 @@ class SandboxConfig {
     fun customProducer(
         pulsarClient: PulsarClient,
         urlBuildService: UrlBuildService,
+        pulsarProperties: PulsarProperties,
+        producerInterceptor: ProducerInterceptor,
         languageIdSupporter: LanguageIdSupporter,
     ): ProducerCollector {
-        return CustomProducerCollector(pulsarClient, urlBuildService, languageIdSupporter)
+        return CustomProducerCollector(
+            pulsarClient,
+            urlBuildService,
+            pulsarProperties,
+            producerInterceptor,
+            languageIdSupporter,
+        )
     }
 
     @Bean
@@ -60,9 +69,11 @@ class SandboxConfig {
     fun sandboxMQ(
         fluxConsumerFactory: FluxConsumerFactory,
         producer: PulsarTemplate<ByteArray>,
-        applicationContext: ApplicationContext
+        applicationContext: ApplicationContext,
+        problemService: ProblemService,
+        judgeService: JudgeService
     ): SandboxMQ {
-        return SandboxMQ(fluxConsumerFactory, producer, applicationContext)
+        return SandboxMQ(fluxConsumerFactory, producer, applicationContext, problemService, judgeService)
     }
 
     @Bean
@@ -87,8 +98,9 @@ class SandboxMQ(
     fluxConsumerFactory: FluxConsumerFactory,
     private val producer: PulsarTemplate<ByteArray>,
     private val applicationContext: ApplicationContext,
-//    private val jud
-) {
+    private val problemService: ProblemService,
+    private val judgeService: JudgeService
+) : DisposableBean {
     companion object {
         private val log = KotlinLogging.logger { }
         private val hostname = InetAddress.getLocalHost().hostName
@@ -118,6 +130,17 @@ class SandboxMQ(
             .build()
     )
 
+    private val dlqConsumer = fluxConsumerFactory.newConsumer<ByteArray>(
+        PulsarFluxConsumer.builder()
+            .setTopic(deadLetterTopic())
+            .setConsumerName("koj-backend-dlq-${hostname}-${Random.nextLong()}")
+            .setSubscriptionName("koj-backend")
+            .setSubscriptionType(SubscriptionType.Shared)
+            .setMessageClass(ByteArray::class.java)
+            .setSimple(false)
+            .build()
+    )
+
     @EventListener(ApplicationReadyEvent::class)
     fun subscribe() {
         coroutineScope.launch {
@@ -126,8 +149,9 @@ class SandboxMQ(
                     val data = (msg.message.value as ByteArray).decompress()
                     taskStatus(data)
                     msg.consumer.acknowledge(msg.message)
-                } catch (e: PulsarClientException) {
+                } catch (e: Throwable) {
                     msg.consumer.negativeAcknowledge(msg.message)
+                    log.error(e) { "receive status error:${e.message}" }
                 }
             }
         }
@@ -137,8 +161,21 @@ class SandboxMQ(
                     val data = (msg.message.value as ByteArray).decompress()
                     taskResult(data)
                     msg.consumer.acknowledge(msg.message)
-                } catch (e: PulsarClientException) {
+                } catch (e: Throwable) {
                     msg.consumer.negativeAcknowledge(msg.message)
+                    log.error(e) { "receive result error:${e.message}" }
+                }
+            }
+        }
+        coroutineScope.launch {
+            dlqConsumer.asFlux().collect { msg ->
+                try {
+                    val data = (msg.message.value as ByteArray).decompress()
+                    taskDead(data)
+                    msg.consumer.acknowledge(msg.message)
+                } catch (e: Throwable) {
+                    msg.consumer.negativeAcknowledge(msg.message)
+                    log.error(e) { "receive dlq error:${e.message}" }
                 }
             }
         }
@@ -156,10 +193,16 @@ class SandboxMQ(
     }
 
     @OptIn(InternalApi::class)
+    private suspend fun taskDead(data: ByteArray) {
+        val status = Task.parseFrom(data)
+        log.info { "task status(failed of dlq):${status}" }
+        submitService.updateSubmit(status.id, SubmitState.NO_SANDBOX, null, null)
+    }
+
+    @OptIn(InternalApi::class)
     private suspend fun taskResult(data: ByteArray) {
         val result = TaskResult.parseFrom(data)
         log.info { "task result(${result.type}):${result}" }
-        result.stderr
         submitService.updateSubmit(
             result.id,
             result.type.asSubmitState(),
@@ -168,6 +211,50 @@ class SandboxMQ(
             result.stderr,
             result.stdout
         )
+        if (result.type == TaskResultType.NO_ERROR) {
+            judge(result.id, result.stdout)
+        }
+    }
+
+    @OptIn(InternalApi::class)
+    private suspend fun judge(submitId: Long, stdout: String) {
+        coroutineScope.launch {
+            try {
+                val problemId = submitService.getProblemIdOfSubmit(submitId)
+                if (problemId == null) {
+                    log.error { "judge task of submit[id=${submitId}] error because cannot find problem id." }
+                    submitService.updateSubmit(
+                        submitId,
+                        SubmitState.SYSTEM_ERROR
+                    )
+                    return@launch
+                }
+                val problemRun = problemService.getProblemAnsout(problemId)
+                if (problemRun == null) {
+                    log.error { "judge task of submit[id=${submitId}] error because cannot find problem ansout." }
+                    submitService.updateSubmit(
+                        submitId,
+                        SubmitState.SYSTEM_ERROR
+                    )
+                    return@launch
+                }
+                val state = judgeService.normalJudge(stdout, problemRun)
+                submitService.updateSubmit(
+                    submitId,
+                    state
+                )
+            } catch (e: Throwable) {
+                if (e is CancellationException) {
+                    log.error(e) { "judge task of submit[id=${submitId}] has been canceled" }
+                } else {
+                    log.error(e) { "judge task of submit[id=${submitId}] error" }
+                }
+                submitService.updateSubmit(
+                    submitId,
+                    SubmitState.SYSTEM_ERROR
+                )
+            }
+        }
     }
 
     private fun TaskIntermediateStatusEnum.asSubmitState(): SubmitState {
@@ -194,6 +281,10 @@ class SandboxMQ(
 
     fun sendTask(task: Task) {
         producer.send(taskTopic(task.languageId), task.toByteArray().compress())
+    }
+
+    override fun destroy() {
+        coroutineScope.cancel()
     }
 
 }

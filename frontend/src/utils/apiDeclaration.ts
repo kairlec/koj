@@ -1,17 +1,19 @@
+import { Moment } from 'moment'
+
 export interface ITime {
-  createTime: Date
-  updateTime?: Date
+  createTime: Moment
+  updateTime?: Moment
 }
 
 export interface UserStat extends ITime {
-  id: number
+  id: string
   username: string
   submitted: number
   ac: number[]
 }
 
 export interface User extends ITime {
-  id: number
+  id: string
   username: string
   email: string
   type: number
@@ -23,7 +25,7 @@ export interface PageData<T> {
 }
 
 export interface SimpleProblem {
-  id: number
+  id: string
   name: string
   spj: boolean
   idx?: number
@@ -47,25 +49,25 @@ export interface ProblemConfig {
   languageId: string
   memoryLimit: number
   timeLimit: number
-  createTime: Date
-  updateTime: Date
+  createTime: Moment
+  updateTime: Moment
 }
 
 export interface ProblemDetail {
-  id: number
+  id: string
   name: string
   content: string
   contentObj: ProblemContent
   spj: boolean
-  createTime: string
-  updateTime: string
+  createTime: Moment
+  updateTime: Moment
   config: ProblemConfig[]
   idx?: number
   tags: string[]
 }
 
 export interface Tag {
-  id: number
+  id: string
   name: string
 }
 
@@ -73,8 +75,8 @@ export interface ProblemConfigManage {
   languageId: string
   time: number
   memory: number
-  maxOutputSize?: number
-  maxStack?: number
+  maxOutputSize?: string
+  maxStack?: string
   maxProcessNumber?: number
   args?: string[]
   env?: string[]
@@ -208,15 +210,60 @@ export function submitStateToString(state: SubmitState): string {
 }
 
 export interface SimpleSubmit {
-  id: number
+  id: string
+  problemId: string
   state: SubmitState
-  castMemory?: number
-  castTime?: number
+  castMemory?: string
+  castTime?: string
   languageId: string
-  belongUserId: number
+  belongUserId: string
   username: string
-  createTime: Date
-  updateTime: Date
+  createTime: Moment
+  updateTime: Moment
+}
+
+export interface SubmitRequest {
+  competitionId?: string
+  languageId: string
+  problemId: string
+  code: string
+}
+
+export interface SubmitDetail {
+  id: string
+  problemId: string
+  state: string
+  castMemory?: string
+  castTime?: string
+  languageId: string
+  belongUserId: string
+  username: string
+  createTime: Moment
+  updateTime: Moment
+  code: string
+  stderr?: string
+}
+
+export enum UserType {
+  ADMIN = 0,
+  USER = 1,
+}
+
+export interface UserManageDetail {
+  id: string
+  username: string
+  email: string
+  type: UserType
+  createTime: Moment
+  updateTime: Moment
+  blocked: number
+}
+
+export interface UserRankInfo {
+  userId: string
+  username: string
+  rank: number
+  ac: number
 }
 
 export interface SimpleCompetition {

@@ -64,7 +64,7 @@ public class Competition extends TableImpl<CompetitionRecord> {
     /**
      * The column <code>koj.competition.pwd</code>. 比赛密码(脱敏后)
      */
-    public final TableField<CompetitionRecord, String> PWD = createField(DSL.name("pwd"), SQLDataType.CHAR(64).nullable(false), this, "比赛密码(脱敏后)");
+    public final TableField<CompetitionRecord, String> PWD = createField(DSL.name("pwd"), SQLDataType.CHAR(64), this, "比赛密码(脱敏后)");
 
     /**
      * The column <code>koj.competition.start_time</code>. 比赛开始时间

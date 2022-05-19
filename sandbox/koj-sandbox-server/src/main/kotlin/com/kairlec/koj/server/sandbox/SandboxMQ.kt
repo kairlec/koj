@@ -14,7 +14,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.reactive.asFlow
 import mu.KotlinLogging
-import org.apache.pulsar.client.api.PulsarClientException
 import org.apache.pulsar.client.api.SubscriptionType
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationContext
@@ -58,7 +57,7 @@ internal class SandboxMQ(
         "koj-sb-app-server"
     }
 
-    private val consumerNameSuffix = "$hostname-${Random.nextLong()}-${applicationName}"
+    private val consumerNameSuffix = "$hostname-${Random.nextLong(0, Long.MAX_VALUE)}-${applicationName}"
 
     private fun newConsumer(language: Language): FluxConsumer<ByteArray> {
         return fluxConsumerFactory.newConsumer(
@@ -69,6 +68,8 @@ internal class SandboxMQ(
                 .setSubscriptionType(SubscriptionType.Shared)
                 .setMessageClass(ByteArray::class.java)
                 .setSimple(false)
+                .setDeadLetterTopic(deadLetterTopic())
+                .setMaxRedeliverCount(5)
                 .build()
         )
     }
@@ -100,10 +101,9 @@ internal class SandboxMQ(
                         val data = (msg.message.value as ByteArray).decompress()
                         receive(data)
                         msg.consumer.acknowledge(msg.message)
-                    } catch (e: PulsarClientException) {
+                    } catch (e: Throwable) {
                         msg.consumer.negativeAcknowledge(msg.message)
-                    } catch (e: Exception) {
-                        throw e
+                        log.error(e) { "receive task error:${e.message}" }
                     }
                 }
             }

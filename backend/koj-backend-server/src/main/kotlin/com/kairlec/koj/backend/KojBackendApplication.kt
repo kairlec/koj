@@ -10,17 +10,11 @@ import reactor.core.publisher.Hooks
 
 @SpringBootApplication(exclude = [DataSourceAutoConfiguration::class])
 @ComponentScan(
-//    excludeFilters = [
-//        ComponentScan.Filter(
-//            type = FilterType.ASSIGNABLE_TYPE,
-//            value = [ProducerCollector::class, SandboxConfig::class, PulsarAdminAutoConfiguration::class]
-//        )
-//    ],
     basePackages = ["com.kairlec.koj", "com.baidu.fsg.uid"]
 )
 @EnableScheduling
 @EnableTransactionManagement
-private class KojBackendApplication
+class KojBackendApplication
 
 
 fun main(args: Array<String>) {

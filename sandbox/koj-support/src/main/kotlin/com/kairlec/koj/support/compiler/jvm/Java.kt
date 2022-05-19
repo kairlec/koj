@@ -30,7 +30,7 @@ data class JvmCompileFailure(
 
 data class JvmCompileConfig(
     override val source: CompileSource,
-    override val compileImage: String = "kairlec/koj-support:jvm",
+    override val compileImage: String = "kairlec/koj-support",
     override val compileImageVersion: String = "",
     override val debug: Boolean = false,
 ) : AbstractCompileConfig()
@@ -42,9 +42,9 @@ object Java : KojCompiler {
         require(compileConfig is JvmCompileConfig) { "JvmCompileConfig required" }
         val imageVersion = if (compileConfig.compileImageVersion.isEmpty()) {
             when (context.useLanguage) {
-                is Java8 -> "8"
-                is Java11 -> "11"
-                is Java17 -> "17"
+                is Java8 -> "jvm8"
+                is Java11 -> "jvm11"
+                is Java17 -> "jvm17"
                 else -> throw UnsupportedLanguageException(
                     context.useLanguage,
                     "current jvm impl is not supported for this language yet"
@@ -53,13 +53,13 @@ object Java : KojCompiler {
         } else {
             when (context.useLanguage) {
                 is Java8 -> {
-                    require(compileConfig.compileImageVersion == "8") { "Java8 requires compileImageVersion == 8" }
+                    require(compileConfig.compileImageVersion == "jvm8") { "Java8 requires compileImageVersion == jvm8" }
                 }
                 is Java11 -> {
-                    require(compileConfig.compileImageVersion == "11") { "Java11 requires compileImageVersion == 11" }
+                    require(compileConfig.compileImageVersion == "jvm11") { "Java11 requires compileImageVersion == jvm11" }
                 }
                 is Java17 -> {
-                    require(compileConfig.compileImageVersion == "17") { "Java17 requires compileImageVersion == 17" }
+                    require(compileConfig.compileImageVersion == "jvm17") { "Java17 requires compileImageVersion == jvm17" }
                 }
                 else -> throw UnsupportedLanguageException(
                     context.useLanguage,
@@ -74,7 +74,7 @@ object Java : KojCompiler {
             add("-encoding")
             add("UTF8")
         }
-        val image = "${compileConfig.compileImage}${imageVersion}"
+        val image = "${compileConfig.compileImage}:${imageVersion}"
         val output = Docker.compile(
             context.tempDirectory,
             DockerSandboxCompileConfig(

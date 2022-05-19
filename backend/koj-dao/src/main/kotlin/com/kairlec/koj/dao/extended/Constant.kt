@@ -4,7 +4,6 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactive.awaitSingle
 import org.jooq.*
 import org.jooq.impl.DSL
-import kotlin.reflect.KMutableProperty0
 
 /**
  * @author : Kairlec

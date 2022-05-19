@@ -2,7 +2,7 @@ package com.kairlec.koj.backend.controller.internal
 
 import com.kairlec.koj.backend.config.userIdAttributes
 import com.kairlec.koj.backend.service.CompetitionService
-import com.kairlec.koj.backend.service.ReadOnlySubmitService
+import com.kairlec.koj.backend.service.SubmitService
 import com.kairlec.koj.dao.model.SimpleSubmit
 import kotlinx.coroutines.flow.Flow
 import org.springframework.web.bind.annotation.*
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/competitions")
 class CompetitionController(
     private val competitionService: CompetitionService,
-    private val submitService: ReadOnlySubmitService
+    private val submitService: SubmitService
 ) {
     @PostMapping("/{competitionId}:join")
     suspend fun joinCompetition(

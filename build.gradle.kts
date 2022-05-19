@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "com.kairlec.koj"
@@ -5,6 +6,7 @@ version = "1.0-SNAPSHOT"
 
 plugins {
     alias(libs.plugins.kotlin.jvm) apply false
+    id("com.github.johnrengelman.shadow")
 }
 
 allprojects {
@@ -20,6 +22,7 @@ allprojects {
 subprojects {
     if (name.startsWith("koj-") && !name.endsWith("proto")) {
         apply(plugin = "kotlin")
+        apply(plugin = "com.github.johnrengelman.shadow")
         dependencies {
             val implementation by configurations
             implementation(rootProject.libs.bundles.base)
@@ -40,5 +43,9 @@ subprojects {
             sourceCompatibility = targetJavaVersion.toString()
             targetCompatibility = targetJavaVersion.toString()
         }
+//        tasks.withType<ShadowJar> {
+//            archiveBaseName.set(project.name)
+//            archiveClassifier.set("")
+//        }
     }
 }

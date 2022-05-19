@@ -1,5 +1,6 @@
 package com.kairlec.koj.backend.service
 
+import com.kairlec.koj.common.InternalApi
 import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.model.Problem
 import com.kairlec.koj.dao.model.SimpleProblem
@@ -8,6 +9,7 @@ import com.kairlec.koj.dao.tables.records.ProblemConfigRecord
 import com.kairlec.koj.dao.tables.records.ProblemRunRecord
 import com.kairlec.koj.dao.tables.records.ProblemTagRecord
 import kotlinx.coroutines.flow.Flow
+import java.math.BigInteger
 
 interface ProblemService {
     suspend fun getProblems(tags: List<String>, listCondition: ListCondition): PageData<SimpleProblem>
@@ -42,14 +44,14 @@ interface ProblemService {
 
     suspend fun updateTag(tagId: Long, name: String): Boolean
 
-    suspend fun addProblemConfig(
+    suspend fun saveProblemConfig(
         problemId: Long,
         languageId: String,
         time: Int,
         memory: Int,
-        maxOutputSize: Long?,
-        maxStack: Long?,
-        maxProcessNumber: Short?,
+        maxOutputSize: BigInteger?,
+        maxStack: BigInteger?,
+        maxProcessNumber: Int?,
         args: List<String>,
         env: List<String>
     ): Boolean
@@ -72,4 +74,9 @@ interface ProblemService {
     suspend fun getProblemRunConfig(
         problemId: Long
     ): ProblemRunRecord?
+
+    @OptIn(InternalApi::class)
+    suspend fun getProblemAnsout(
+        problemId: Long
+    ): String?
 }

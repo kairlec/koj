@@ -20,9 +20,9 @@ object Kotlin : KojCompiler {
         require(compileConfig is JvmCompileConfig) { "JvmCompileConfig required" }
         val imageVersion = if (compileConfig.compileImageVersion.isEmpty()) {
             when (context.useLanguage) {
-                is Kotlin1610_Java8 -> "8"
-                is Kotlin1610_Java11 -> "11"
-                is Kotlin1610_Java17 -> "17"
+                is Kotlin1610_Java8 -> "jvm8"
+                is Kotlin1610_Java11 -> "jvm11"
+                is Kotlin1610_Java17 -> "jvm17"
                 else -> throw UnsupportedLanguageException(
                     context.useLanguage,
                     "current jvm impl is not supported for this language yet"
@@ -31,13 +31,13 @@ object Kotlin : KojCompiler {
         } else {
             when (context.useLanguage) {
                 is Kotlin1610_Java8 -> {
-                    require(compileConfig.compileImageVersion == "8") { "Java8 requires compileImageVersion == 8" }
+                    require(compileConfig.compileImageVersion == "jvm8") { "Java8 requires compileImageVersion == jvm8" }
                 }
                 is Kotlin1610_Java11 -> {
-                    require(compileConfig.compileImageVersion == "11") { "Java11 requires compileImageVersion == 11" }
+                    require(compileConfig.compileImageVersion == "jvm11") { "Java11 requires compileImageVersion == jvm11" }
                 }
                 is Kotlin1610_Java17 -> {
-                    require(compileConfig.compileImageVersion == "17") { "Java17 requires compileImageVersion == 17" }
+                    require(compileConfig.compileImageVersion == "jvm17") { "Java17 requires compileImageVersion == jvm17" }
                 }
                 else -> throw UnsupportedLanguageException(
                     context.useLanguage,
@@ -50,7 +50,7 @@ object Kotlin : KojCompiler {
         val compileArguments = buildList {
             add(sourceFileName)
         }
-        val image = "${compileConfig.compileImage}${imageVersion}"
+        val image = "${compileConfig.compileImage}:${imageVersion}"
         val output = Docker.compile(
             context.tempDirectory,
             DockerSandboxCompileConfig(

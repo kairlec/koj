@@ -1,11 +1,11 @@
 <template>
-  <ProblemAddDrawer
+  <CompetitionAddDrawer
     v-if='!fetchingTagList'
     v-model:tag-data='tags'
     v-model:show='showAdd'
-    @add-problem='addProblem'
+    @add-competition='addCompetition'
   />
-  <el-container class='problem-container'>
+  <el-container class='competition-container'>
     <el-header style='text-align: right; font-size: 12px'>
       <div class='toolbar'>
         <el-row :gutter='20'>
@@ -19,32 +19,32 @@
               :prefix-icon='Search'
               clearable
               maxlength='20'
-              @keyup.enter='searchProblem'
+              @keyup.enter='searchCompetition'
             >
               <template #append>
-                <el-button :icon='Search' @click='searchProblem' />
+                <el-button :icon='Search' @click='searchCompetition' />
               </template>
             </el-input>
           </el-col>
           <el-col :span='10'>
             <el-button-group>
               <el-button
-                type='primary' size='large' :loading='fetchingProblemList' :icon='ArrowLeft' :disabled='!havePrev'
-                @click='fetchProblemList("Prev")'>
+                type='primary' size='large' :loading='fetchingCompetitionList' :icon='ArrowLeft' :disabled='!havePrev'
+                @click='fetchCompetitionList("Prev")'>
                 {{ havePrev ? '上一页' : '没有更多了' }}
               </el-button>
               <el-button
-                type='primary' size='large' :loading='fetchingProblemList' :disabled='!haveNext'
-                @click='fetchProblemList("Next")'>
+                type='primary' size='large' :loading='fetchingCompetitionList' :disabled='!haveNext'
+                @click='fetchCompetitionList("Next")'>
                 {{ haveNext ? '下一页' : '没有更多了' }}
                 <el-icon class='el-icon--right'>
                   <ArrowRight />
                 </el-icon>
               </el-button>
               <el-button
-                size='large' :loading='fetchingProblemList' :icon='RefreshRight'
-                @click='fetchProblemList("Refresh")'>
-                {{ fetchingProblemList ? '请求中' : '刷新' }}
+                size='large' :loading='fetchingCompetitionList' :icon='RefreshRight'
+                @click='fetchCompetitionList("Refresh")'>
+                {{ fetchingCompetitionList ? '请求中' : '刷新' }}
               </el-button>
             </el-button-group>
           </el-col>
@@ -55,28 +55,25 @@
     <el-main style='padding: 0'>
       <el-container style='max-height: 100%'>
         <el-main style='padding: 0'>
-          <el-scrollbar v-loading='fetchingProblemList'>
-            <template v-if='fetchingProblemListError.length'>
+          <el-scrollbar v-loading='fetchingCompetitionList'>
+            <template v-if='fetchingCompetitionListError.length'>
               <el-result
                 icon='error'
                 title='请求出错'
-                :sub-title='fetchingProblemListError'
+                :sub-title='fetchingCompetitionListError'
               >
                 <template #extra>
-                  <el-button type='primary' @click='fetchProblemList("Refresh")'>刷新</el-button>
+                  <el-button type='primary' @click='fetchCompetitionList("Refresh")'>刷新</el-button>
                 </template>
               </el-result>
             </template>
-            <template v-if='problemList'>
-              <!--              <p  class='problem-item'>ID : Name</p>-->
-              <!--                              <p v-for='item in problemList.record' :key='item.id' style='cursor: pointer' class='problem-item'>-->
-              <!--                                {{ `${item.id} : ${item.name}` }}</p>-->
+            <template v-if='competitionList'>
               <el-table
-                :data='problemList?.record' :stripe='true' style='width: 100%;margin-top:10px;'
-                :row-style='{cursor: "pointer"}' max-height='100%' :border='true' @row-click='detailProblem'>
+                :data='competitionList?.record' :stripe='true' style='width: 100%;margin-top:10px;'
+                :row-style='{cursor: "pointer"}' max-height='100%' :border='true' @row-click='detailCompetition'>
                 <el-table-column prop='id' label='ID' width='180' />
-                <el-table-column prop='name' label='题目' />
-                <el-table-column prop='type' label='标签'>
+                <el-table-column prop='name' label='名称' />
+                <el-table-column prop='startTime' label='开始时间'>
                   <template #default='scope'>
                     <el-tag v-for='(item,idx) in scope.row.tags' :key='idx'>{{ item }}</el-tag>
                   </template>
@@ -84,7 +81,7 @@
                 <template v-if='user.user?.type===0'>
                   <el-table-column prop='type' label='操作'>
                     <template #default='scope'>
-                      <el-button type='danger' @click.stop='deleteProblem(scope.row)'>
+                      <el-button type='danger' @click.stop='deleteCompetition(scope.row)'>
                         删除
                       </el-button>
                     </template>
@@ -98,7 +95,7 @@
                           <el-icon style='margin-right: 5px'>
                             <plus></plus>
                           </el-icon>
-                          添 加 题 目
+                          创 建 比 赛
                         </el-button>
                       </div>
                     </td>
@@ -108,23 +105,6 @@
             </template>
           </el-scrollbar>
         </el-main>
-        <el-aside id='tag-container' width='35%'>
-          <el-card v-loading='fetchingTagList' class='box-card'>
-            <template #header>
-              <div class='card-header'>
-                <span>标签列表</span>
-              </div>
-            </template>
-            <el-scrollbar>
-              <el-check-tag
-                v-for='(item,idx) in tags' :key='item.id' :checked='item.selected'
-                :style='item.selected? "border-color: var(--el-color-primary)" : ""'
-                @change='tagOnChange(idx)'>
-                {{ item.name }}
-              </el-check-tag>
-            </el-scrollbar>
-          </el-card>
-        </el-aside>
       </el-container>
     </el-main>
   </el-container>
@@ -133,24 +113,24 @@
 <script lang='ts'>
 import { defineComponent, getCurrentInstance, onBeforeMount, onBeforeUnmount, Ref, ref } from 'vue';
 import api from '~/api';
-import { ListCondition, PageData, SimpleProblem, Tag } from '~/apiDeclaration';
+import { ListCondition, PageData, SimpleCompetition, Tag } from '~/apiDeclaration';
 import { ArrowLeft, ArrowRight, Plus, RefreshRight, Search } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
 import { getGlobalUser } from '~/hooks/globalUser';
 
 export default defineComponent({
-  name: 'ProblemList',
+  name: 'CompetitionList',
   components: {
     Plus,
     ArrowRight,
   },
   setup() {
     const controller = new AbortController();
-    const problemApi = api.withConfig({ signal: controller.signal });
+    const competitionApi = api.withConfig({ signal: controller.signal });
     let lastFetchCondition: ListCondition | undefined;
-    const problemList: Ref<PageData<SimpleProblem> | undefined> = ref();
-    const fetchingProblemList = ref(false);
-    const fetchingProblemListError = ref('');
+    const competitionList: Ref<PageData<SimpleCompetition> | undefined> = ref();
+    const fetchingCompetitionList = ref(false);
+    const fetchingCompetitionListError = ref('');
     const fetchingTagList = ref(true);
     const havePrev = ref(false);
     const haveNext = ref(false);
@@ -194,11 +174,11 @@ export default defineComponent({
           },
         };
       }
-      if (problemList.value?.record?.length) {
+      if (competitionList.value?.record?.length) {
         if (fetchMode === 'Next') {
-          res.seek = [problemList.value.record[problemList.value.record.length - 1].id];
+          res.seek = [competitionList.value.record[competitionList.value.record.length - 1].id];
         } else if (fetchMode === 'Prev') {
-          res.seek = [problemList.value.record[0].id];
+          res.seek = [competitionList.value.record[0].id];
         }
       }
       return res;
@@ -206,22 +186,22 @@ export default defineComponent({
 
     const router = useRouter();
 
-    function detailProblem(row: SimpleProblem) {
-      router.push({ name: 'ProblemDetail', params: { id: row.id } });
+    function detailCompetition(row: SimpleCompetition) {
+      router.push({ name: 'CompetitionDetail', params: { id: row.id } });
     }
 
     onBeforeMount(() => {
-      fetchProblemList('Refresh');
+      fetchCompetitionList('Refresh');
       fetchTags();
     });
 
-    function searchProblem() {
+    function searchCompetition() {
       lastFetchCondition = undefined;
-      fetchProblemList('Refresh');
+      fetchCompetitionList('Refresh');
     }
 
     function fetchTags() {
-      problemApi.tags({
+      competitionApi.tags({
         limit: 99999,
       }, {
         ignoreError: true,
@@ -235,17 +215,17 @@ export default defineComponent({
       });
     }
 
-    function fetchProblemList(fetchMode: FetchMode) {
+    function fetchCompetitionList(fetchMode: FetchMode) {
       if (fetchMode === 'Refresh') {
-        problemList.value = undefined;
+        competitionList.value = undefined;
       }
-      fetchingProblemList.value = true;
-      fetchingProblemListError.value = '';
+      fetchingCompetitionList.value = true;
+      fetchingCompetitionListError.value = '';
       const condition = buildListCondition(fetchMode);
-      problemApi.problems(tags.value.filter(it => it.selected).map((it) => it.name), condition).then((data) => {
+      competitionApi.competitions(tags.value.filter(it => it.selected).map((it) => it.name), condition).then((data) => {
         if (data.record.length) {
           lastFetchCondition = condition;
-          problemList.value = data;
+          competitionList.value = data;
           if (data.record.length < pageLimit) {
             if (fetchMode === 'Next') {
               haveNext.value = false;
@@ -272,19 +252,19 @@ export default defineComponent({
         }
       }).catch((err) => {
         if (fetchMode === 'Refresh') {
-          fetchingProblemListError.value = err.message;
+          fetchingCompetitionListError.value = err.message;
         }
       }).finally(() => {
-        fetchingProblemList.value = false;
+        fetchingCompetitionList.value = false;
       });
     }
 
-    function addProblem(simpleProblem: SimpleProblem) {
-      if (problemList.value!.totalCount < pageLimit) {
+    function addCompetition(simpleCompetition: SimpleCompetition) {
+      if (competitionList.value!.totalCount < pageLimit) {
         if (currentSortMode == 'Asc') {
-          problemList.value!.record.unshift(simpleProblem);
+          competitionList.value!.record.unshift(simpleCompetition);
         } else {
-          problemList.value!.record.push(simpleProblem);
+          competitionList.value!.record.push(simpleCompetition);
         }
       }else{
         if (currentSortMode == 'Asc') {
@@ -295,47 +275,47 @@ export default defineComponent({
       }
     }
 
-    function deleteProblem(simpleProblem:SimpleProblem){
+    function deleteCompetition(simpleCompetition:SimpleCompetition){
       ElMessageBox.confirm('确定要删除该题目吗？', '警告', {
         confirmButtonText: '删除',
         confirmButtonClass: 'el-button--danger',
         cancelButtonText: '算了',
         type: 'warning'
       }).then(() => {
-        problemApi.deleteProblem(simpleProblem.id).then(() => {
+        competitionApi.deleteCompetition(simpleCompetition.id).then(() => {
           ElMessage.success('删除成功');
-          fetchProblemList('Refresh');
+          fetchCompetitionList('Refresh');
         });
       });
     }
 
     return {
-      deleteProblem,
+      deleteCompetition,
       user,
-      addProblem,
+      addCompetition,
       showAdd,
-      detailProblem,
-      fetchingProblemListError,
+      detailCompetition,
+      fetchingCompetitionListError,
       fetchingTagList,
       tags,
       tagOnChange,
-      searchProblem,
+      searchCompetition,
       searchText,
       Search,
       havePrev,
       haveNext,
       ArrowLeft,
       RefreshRight,
-      problemList,
-      fetchingProblemList,
-      fetchProblemList,
+      competitionList,
+      fetchingCompetitionList,
+      fetchCompetitionList,
     };
   },
 });
 </script>
 
 <style scoped>
-.problem-item {
+.competition-item {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -353,17 +333,17 @@ export default defineComponent({
   justify-content: center;
 }
 
-.problem-container .el-header {
+.competition-container .el-header {
   position: relative;
   background-color: var(--el-color-primary-light-7);
   color: var(--el-text-color-primary);
 }
 
-.problem-container .el-aside {
+.competition-container .el-aside {
   color: var(--el-text-color-primary);
 }
 
-.problem-container .toolbar {
+.competition-container .toolbar {
   align-items: center;
   justify-content: center;
   height: 100%;

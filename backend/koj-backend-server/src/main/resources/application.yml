@@ -19,8 +19,14 @@ logging:
     com.kairlec: DEBUG
     com.baidu: ERROR
     pro.chenggang.project.reactive.lock: WARN
-    org.apache.pulsar.shade.org.asynchttpclient: INFO
+    org.asynchttpclient: INFO
     io.lettuce.core: INFO
+    io.netty: INFO
     org.apache.pulsar.common.protocol: INFO
     sun.rmi: ERROR
     javax.management.remote.rmi: ERROR
+
+pulsar:
+  consumer:
+    default:
+      ack-timeout-ms: 900_000 # 15 minutes

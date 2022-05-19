@@ -1,10 +1,11 @@
 import { AppConfig, reactive } from 'vue'
 import { UnwrapNestedRefs } from '@vue/reactivity'
+import { Moment } from 'moment'
 
 interface GlobalUser {
-  createTime: Date
+  createTime: Moment
   email: string
-  id: number
+  id: string
   type: number
   username: string
 }
@@ -24,7 +25,7 @@ export function getGlobalUser(instance: AppConfigProvider): UnwrapNestedRefs<Use
   if (!globalUser) {
     const newGlobal = reactive<UserReactive>({
       user: null,
-      initing: false
+      initing: false,
     })
     properties['$user'] = newGlobal
     return newGlobal

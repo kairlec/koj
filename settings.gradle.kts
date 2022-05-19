@@ -3,19 +3,14 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            version("protobuf") {
-                strictly("[3.19, 3.20[")
-                prefer("3.19.4")
-            }
+            version("protobuf","3.20.+")
             version("kotlin", "1.6.21")
             version("spring", "2.6.+")
             version("pulsar-starter") {
                 strictly("[1, 2[")
-                prefer("1.1.0")
             }
             version("docker-java") {
                 strictly("[3, 4[")
-                prefer("3.2.13")
             }
             version("kotest", "5.+")
             version("kotest-ext-spring", "1.1.+")
@@ -56,7 +51,7 @@ dependencyResolutionManagement {
             bundle("protobuf", listOf("protobuf-java", "protobuf-kotlin", "protobuf-java-util"))
 
             library("pulsar", "io.github.majusko", "pulsar-java-spring-boot-starter").versionRef("pulsar-starter")
-            library("pulsar.admin", "org.apache.pulsar", "pulsar-client-admin").versionRef("pulsar")
+            library("pulsar.admin", "org.apache.pulsar", "pulsar-client-admin-original").versionRef("pulsar")
             library(
                 "coroutines-reactive",
                 "org.jetbrains.kotlinx",

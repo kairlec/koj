@@ -4,7 +4,7 @@
     :before-close='handleDrawerClose'>
     <template #title>
       <el-input v-model='problemNameEdit'>
-        <template #prepend>{{ `标题: ${problemDetail?.id} - ` }}</template>
+        <template #prepend>{{ `标题: ` }}</template>
       </el-input>
     </template>
     <template #default>
@@ -74,7 +74,6 @@
     </template>
     <template #footer>
       <div
-        v-loading='!fetchingFinishState.tagList'
         style='text-align: center'>
         <el-transfer
           v-model='rightValue'
@@ -96,7 +95,6 @@
       </div>
 
       <div style='flex: auto'>
-        <el-button :loading='saving' @click='resetClick'>重置</el-button>
         <el-button type='primary' :loading='saving' @click='confirmClick'>确定</el-button>
       </div>
     </template>
@@ -104,9 +102,9 @@
 </template>
 
 <script lang='ts' setup>
-import { computed, onBeforeMount, onBeforeUnmount, PropType, reactive, ref } from 'vue';
+import { computed, onBeforeUnmount, PropType, reactive, ref } from 'vue';
 import api from '~/api';
-import { ProblemContent, ProblemDetail } from '~/apiDeclaration';
+import { ProblemContent, ProblemDetail, SimpleProblem, Tag } from '~/apiDeclaration';
 import { CirclePlus, Delete } from '@element-plus/icons-vue';
 import Prism, { highlight } from 'prismjs';
 import { PrismEditor } from 'vue-prism-editor';
@@ -115,34 +113,31 @@ import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-textile';
 import 'prismjs/themes/prism.css';
 
-interface Option {
-  key: string;
-  label: string;
-  disabled: boolean;
-}
-
 const props = defineProps({
-  problemDetail: {
-    type: Object as PropType<ProblemDetail>,
-    required: true,
-  },
   show: {
     type: Boolean,
     required: true,
     default: true,
   },
-});
-
-const emit = defineEmits(['update:problemDetail', 'update:show']);
-
-const problemDetail = computed<ProblemDetail>({
-  get() {
-    return props.problemDetail;
-  },
-  set(value) {
-    emit('update:problemDetail', value);
+  tagData: {
+    type: Array as PropType<Array<Tag>>,
+    required: true,
   },
 });
+
+const tagData = props.tagData.map((tag) => {
+  return {
+    key: tag.id,
+    label: tag.name,
+    disabled: false,
+  };
+});
+
+const emit = defineEmits(['addProblem', 'update:show']);
+
+function emitAddProblem(problem: SimpleProblem) {
+  emit('addProblem', problem);
+}
 
 const showDrawer = computed<boolean>({
   get() {
@@ -153,15 +148,19 @@ const showDrawer = computed<boolean>({
   },
 });
 
+const problemDetail = reactive({
+  name: '',
+  content: '{}',
+  contentObj: {},
+  spj: false,
+  config: [],
+  tags: [],
+}) as unknown as ProblemDetail;
 
-const problemNameEdit = ref(problemDetail.value.name);
-const problemContentEdit = ref(problemDetail.value.content);
+const problemNameEdit = ref(problemDetail.name);
+const problemContentEdit = ref(problemDetail.content);
 const saving = ref(false);
-const fetchingFinishState: {
-  tagList?: boolean,
-} = reactive({});
 const controller = new AbortController();
-const tagData = ref(Array<Option>());
 const rightValue = ref(Array<string>());
 const problemEditDrawerApi = api.withConfig({ signal: controller.signal });
 const showRawMode = ref(true);
@@ -208,39 +207,6 @@ function handleDrawerClose(done: () => void) {
   });
 }
 
-onBeforeMount(() => {
-  fetchTags();
-});
-
-function fetchTags() {
-  fetchingFinishState.tagList = false;
-  problemEditDrawerApi.tags({
-    limit: 99999,
-  }, {
-    ignoreError: true,
-  }).then(res => {
-    tagData.value = res.record.map(tag => {
-      return {
-        key: tag.id,
-        label: tag.name,
-        disabled: false,
-      };
-    });
-    fetchingFinishState.tagList = true;
-    if (!problemDetail.value.tags) {
-      rightValue.value = [];
-    } else {
-      rightValue.value = tagData.value.filter(tag => {
-        return problemDetail.value.tags.includes(tag.label);
-      }).map(tag => tag.key);
-    }
-  }).catch(() => {
-    setTimeout(() => {
-      fetchTags();
-    }, 100);
-  });
-}
-
 onBeforeUnmount(() => {
   controller.abort();
 });
@@ -249,30 +215,14 @@ function highlighterJson(code: string) {
   return highlight(code, Prism.languages.json, 'json');
 }
 
-function resetClick() {
-  ElMessageBox.confirm('确定重置初始内容?')
-    .then(() => {
-      if (problemDetail.value.contentObj) {
-        try {
-          problemContentEdit.value = JSON.stringify(problemDetail.value.contentObj, null, 2);
-        } catch (e) {
-          problemContentEdit.value = problemDetail.value.content ?? '';
-        }
-      } else {
-        problemContentEdit.value = problemDetail.value.content ?? '';
-      }
-      problemNameEdit.value = problemDetail.value.name ?? '';
-      if (!problemDetail.value.tags) {
-        rightValue.value = [];
-      } else {
-        rightValue.value = tagData.value.filter(tag => {
-          return problemDetail.value.tags.includes(tag.label);
-        }).map(tag => tag.key);
-      }
-    });
-}
-
 function saveProblemDetail(): Promise<any> {
+  if(problemNameEdit.value.length===0){
+    ElMessage({
+      type: 'error',
+      message: '题目名称不能为空',
+    });
+    return Promise.reject();
+  }
   let obj: ProblemContent;
   try {
     if (!showRawMode.value) {
@@ -289,21 +239,28 @@ function saveProblemDetail(): Promise<any> {
   }
   saving.value = true;
   const realContent = JSON.stringify(obj);
-  return problemEditDrawerApi.updateProblem(problemDetail.value!.id, {
+  return problemEditDrawerApi.addProblem({
     name: problemNameEdit.value,
     content: realContent,
+    spj: problemDetail.spj,
     tags: rightValue.value,
-  }).then(() => {
+  }).then((id) => {
     ElMessage({
       type: 'success',
-      message: '保存成功',
+      message: '添加成功',
     });
-    problemDetail.value.tags = tagData.value.filter(tag => {
+    problemDetail.tags = tagData.filter(tag => {
       return rightValue.value.includes(tag.key);
     }).map(tag => tag.label);
-    problemDetail.value.content = realContent;
-    problemDetail.value.name = problemNameEdit.value;
-    problemDetail.value.contentObj = obj;
+    problemDetail.content = realContent;
+    problemDetail.name = problemNameEdit.value;
+    problemDetail.contentObj = obj;
+    emitAddProblem({
+      id: id,
+      name: problemNameEdit.value,
+      spj: problemDetail.spj,
+      tags: rightValue.value
+    });
     showDrawer.value = false;
   }).finally(() => {
     saving.value = false;

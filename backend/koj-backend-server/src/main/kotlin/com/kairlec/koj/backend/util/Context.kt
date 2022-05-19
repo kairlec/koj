@@ -5,6 +5,7 @@ package com.kairlec.koj.backend.util
 import com.kairlec.koj.backend.exp.DataNotFoundException
 import com.kairlec.koj.backend.exp.DataNotModifiedException
 import com.kairlec.koj.dao.extended.ListCondition
+import com.kairlec.koj.dao.repository.FluxPageData
 import com.kairlec.koj.dao.repository.PageData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -12,6 +13,7 @@ import kotlinx.coroutines.reactor.awaitSingle
 import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.http.server.reactive.ServerHttpResponse
 import org.springframework.web.server.ServerWebExchange
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 
@@ -58,8 +60,8 @@ fun <T> PageData<T>.re(): RE<Flow<T>> {
     }
 }
 
-fun <T, R> PageData<T>.re(transform: suspend (value: T) -> R): RE<Flow<R>> {
-    return data.map(transform).ok {
+fun <T, R> PageData<T>.re(transformer: (item: T) -> R): RE<Flow<R>> {
+    return data.map(transformer).ok {
         xCount(total)
     }
 }

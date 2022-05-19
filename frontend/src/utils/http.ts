@@ -88,29 +88,30 @@ function showError(error: AxiosError) {
 function http(config?: KOJAxiosRequestConfig): KOJAxiosInstance {
   const _http = axios.create(config)
 
-  _http.interceptors.request.use(
-    (config) => {
-      const id = KOJStorage.identity()
-      if (id) {
-        config.headers = {
-          'x-identity': id,
-          ...config.headers,
-        }
+  _http.interceptors.request.use((config) => {
+    const id = KOJStorage.identity()
+    if (id) {
+      config.headers = {
+        'x-identity': id,
+        ...config.headers,
       }
-      config.validateStatus = (status) => {
-        return status < 400
-      }
-      return config
-    },
-    (error) => {
-      return Promise.reject(error)
-    },
-  )
+    }
+    config.validateStatus = (status) => {
+      return status < 400
+    }
+    return config
+  })
 
   _http.interceptors.response.use(
     (res) => {
-      if (res.status / 100 == 2 || res.status == 304) {
+      if (~~(res.status / 100) === 2 || res.status === 304) {
         return Promise.resolve(res)
+      } else {
+        if (res.status >= 400) {
+          return Promise.reject(res)
+        } else {
+          return Promise.resolve(res)
+        }
       }
     },
     (error) => {

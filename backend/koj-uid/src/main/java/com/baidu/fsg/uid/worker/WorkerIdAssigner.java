@@ -16,7 +16,6 @@
 package com.baidu.fsg.uid.worker;
 
 import com.baidu.fsg.uid.impl.DefaultUidGenerator;
-import org.jetbrains.annotations.NotNull;
 import reactor.core.publisher.Mono;
 
 /**

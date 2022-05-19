@@ -28,6 +28,35 @@ import java.time.LocalDateTime;
  * @author yutianbao
  */
 public class WorkerNodeEntity {
+    /**
+     * Entity unique id (table unique)
+     */
+    private long id;
+    /**
+     * Type of CONTAINER: HostName, ACTUAL : IP.
+     */
+    private String hostName;
+    /**
+     * Type of CONTAINER: Port, ACTUAL : Timestamp + Random(0-10000)
+     */
+    private String port;
+    /**
+     * type of {@link WorkerNodeType}
+     */
+    private int type;
+    /**
+     * Worker launch date, default now
+     */
+    private LocalDate launchDate = LocalDate.now();
+    /**
+     * Created time
+     */
+    private LocalDateTime createTime;
+    /**
+     * Last modified
+     */
+    private LocalDateTime updateTime;
+
     public long getId() {
         return id;
     }
@@ -83,41 +112,6 @@ public class WorkerNodeEntity {
     public void setUpdateTime(LocalDateTime updateTime) {
         this.updateTime = updateTime;
     }
-
-    /**
-     * Entity unique id (table unique)
-     */
-    private long id;
-
-    /**
-     * Type of CONTAINER: HostName, ACTUAL : IP.
-     */
-    private String hostName;
-
-    /**
-     * Type of CONTAINER: Port, ACTUAL : Timestamp + Random(0-10000)
-     */
-    private String port;
-
-    /**
-     * type of {@link WorkerNodeType}
-     */
-    private int type;
-
-    /**
-     * Worker launch date, default now
-     */
-    private LocalDate launchDate = LocalDate.now();
-
-    /**
-     * Created time
-     */
-    private LocalDateTime createTime;
-
-    /**
-     * Last modified
-     */
-    private LocalDateTime updateTime;
 
     @Override
     public String toString() {

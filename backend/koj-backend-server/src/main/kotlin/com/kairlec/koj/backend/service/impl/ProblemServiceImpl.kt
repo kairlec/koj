@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.kairlec.koj.backend.exp.PermissionDeniedException
 import com.kairlec.koj.backend.service.ProblemService
 import com.kairlec.koj.backend.util.sureFound
+import com.kairlec.koj.common.InternalApi
 import com.kairlec.koj.dao.exception.CompetitionNotStartedYetException
 import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.model.Problem
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigInteger
 import java.time.LocalDateTime
 
 @Service
@@ -97,18 +99,20 @@ class ProblemServiceImpl(
         return problemRepository.updateTag(tagId, name)
     }
 
-    override suspend fun addProblemConfig(
+    override suspend fun saveProblemConfig(
         problemId: Long,
         languageId: String,
         time: Int,
         memory: Int,
-        maxOutputSize: Long?,
-        maxStack: Long?,
-        maxProcessNumber: Short?,
+        maxOutputSize: BigInteger?,
+        maxStack: BigInteger?,
+        maxProcessNumber: Int?,
         args: List<String>,
         env: List<String>
     ): Boolean {
-        return problemRepository.addProblemConfig(
+        val argsString = objectMapper.writeValueAsString(args)
+        val envString = objectMapper.writeValueAsString(env)
+        return problemRepository.saveProblemConfig(
             problemId,
             languageId,
             time,
@@ -116,8 +120,8 @@ class ProblemServiceImpl(
             maxOutputSize,
             maxStack,
             maxProcessNumber,
-            objectMapper.writeValueAsString(args),
-            objectMapper.writeValueAsString(env)
+            argsString,
+            envString
         )
     }
 
@@ -141,5 +145,10 @@ class ProblemServiceImpl(
 
     override suspend fun getProblemRunConfig(problemId: Long): ProblemRunRecord? {
         return problemRepository.getProblemRunConfig(problemId)
+    }
+
+    @OptIn(InternalApi::class)
+    override suspend fun getProblemAnsout(problemId: Long): String? {
+        return problemRepository.getProblemAnsOut(problemId)
     }
 }

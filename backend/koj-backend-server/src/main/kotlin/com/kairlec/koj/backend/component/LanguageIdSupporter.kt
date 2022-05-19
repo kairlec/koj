@@ -10,19 +10,19 @@ import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import org.apache.pulsar.client.admin.PulsarAdmin
 import org.springframework.beans.factory.DisposableBean
+import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.ReactiveRedisOperations
 import org.springframework.data.redis.core.deleteAndAwait
 import org.springframework.data.redis.core.rangeAsFlow
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Component
 import pro.chenggang.project.reactive.lock.core.ReactiveLockRegistry
 
 class LanguageIdSupporter(
     private val pulsarAdmin: PulsarAdmin,
     private val redisReactiveLockRegistry: ReactiveLockRegistry,
-    private val redisOperations: ReactiveRedisOperations<String, String>,
-) : DisposableBean {
+    redisOperations: ReactiveRedisOperations<String, String>,
+) : DisposableBean, InitializingBean {
     @Value("\${koj.namespace:public/default}")
     private lateinit var namespace: String
 
@@ -31,12 +31,19 @@ class LanguageIdSupporter(
             "(?:non-)?persistent://${namespace}/$taskTopicPrefix(.*)".toRegex()
                 .matchEntire(it)?.groupValues?.get(1)
         }.asFlow().filter { languageId ->
-            pulsarAdmin.topics().getStatsAsync(taskTopic(languageId))
+            (pulsarAdmin.topics().getStatsAsync(taskTopic(languageId))
                 .await()
                 .subscriptions
                 .filterKeys { it == "koj-sandbox" }
                 .values
-                .sumOf { it.consumers.size } > 0
+                .sumOf {
+                    log.debug { "language:${languageId} has consumer:[${it.consumers.joinToString { it.consumerName }}](active:${it.activeConsumerName})" }
+                    it.consumers.size
+                } > 0).also {
+                if (!it) {
+                    log.warn { "language:${languageId} subscriptions of koj-sandbox is empty, ignore it." }
+                }
+            }
         }
     }
 
@@ -59,6 +66,7 @@ class LanguageIdSupporter(
                     supportLanguages.map { languageId ->
                         async { listOperations.leftPush(LANGUAGE_IDS_KEY, languageId).awaitSingle() }
                     }.toList().awaitAll()
+                    log.debug { "emit language id list" }
                     _supportLanguageChanges.emit(supportLanguages.toList())
                 }
             } else {
@@ -82,6 +90,10 @@ class LanguageIdSupporter(
             log.debug { "close language supporter" }
             coroutineScope.cancel()
         }
+    }
+
+    override fun afterPropertiesSet() {
+        updateLanguageIds()
     }
 }
 

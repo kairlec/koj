@@ -21,17 +21,19 @@ import kotlinx.coroutines.reactive.awaitSingle
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigInteger
+
 
 @Repository
 class ProblemRepository(
     private val dslAccess: DSLAccess,
 ) {
-
     @Transactional(rollbackFor = [Exception::class])
     suspend fun getProblems(
         tags: List<String> = emptyList(),
         listCondition: ListCondition
     ): PageData<SimpleProblem> {
+
         val count = dslAccess.with { create ->
             create.selectCount()
                 .from(PROBLEM)
@@ -232,8 +234,8 @@ class ProblemRepository(
         }
         if (tags != null) {
             val ok2 = dslAccess.with { create ->
-                create.deleteFrom(PROBLEM_CONFIG)
-                    .where(PROBLEM_CONFIG.PROBLEM_ID.eq(id))
+                create.deleteFrom(TAG_BELONG_PROBLEM)
+                    .where(TAG_BELONG_PROBLEM.PROBLEM_ID.eq(id))
                     .awaitBool()
             }
             if (ok2 && tags.isNotEmpty()) {
@@ -347,14 +349,14 @@ class ProblemRepository(
     }
 
     @Transactional(rollbackFor = [Exception::class])
-    suspend fun addProblemConfig(
+    suspend fun saveProblemConfig(
         problemId: Long,
         languageId: String,
         time: Int,
         memory: Int,
-        maxOutputSize: Long?,
-        maxStack: Long?,
-        maxProcessNumber: Short?,
+        maxOutputSize: BigInteger?,
+        maxStack: BigInteger?,
+        maxProcessNumber: Int?,
         args: String,
         env: String
     ): Boolean {
@@ -376,21 +378,33 @@ class ProblemRepository(
                     DSL.value(time),
                     DSL.value(memory),
                     DSL.value(languageId),
-                    DSL.nvl(
-                        maxOutputSize?.let { org.jooq.types.ULong.valueOf(it) },
-                        DSL.defaultValue(PROBLEM_CONFIG.MAX_OUTPUT_SIZE)
-                    ),
-                    DSL.nvl(
-                        maxStack?.let { org.jooq.types.ULong.valueOf(it) },
-                        DSL.defaultValue(PROBLEM_CONFIG.MAX_STACK)
-                    ),
-                    DSL.nvl(
-                        maxProcessNumber?.let { org.jooq.types.UShort.valueOf(it) },
-                        DSL.defaultValue(PROBLEM_CONFIG.MAX_PROCESS_NUMBER)
-                    ),
+                    maxOutputSize?.let { DSL.value(org.jooq.types.ULong.valueOf(it)) }
+                        ?: DSL.defaultValue(PROBLEM_CONFIG.MAX_OUTPUT_SIZE),
+                    maxStack?.let { DSL.value(org.jooq.types.ULong.valueOf(it)) }
+                        ?: DSL.defaultValue(PROBLEM_CONFIG.MAX_STACK),
+                    maxProcessNumber?.let { DSL.value(org.jooq.types.UShort.valueOf(it)) }
+                        ?: DSL.defaultValue(PROBLEM_CONFIG.MAX_PROCESS_NUMBER),
                     DSL.value(args),
                     DSL.value(env)
                 )
+                .onDuplicateKeyUpdate()
+                .set(PROBLEM_CONFIG.TIME, time)
+                .set(PROBLEM_CONFIG.MEMORY, memory)
+                .set(
+                    PROBLEM_CONFIG.MAX_OUTPUT_SIZE, maxOutputSize?.let { DSL.value(org.jooq.types.ULong.valueOf(it)) }
+                        ?: DSL.defaultValue(PROBLEM_CONFIG.MAX_OUTPUT_SIZE)
+                )
+                .set(
+                    PROBLEM_CONFIG.MAX_STACK, maxStack?.let { DSL.value(org.jooq.types.ULong.valueOf(it)) }
+                        ?: DSL.defaultValue(PROBLEM_CONFIG.MAX_STACK)
+                )
+                .set(
+                    PROBLEM_CONFIG.MAX_PROCESS_NUMBER,
+                    maxProcessNumber?.let { DSL.value(org.jooq.types.UShort.valueOf(it)) }
+                        ?: DSL.defaultValue(PROBLEM_CONFIG.MAX_PROCESS_NUMBER)
+                )
+                .set(PROBLEM_CONFIG.ARGS, args)
+                .set(PROBLEM_CONFIG.ENV, env)
                 .awaitBool()
         }
     }

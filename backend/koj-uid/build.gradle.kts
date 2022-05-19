@@ -9,7 +9,7 @@ tasks.bootJar {
 
 dependencies {
     implementation(projects.backend.kojDaoCodegen)
-    implementation(libs.spring.boot.starter.jooq){
+    implementation(libs.spring.boot.starter.jooq) {
         exclude(libs.jooq)
     }
     api(libs.bundles.jooq)

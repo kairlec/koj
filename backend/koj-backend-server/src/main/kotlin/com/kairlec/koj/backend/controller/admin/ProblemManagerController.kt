@@ -7,6 +7,7 @@ import com.kairlec.koj.dao.tables.records.ProblemConfigRecord
 import com.kairlec.koj.dao.tables.records.ProblemRunRecord
 import kotlinx.coroutines.flow.Flow
 import org.springframework.web.bind.annotation.*
+import java.math.BigInteger
 
 @RestController
 @RequestMapping("/admin")
@@ -93,19 +94,19 @@ class ProblemManagerController(
         val languageId: String,
         val time: Int,
         val memory: Int,
-        val maxOutputSize: Long?,
-        val maxStack: Long?,
-        val maxProcessNumber: Short?,
+        val maxOutputSize: BigInteger?,
+        val maxStack: BigInteger?,
+        val maxProcessNumber: Int?,
         val args: List<String>?,
         val env: List<String>?
     )
 
     @PutMapping("/problems/{problemId}/configs")
-    suspend fun addConfig(
+    suspend fun saveConfig(
         @PathVariable problemId: Long,
         @RequestBody config: ConfigModel
     ) {
-        problemService.addProblemConfig(
+        problemService.saveProblemConfig(
             problemId,
             config.languageId,
             config.time,

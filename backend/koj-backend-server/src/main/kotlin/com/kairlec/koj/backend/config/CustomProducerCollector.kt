@@ -6,18 +6,17 @@ import com.kairlec.koj.common.taskTopic
 import io.github.majusko.pulsar.collector.ProducerHolder
 import io.github.majusko.pulsar.constant.Serialization
 import io.github.majusko.pulsar.producer.ProducerCollector
+import io.github.majusko.pulsar.properties.PulsarProperties
 import io.github.majusko.pulsar.utils.UrlBuildService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.apache.pulsar.client.api.Producer
 import org.apache.pulsar.client.api.PulsarClient
+import org.apache.pulsar.client.api.interceptor.ProducerInterceptor
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.memberProperties
@@ -26,8 +25,10 @@ import kotlin.reflect.jvm.isAccessible
 class CustomProducerCollector(
     pulsarClient: PulsarClient,
     urlBuildService: UrlBuildService,
+    pulsarProperties: PulsarProperties,
+    producerInterceptor: ProducerInterceptor,
     languageIdSupporter: LanguageIdSupporter,
-) : ProducerCollector(pulsarClient, urlBuildService) {
+) : ProducerCollector(pulsarClient, urlBuildService, pulsarProperties, producerInterceptor) {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     @Suppress("UNCHECKED_CAST")

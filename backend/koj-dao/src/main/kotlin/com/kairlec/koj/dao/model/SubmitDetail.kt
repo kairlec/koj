@@ -8,6 +8,7 @@ inline fun <reified T> parse(value: Byte): T where T : Enum<T>, T : ValueAble {
 
 data class SubmitDetail(
     val id: Long,
+    val problemId: Long,
     val state: SubmitState,
     val castMemory: Long?,
     val castTime: Long?,
@@ -22,6 +23,7 @@ data class SubmitDetail(
 
 data class SimpleSubmit(
     val id: Long,
+    val problemId: Long,
     val state: SubmitState,
     val castMemory: Long?,
     val castTime: Long?,

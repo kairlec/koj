@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.PropertiesFileTransformer
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
@@ -5,6 +6,8 @@ plugins {
     alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.spring.dependency)
     kotlin("kapt")
+    id("com.github.johnrengelman.shadow")
+    application
 }
 
 dependencies {
@@ -57,4 +60,19 @@ tasks.withType<BootJar> {
             rename { "${project.name}.jar" }
         }
     }
+}
+
+//tasks.shadowJar {
+//    mergeServiceFiles()
+//    append("META-INF/spring.handlers")
+//    append("META-INF/spring.schemas")
+//    append("META-INF/spring.tooling")
+//    transform(PropertiesFileTransformer::class.java) {
+//        paths = listOf("META-INF/spring.factories")
+//        mergeStrategy = "append"
+//    }
+//}
+
+application {
+    mainClass.set("com.kairlec.koj.backend.KojBackendApplicationKt")
 }

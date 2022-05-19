@@ -9,6 +9,7 @@ import com.kairlec.koj.dao.model.RankInfo
 import com.kairlec.koj.dao.model.UserStat
 import com.kairlec.koj.dao.repository.UserType
 import kotlinx.coroutines.flow.Flow
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 import javax.validation.constraints.Email
@@ -34,6 +35,7 @@ class PublicUserController(
 
     @PostMapping("/users")
     suspend fun login(
+        @RequestBody
         model: LoginModel
     ): RE<UserVO> {
         val user = userService.matchUser(model.usernameOrEmail, model.password)?.let {
@@ -50,11 +52,14 @@ class PublicUserController(
     data class RegisterModel(
         val username: String,
         val password: String,
+        @Email
         val email: String,
     )
 
     @PutMapping("/users")
     suspend fun register(
+        @Validated
+        @RequestBody
         model: RegisterModel
     ): Long {
         return userService.addUser(model.username, model.password, model.email, UserType.USER)
@@ -81,19 +86,20 @@ class PublicUserController(
     )
 
     @PostMapping("/users/pwd:forget")
-    suspend fun forgetPassword(forgePasswordModel: ForgePasswordModel): REV {
+    suspend fun forgetPassword(@Validated @RequestBody forgePasswordModel: ForgePasswordModel): REV {
         return userService.resetPasswordRequest(forgePasswordModel.username, forgePasswordModel.email).voidOk()
     }
 
     data class ResetPasswordModel(
         val username: String,
+        @Email
         val email: String,
         val newPwd: String,
         val code: String
     )
 
     @PostMapping("/users/pwd:reset")
-    suspend fun resetPassword(resetPasswordModel: ResetPasswordModel): REV {
+    suspend fun resetPassword(@Validated @RequestBody resetPasswordModel: ResetPasswordModel): REV {
         return userService.resetPassword(
             resetPasswordModel.username,
             resetPasswordModel.email,
