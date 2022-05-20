@@ -266,11 +266,13 @@ export interface UserRankInfo {
   ac: number
 }
 
-export interface SimpleCompetition {
+export interface SimpleCompetition extends ManageCompetition {
   id: string
   name: string
+  pwd: string | null
   startTime: Moment
   endTime: Moment
+  createTime: Moment
   joined: boolean
 }
 

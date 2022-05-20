@@ -1,6 +1,6 @@
 import { AxiosPromise, AxiosResponse } from 'axios'
 import { PageData } from '~/apiDeclaration'
-import moment from 'moment'
+import moment from 'moment-timezone'
 
 function defaultExtra<T = any>(res: AxiosResponse<T>): T {
   setTime(res.data)
@@ -35,6 +35,8 @@ export function page<T = any>(
   })
 }
 
+const localTimezone = moment.tz.guess()
+
 export function setTime(obj: Record<string, any> | Record<string, any>[]) {
   if (Array.isArray(obj)) {
     obj.forEach((it) => setTime(it))
@@ -44,8 +46,8 @@ export function setTime(obj: Record<string, any> | Record<string, any>[]) {
     if (typeof obj[key] === 'object') {
       setTime(obj[key])
     }
-    if (key === 'createTime' || key === 'updateTime') {
-      obj[key] = moment(obj[key])
+    if (key === 'createTime' || key === 'updateTime' || key === 'startTime' || key === 'endTime') {
+      obj[key] = moment.tz(obj[key], 'Atlantic/Reykjavik').tz(localTimezone)
     }
   }
 }

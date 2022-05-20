@@ -157,7 +157,7 @@ export default defineComponent({
         cancelButtonText: '算了',
         type: 'warning',
       }).then(() => {
-        problemApi.deleteProblem(simpleProblem.id).then(() => {
+        problemApi.deleteCompetitionProblem(competitionId,simpleProblem.id).then(() => {
           ElMessage.success('删除成功');
           fetchProblemList();
         });
