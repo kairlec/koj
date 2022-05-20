@@ -7,5 +7,6 @@ data class SimpleCompetition(
     val name: String,
     val startTime: LocalDateTime,
     val endTime: LocalDateTime,
-    val joined: Boolean
+    val joined: Boolean,
+    val pwd: String?
 )

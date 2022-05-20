@@ -1,14 +1,14 @@
 package com.kairlec.koj.dao.repository
 
 import com.kairlec.koj.dao.DSLAccess
-import com.kairlec.koj.dao.Tables.COMPETITION
-import com.kairlec.koj.dao.Tables.CONTESTANTS
+import com.kairlec.koj.dao.Tables.*
 import com.kairlec.koj.dao.exception.CompetitionOverException
 import com.kairlec.koj.dao.exception.CompetitionPwdWrongException
 import com.kairlec.koj.dao.exception.NoSuchContentException
 import com.kairlec.koj.dao.extended.*
 import com.kairlec.koj.dao.flow
 import com.kairlec.koj.dao.model.SimpleCompetition
+import com.kairlec.koj.dao.repository.UserType.ADMIN
 import com.kairlec.koj.dao.tables.records.CompetitionRecord
 import com.kairlec.koj.dao.with
 import kotlinx.coroutines.flow.map
@@ -27,6 +27,7 @@ class CompetitionRepository(
     @Transactional(rollbackFor = [Exception::class])
     suspend fun getCompetitions(
         userId: Long?,
+        userType: UserType?,
         listCondition: ListCondition
     ): PageData<SimpleCompetition> {
         val count = dslAccess.with { create ->
@@ -42,13 +43,25 @@ class CompetitionRepository(
                     create.selectFrom(COMPETITION)
                         .list(COMPETITION, listCondition)
                 ).asFlow().map {
-                    SimpleCompetition(
-                        it[COMPETITION.ID],
-                        it[COMPETITION.NAME],
-                        it[COMPETITION.START_TIME],
-                        it[COMPETITION.END_TIME],
-                        false
-                    )
+                    if (userType == ADMIN) {
+                        SimpleCompetition(
+                            it[COMPETITION.ID],
+                            it[COMPETITION.NAME],
+                            it[COMPETITION.START_TIME],
+                            it[COMPETITION.END_TIME],
+                            false,
+                            it[COMPETITION.PWD],
+                        )
+                    } else {
+                        SimpleCompetition(
+                            it[COMPETITION.ID],
+                            it[COMPETITION.NAME],
+                            it[COMPETITION.START_TIME],
+                            it[COMPETITION.END_TIME],
+                            false,
+                            null
+                        )
+                    }
                 }
             } else {
                 Flux.from(
@@ -59,14 +72,27 @@ class CompetitionRepository(
                         ).limit(1).`as`("joined")
                     )
                         .from(COMPETITION)
+                        .list(COMPETITION, listCondition)
                 ).asFlow().map {
-                    SimpleCompetition(
-                        it[COMPETITION.ID],
-                        it[COMPETITION.NAME],
-                        it[COMPETITION.START_TIME],
-                        it[COMPETITION.END_TIME],
-                        it["joined"] != null
-                    )
+                    if (userType == ADMIN) {
+                        SimpleCompetition(
+                            it[COMPETITION.ID],
+                            it[COMPETITION.NAME],
+                            it[COMPETITION.START_TIME],
+                            it[COMPETITION.END_TIME],
+                            it["joined"] != null,
+                            it[COMPETITION.PWD],
+                        )
+                    } else {
+                        SimpleCompetition(
+                            it[COMPETITION.ID],
+                            it[COMPETITION.NAME],
+                            it[COMPETITION.START_TIME],
+                            it[COMPETITION.END_TIME],
+                            it["joined"] != null,
+                            null
+                        )
+                    }
                 }
             }
         }
@@ -162,6 +188,10 @@ class CompetitionRepository(
         name: String?,
         pwd: String?
     ): Boolean {
+        val competition = getCompetition(id) ?: throw NoSuchContentException("cannot found competition:${id}")
+        if (competition.isOver) {
+            throw CompetitionOverException("competition is over")
+        }
         if (name == null && pwd == null) {
             return false
         }
@@ -175,6 +205,33 @@ class CompetitionRepository(
                     }
                 }
                 .where(COMPETITION.ID.eq(id))
+                .awaitBool()
+        }
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
+    suspend fun addCompetitionProblem(
+        id: Long,
+        problemId: Long,
+    ): Boolean {
+        return dslAccess.with { create ->
+            create.insertInto(PROBLEM_BELONG_COMPETITION)
+                .columns(PROBLEM_BELONG_COMPETITION.COMPETITION_ID, PROBLEM_BELONG_COMPETITION.PROBLEM_ID)
+                .values(id, problemId)
+                .onDuplicateKeyIgnore()
+                .awaitBool()
+        }
+    }
+
+    @Transactional(rollbackFor = [Exception::class])
+    suspend fun deleteCompetitionProblem(
+        id: Long,
+        problemId: Long,
+    ): Boolean {
+        return dslAccess.with { create ->
+            create.deleteFrom(PROBLEM_BELONG_COMPETITION)
+                .where(PROBLEM_BELONG_COMPETITION.COMPETITION_ID.eq(id))
+                .and(PROBLEM_BELONG_COMPETITION.PROBLEM_ID.eq(problemId))
                 .awaitBool()
         }
     }

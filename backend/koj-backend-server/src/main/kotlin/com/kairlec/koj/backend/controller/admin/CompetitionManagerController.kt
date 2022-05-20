@@ -6,6 +6,10 @@ import com.kairlec.koj.backend.util.sureFound
 import com.kairlec.koj.dao.tables.records.CompetitionRecord
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 @RestController
 @RequestMapping("/admin/competitions")
@@ -14,8 +18,8 @@ class CompetitionManagerController(
 ) {
     data class AddCompetitionModel(
         val name: String,
-        val startTime: LocalDateTime,
-        val endTime: LocalDateTime,
+        val startTime: OffsetDateTime,
+        val endTime: OffsetDateTime,
         val pwd: String?
     )
 
@@ -23,8 +27,8 @@ class CompetitionManagerController(
     suspend fun addCompetition(@RequestBody addCompetitionModel: AddCompetitionModel): Long {
         return competitionService.addCompetition(
             addCompetitionModel.name,
-            addCompetitionModel.startTime,
-            addCompetitionModel.endTime,
+            addCompetitionModel.startTime.atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
+            addCompetitionModel.endTime.atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
             addCompetitionModel.pwd
         ).sureEffect()
     }
@@ -47,5 +51,15 @@ class CompetitionManagerController(
     @PatchMapping("/{id}")
     suspend fun updateCompetition(@PathVariable id: Long, @RequestBody updateCompetitionModel: UpdateCompetitionModel) {
         competitionService.updateCompetition(id, updateCompetitionModel.name, updateCompetitionModel.pwd).sureEffect()
+    }
+
+    @PutMapping("/{id}/problems/{problemId}")
+    suspend fun addProblemToCompetition(@PathVariable id: Long, @PathVariable problemId: Long) {
+        competitionService.addCompetitionProblem(id, problemId).sureEffect()
+    }
+
+    @DeleteMapping("/{id}/problems/{problemId}")
+    suspend fun removeProblemFromCompetition(@PathVariable id: Long, @PathVariable problemId: Long) {
+        competitionService.deleteCompetitionProblem(id, problemId).sureEffect()
     }
 }

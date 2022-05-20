@@ -14,8 +14,13 @@ import com.kairlec.koj.dao.repository.PageData
 import com.kairlec.koj.dao.repository.UserRepository
 import com.kairlec.koj.dao.repository.UserType
 import com.kairlec.koj.dao.tables.records.UserRecord
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactor.awaitSingle
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.data.redis.core.ReactiveRedisOperations
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -25,7 +30,9 @@ class UserServiceImpl(
     private val userRepository: UserRepository,
     private val mailService: MailService,
     private val redisOperations: ReactiveRedisOperations<String, String>
-) : UserService {
+) : UserService, DisposableBean {
+
+    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 
     suspend fun getResetPasswordCode(address: String): String {
         return redisOperations.opsForValue().get("RESET_PWD_REQ:${address}").awaitSingle()
@@ -42,8 +49,10 @@ class UserServiceImpl(
 
     override suspend fun resetPasswordRequest(username: String, email: String) {
         userRepository.get(username = username, email = email) ?: return
-        val code = setResetPasswordCode(email)
-        mailService.sendMail(email, "[KOJ]重置密码", "你的验证码是：$code , 有效期为10分钟", ResetPasswordMail)
+        coroutineScope.launch {
+            val code = setResetPasswordCode(email)
+            mailService.sendMail(email, "[KOJ]重置密码", "你的验证码是：$code , 有效期为10分钟", ResetPasswordMail)
+        }
     }
 
     override suspend fun resetPassword(username: String, email: String, newPwd: String, code: String): Boolean {
@@ -118,6 +127,10 @@ class UserServiceImpl(
 
     override fun rank(max: Int): Flow<RankInfo> {
         return userRepository.rank(max)
+    }
+
+    override fun destroy() {
+        coroutineScope.cancel()
     }
 
 //    override suspend fun userService() {
