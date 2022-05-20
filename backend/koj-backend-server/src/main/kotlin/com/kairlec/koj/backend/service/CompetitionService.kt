@@ -4,7 +4,6 @@ import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.model.SimpleCompetition
 import com.kairlec.koj.dao.repository.PageData
 import com.kairlec.koj.dao.repository.UserType
-import com.kairlec.koj.dao.tables.records.CompetitionRecord
 import java.time.LocalDateTime
 
 interface CompetitionService {
@@ -14,7 +13,7 @@ interface CompetitionService {
         listCondition: ListCondition
     ): PageData<SimpleCompetition>
 
-    suspend fun getCompetition(id: Long): CompetitionRecord?
+    suspend fun getCompetition(userType: UserType, id: Long): SimpleCompetition?
 
     suspend fun deleteCompetition(id: Long): Boolean
 

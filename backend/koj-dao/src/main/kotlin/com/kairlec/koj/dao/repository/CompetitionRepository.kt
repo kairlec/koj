@@ -9,7 +9,6 @@ import com.kairlec.koj.dao.extended.*
 import com.kairlec.koj.dao.flow
 import com.kairlec.koj.dao.model.SimpleCompetition
 import com.kairlec.koj.dao.repository.UserType.ADMIN
-import com.kairlec.koj.dao.tables.records.CompetitionRecord
 import com.kairlec.koj.dao.with
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
@@ -19,6 +18,8 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 @Repository
 class CompetitionRepository(
@@ -50,7 +51,13 @@ class CompetitionRepository(
                             it[COMPETITION.START_TIME],
                             it[COMPETITION.END_TIME],
                             false,
-                            it[COMPETITION.PWD],
+                            it[COMPETITION.PWD].let {
+                                if (it.isNullOrBlank()) {
+                                    null
+                                } else {
+                                    it
+                                }
+                            },
                         )
                     } else {
                         SimpleCompetition(
@@ -59,7 +66,13 @@ class CompetitionRepository(
                             it[COMPETITION.START_TIME],
                             it[COMPETITION.END_TIME],
                             false,
-                            null
+                            it[COMPETITION.PWD].let {
+                                if (it.isNullOrBlank()) {
+                                    null
+                                } else {
+                                    ""
+                                }
+                            },
                         )
                     }
                 }
@@ -81,7 +94,13 @@ class CompetitionRepository(
                             it[COMPETITION.START_TIME],
                             it[COMPETITION.END_TIME],
                             it["joined"] != null,
-                            it[COMPETITION.PWD],
+                            it[COMPETITION.PWD].let {
+                                if (it.isNullOrBlank()) {
+                                    null
+                                } else {
+                                    it
+                                }
+                            },
                         )
                     } else {
                         SimpleCompetition(
@@ -90,7 +109,13 @@ class CompetitionRepository(
                             it[COMPETITION.START_TIME],
                             it[COMPETITION.END_TIME],
                             it["joined"] != null,
-                            null
+                            it[COMPETITION.PWD].let {
+                                if (it.isNullOrBlank()) {
+                                    null
+                                } else {
+                                    ""
+                                }
+                            },
                         )
                     }
                 }
@@ -101,12 +126,32 @@ class CompetitionRepository(
 
     @Transactional(rollbackFor = [Exception::class])
     suspend fun getCompetition(
+        userType: UserType?,
         competitionId: Long
-    ): CompetitionRecord? {
+    ): SimpleCompetition? {
         return dslAccess.with { create ->
             create.selectFrom(COMPETITION)
                 .where(COMPETITION.ID.eq(competitionId))
-                .awaitFirstOrNull()
+                .awaitFirstOrNull()?.let {
+                    SimpleCompetition(
+                        it[COMPETITION.ID],
+                        it[COMPETITION.NAME],
+                        it[COMPETITION.START_TIME],
+                        it[COMPETITION.END_TIME],
+                        false,
+                        it[COMPETITION.PWD].let {
+                            if (it.isNullOrBlank()) {
+                                null
+                            } else {
+                                if (userType == ADMIN) {
+                                    it
+                                } else {
+                                    ""
+                                }
+                            }
+                        },
+                    )
+                }
         }
     }
 
@@ -127,11 +172,8 @@ class CompetitionRepository(
         competitionId: Long,
         pwd: String?
     ) {
-        val competition = dslAccess.with { create ->
-            create.selectFrom(COMPETITION)
-                .where(COMPETITION.ID.eq(competitionId))
-                .awaitFirstOrNull() ?: throw NoSuchContentException("cannot found competition:${competitionId}")
-        }
+        val competition = getCompetition(null, competitionId)
+            ?: throw NoSuchContentException("cannot found competition:${competitionId}")
         if (competition.isOver) {
             throw CompetitionOverException("competition is over")
         }
@@ -188,7 +230,7 @@ class CompetitionRepository(
         name: String?,
         pwd: String?
     ): Boolean {
-        val competition = getCompetition(id) ?: throw NoSuchContentException("cannot found competition:${id}")
+        val competition = getCompetition(null, id) ?: throw NoSuchContentException("cannot found competition:${id}")
         if (competition.isOver) {
             throw CompetitionOverException("competition is over")
         }
@@ -238,13 +280,15 @@ class CompetitionRepository(
 
 }
 
+private val now
+    get() = OffsetDateTime.now().atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()
 
-val CompetitionRecord.isOver: Boolean
-    get() = endTime.isBefore(LocalDateTime.now())
+val SimpleCompetition.isOver: Boolean
+    get() = endTime.isBefore(now)
 
-val CompetitionRecord.isFreeze: Boolean
-    get() = (endTime.minusHours(1)).isBefore(LocalDateTime.now())
+val SimpleCompetition.isFreeze: Boolean
+    get() = (endTime.minusHours(1)).isBefore(now)
 
-val CompetitionRecord.isStart: Boolean
-    get() = startTime.isBefore(LocalDateTime.now())
+val SimpleCompetition.isStart: Boolean
+    get() = startTime.isBefore(now)
 

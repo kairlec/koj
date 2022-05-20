@@ -5,6 +5,8 @@ import com.kairlec.koj.backend.config.userTypeAttributes
 import com.kairlec.koj.backend.service.CompetitionService
 import com.kairlec.koj.backend.service.ProblemService
 import com.kairlec.koj.backend.service.SubmitService
+import com.kairlec.koj.backend.util.sureFound
+import com.kairlec.koj.dao.model.SimpleCompetition
 import com.kairlec.koj.dao.model.SimpleProblem
 import com.kairlec.koj.dao.model.SimpleSubmit
 import com.kairlec.koj.dao.repository.UserType
@@ -43,6 +45,14 @@ class CompetitionController(
         @PathVariable competitionId: Long
     ): Flow<SimpleProblem> {
         return problemService.getProblems(userId, userType, competitionId)
+    }
+
+    @GetMapping("/{id}")
+    suspend fun getCompetition(
+        @PathVariable id: Long,
+        @RequestAttribute(userTypeAttributes) userType: UserType
+    ): SimpleCompetition {
+        return competitionService.getCompetition(userType, id).sureFound()
     }
 
 }

@@ -42,7 +42,7 @@ class ProblemServiceImpl(
     override suspend fun getProblems(userId: Long, userType: UserType, competitionId: Long): Flow<SimpleProblem> {
         if (userType != ADMIN) {
             val competition =
-                competitionRepository.getCompetition(competitionId)
+                competitionRepository.getCompetition(null, competitionId)
                     .sureFound("cannot find competition<${competitionId}>")
             val inCompetition = competitionRepository.isInCompetition(userId, competitionId)
             if (!inCompetition) {

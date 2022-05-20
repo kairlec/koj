@@ -33,11 +33,6 @@ class CompetitionManagerController(
         ).sureEffect()
     }
 
-    @GetMapping("/{id}")
-    suspend fun getCompetition(@PathVariable id: Long): CompetitionRecord {
-        return competitionService.getCompetition(id).sureFound()
-    }
-
     @DeleteMapping("/{id}")
     suspend fun deleteCompetition(@PathVariable id: Long) {
         competitionService.deleteCompetition(id).sureEffect()

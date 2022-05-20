@@ -22,8 +22,8 @@ class CompetitionServiceImpl(
         return competitionRepository.getCompetitions(userId, userType, listCondition)
     }
 
-    override suspend fun getCompetition(id: Long): CompetitionRecord? {
-        return competitionRepository.getCompetition(id)
+    override suspend fun getCompetition(userType: UserType, id: Long): SimpleCompetition? {
+        return competitionRepository.getCompetition(userType, id)
     }
 
     override suspend fun deleteCompetition(id: Long): Boolean {
