@@ -5,6 +5,7 @@ import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.model.Problem
 import com.kairlec.koj.dao.model.SimpleProblem
 import com.kairlec.koj.dao.repository.PageData
+import com.kairlec.koj.dao.repository.UserType
 import com.kairlec.koj.dao.tables.records.ProblemConfigRecord
 import com.kairlec.koj.dao.tables.records.ProblemRunRecord
 import com.kairlec.koj.dao.tables.records.ProblemTagRecord
@@ -14,7 +15,7 @@ import java.math.BigInteger
 interface ProblemService {
     suspend fun getProblems(tags: List<String>, listCondition: ListCondition): PageData<SimpleProblem>
     suspend fun getTags(listCondition: ListCondition): PageData<ProblemTagRecord>
-    suspend fun getProblems(userId: Long, competitionId: Long): Flow<SimpleProblem>
+    suspend fun getProblems(userId: Long, userType: UserType, competitionId: Long): Flow<SimpleProblem>
     suspend fun getProblem(id: Long): Problem?
 
     suspend fun newProblem(

@@ -14,10 +14,8 @@ import com.kairlec.koj.dao.extended.ListCondition
 import com.kairlec.koj.dao.model.SimpleSubmit
 import com.kairlec.koj.dao.model.SubmitDetail
 import com.kairlec.koj.dao.model.SubmitState
-import com.kairlec.koj.dao.repository.CompetitionRepository
-import com.kairlec.koj.dao.repository.PageData
-import com.kairlec.koj.dao.repository.ProblemRepository
-import com.kairlec.koj.dao.repository.SubmitRepository
+import com.kairlec.koj.dao.repository.*
+import com.kairlec.koj.dao.repository.UserType.ADMIN
 import com.kairlec.koj.model.task
 import com.kairlec.koj.model.taskConfig
 import kotlinx.coroutines.Dispatchers
@@ -49,9 +47,11 @@ class SubmitServiceImpl(
         return submitRepository.getSubmitDetail(userId, submitId)
     }
 
-    override suspend fun getSubmits(userId: Long, competitionId: Long): Flow<SimpleSubmit> {
-        if (!competitionRepository.isInCompetition(userId, competitionId)) {
-            throw PermissionDeniedException("not in this competition")
+    override suspend fun getSubmits(userId: Long, userType: UserType, competitionId: Long): Flow<SimpleSubmit> {
+        if (userType != ADMIN) {
+            if (!competitionRepository.isInCompetition(userId, competitionId)) {
+                throw PermissionDeniedException("not in this competition")
+            }
         }
         return withContext(Dispatchers.IO) {
             submitRepository.getSubmitRank(competitionId)

@@ -12,6 +12,8 @@ import com.kairlec.koj.dao.model.SimpleProblem
 import com.kairlec.koj.dao.repository.CompetitionRepository
 import com.kairlec.koj.dao.repository.PageData
 import com.kairlec.koj.dao.repository.ProblemRepository
+import com.kairlec.koj.dao.repository.UserType
+import com.kairlec.koj.dao.repository.UserType.ADMIN
 import com.kairlec.koj.dao.tables.records.ProblemConfigRecord
 import com.kairlec.koj.dao.tables.records.ProblemRunRecord
 import com.kairlec.koj.dao.tables.records.ProblemTagRecord
@@ -37,15 +39,18 @@ class ProblemServiceImpl(
         return problemRepository.getTags(listCondition)
     }
 
-    override suspend fun getProblems(userId: Long, competitionId: Long): Flow<SimpleProblem> {
-        val competition =
-            competitionRepository.getCompetition(competitionId).sureFound("cannot find competition<${competitionId}>")
-        val inCompetition = competitionRepository.isInCompetition(userId, competitionId)
-        if (!inCompetition) {
-            throw PermissionDeniedException("user<${userId}> is not in competition<${competitionId}>")
-        }
-        if (competition.startTime.isAfter(LocalDateTime.now())) {
-            throw CompetitionNotStartedYetException("competition<${competitionId}> has not started yet")
+    override suspend fun getProblems(userId: Long, userType: UserType, competitionId: Long): Flow<SimpleProblem> {
+        if (userType != ADMIN) {
+            val competition =
+                competitionRepository.getCompetition(competitionId)
+                    .sureFound("cannot find competition<${competitionId}>")
+            val inCompetition = competitionRepository.isInCompetition(userId, competitionId)
+            if (!inCompetition) {
+                throw PermissionDeniedException("user<${userId}> is not in competition<${competitionId}>")
+            }
+            if (competition.startTime.isAfter(LocalDateTime.now())) {
+                throw CompetitionNotStartedYetException("competition<${competitionId}> has not started yet")
+            }
         }
         return withContext(Dispatchers.IO) {
             problemRepository.getProblems(competitionId)
