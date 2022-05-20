@@ -59,6 +59,9 @@ export const apiRoute = wrapRecord({
       base() {
         return this._base
       },
+      withProblem(competitionId: string, problemId: string) {
+        return `${this._base}/${competitionId}/problems/${problemId}`
+      },
     },
     tags: {
       _base: '',
@@ -92,6 +95,12 @@ export const apiRoute = wrapRecord({
     _base: '',
     join(id: string) {
       return `${this._base}/${id}:join`
+    },
+    submits(id: string) {
+      return `${this._base}/${id}/submits/-`
+    },
+    problems(id: string) {
+      return `${this._base}/${id}/problems/-`
     },
   },
   public: {

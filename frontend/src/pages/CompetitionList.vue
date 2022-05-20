@@ -67,7 +67,7 @@
                                 </template>
                             </el-result>
                         </template>
-                        <template v-if='competitionList'>
+                        <template v-if='competitionList?.record'>
                             <el-table
                                 :data='competitionList?.record' style='width: 100%;margin-top:10px;'
                                 :row-style='{cursor: "pointer"}' max-height='100%' :border='true'
@@ -125,7 +125,7 @@
 <script lang='ts'>
 import { defineComponent, getCurrentInstance, onBeforeMount, onBeforeUnmount, Ref, ref } from 'vue';
 import api from '~/api';
-import { ListCondition, ManageCompetition, PageData, SimpleCompetition } from '~/apiDeclaration';
+import { getCompetitionState, ListCondition, ManageCompetition, PageData, SimpleCompetition } from '~/apiDeclaration';
 import { ArrowLeft, ArrowRight, Plus, RefreshRight, Search } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
 import { getGlobalUser } from '~/hooks/globalUser';
@@ -221,9 +221,9 @@ export default defineComponent({
             fetchingCompetitionListError.value = '';
             const condition = buildListCondition(fetchMode);
             competitionApi.getCompetitionList(condition).then((data) => {
+                lastFetchCondition = condition;
+                competitionList.value = data;
                 if (data.record.length) {
-                    lastFetchCondition = condition;
-                    competitionList.value = data;
                     if (fetchMode == 'Prev') {
                         competitionList.value!.record = competitionList.value?.record?.reverse();
                     }
@@ -299,13 +299,14 @@ export default defineComponent({
         }
 
         function tableRowClassName({ row }: { row: SimpleCompetition }) {
-            if (row.startTime.isAfter(moment.now())) {
-                return '';
-            }
-            if (row.startTime.isBefore(moment.now()) && row.endTime.isAfter(moment.now())) {
-                return 'competition-active';
-            } else {
-                return 'competition-end';
+            const state = getCompetitionState(row)
+            switch (state){
+                case 'STARTED':
+                    return 'competition-active';
+                case 'NOT_STARTED':
+                    return '';
+                case 'ENDED':
+                    return 'competition-end';
             }
         }
 

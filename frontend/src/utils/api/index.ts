@@ -15,7 +15,7 @@ import {
   UserRankInfo,
   UserType,
 } from '~/apiDeclaration'
-import http, { KOJAxiosInstance, KOJAxiosRequestConfig } from '~/http'
+import http, { KOJAxiosInstance, KOJAxiosRequestConfig, KOJAxiosResponse } from '~/http'
 import { stringify } from 'qs'
 import { KOJStorage } from '~/storage'
 import { AxiosResponse } from 'axios'
@@ -32,14 +32,17 @@ export class ProblemDetailError extends Error {
 
 function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxiosRequestConfig): IApi {
   return {
-    addCompetitionProblem(id: string, problemId: string, config?: KOJAxiosRequestConfig): Promise<void> {
-      return Promise.resolve(undefined)
+    addCompetitionProblem(id: string, problemId: string, config?: KOJAxiosRequestConfig): Promise<KOJAxiosResponse> {
+      return this.axios.put(apiRoute.admin.competitions.withProblem(id, problemId), null, { ...addonConfig, ...config })
     },
     competitionProblems(id: string, config?: KOJAxiosRequestConfig): Promise<SimpleProblem[]> {
-      return Promise.resolve([])
+      return data(this.axios.get(apiRoute.competitions.problems(id), { ...addonConfig, ...config }))
+    },
+    competitionSubmits(id: string, config?: KOJAxiosRequestConfig): Promise<SimpleSubmit[]> {
+      return data(this.axios.get(apiRoute.competitions.submits(id), { ...addonConfig, ...config }))
     },
     deleteCompetitionProblem(id: string, problemId: string, config?: KOJAxiosRequestConfig): Promise<void> {
-      return Promise.resolve(undefined)
+      return this.axios.delete(apiRoute.admin.competitions.withProblem(id, problemId), { ...addonConfig, ...config })
     },
     createCompetition(request: ManageCompetitionCreateRequest, config?: KOJAxiosRequestConfig): Promise<string> {
       return data(this.axios.put(apiRoute.admin.competitions.base(), request, { ...addonConfig, ...config }))

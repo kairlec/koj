@@ -1,4 +1,4 @@
-import { Moment } from 'moment'
+import moment, { Moment } from 'moment'
 
 export interface ITime {
   createTime: Moment
@@ -290,4 +290,19 @@ export interface ManageCompetitionCreateRequest {
   pwd: string | null
   startTime: string
   endTime: string
+}
+
+export type CompetitionState = 'NOT_STARTED' | 'STARTED' | 'ENDED'
+
+export type Competition = { startTime: Moment; endTime: Moment }
+
+export function getCompetitionState(competition: Competition): CompetitionState {
+  if (competition.startTime.isAfter(moment.now())) {
+    return 'NOT_STARTED'
+  }
+  if (competition.startTime.isBefore(moment.now()) && competition.endTime.isAfter(moment.now())) {
+    return 'STARTED'
+  } else {
+    return 'ENDED'
+  }
 }

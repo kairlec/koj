@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import KojHome from '../pages/KojHome.vue'
-import Submit from '../pages/SubmitList.vue'
+import SubmitList from '../pages/SubmitList.vue'
 import ProblemList from '../pages/ProblemList.vue'
 import ProblemDetail from '../pages/ProblemDetail.vue'
 import UserList from '../pages/UserList.vue'
@@ -33,9 +33,9 @@ export const routes: Array<RouteRecordRaw & { displayName?: String; manage?: boo
   },
   {
     path: '/submit',
-    name: 'Submit',
+    name: 'SubmitList',
     displayName: '提交',
-    component: Submit,
+    component: SubmitList,
   },
   {
     path: '/competition',

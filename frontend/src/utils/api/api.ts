@@ -1,4 +1,4 @@
-import { KOJAxiosInstance, KOJAxiosRequestConfig } from '~/http'
+import { KOJAxiosInstance, KOJAxiosRequestConfig, KOJAxiosResponse } from '~/http'
 import {
   ListCondition,
   ManageCompetition,
@@ -93,7 +93,8 @@ export interface CompetitionApi {
   updateCompetition(id: string, data: { name?: string; pwd?: string }, config?: KOJAxiosRequestConfig): Promise<void>
   deleteCompetition(id: string, config?: KOJAxiosRequestConfig): Promise<void>
   competitionProblems(id: string, config?: KOJAxiosRequestConfig): Promise<SimpleProblem[]>
-  addCompetitionProblem(id: string, problemId: string, config?: KOJAxiosRequestConfig): Promise<void>
+  competitionSubmits(id: string, config?: KOJAxiosRequestConfig): Promise<SimpleSubmit[]>
+  addCompetitionProblem(id: string, problemId: string, config?: KOJAxiosRequestConfig): Promise<KOJAxiosResponse>
   deleteCompetitionProblem(id: string, problemId: string, config?: KOJAxiosRequestConfig): Promise<void>
 }
 
