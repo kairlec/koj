@@ -138,7 +138,7 @@ export default defineComponent({
       for (let i = 0; i < manageRoutes.length; i++) {
         const current = manageRoutes[i];
         if (rt.startsWith(current.path)) {
-          router.push({ name: 'Home' });
+          router.push({ name: 'KojHome' });
           return;
         }
       }

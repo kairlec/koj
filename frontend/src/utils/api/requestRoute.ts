@@ -93,6 +93,9 @@ export const apiRoute = wrapRecord({
   },
   competitions: {
     _base: '',
+    single(id: string) {
+      return `${this._base}/${id}`
+    },
     join(id: string) {
       return `${this._base}/${id}:join`
     },

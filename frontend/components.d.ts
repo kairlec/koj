@@ -6,9 +6,9 @@ import '@vue/runtime-core'
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     ChangeUserInfo: typeof import('./src/components/ChangeUserInfo.vue')['default']
-    CompetitionAddDrawer: typeof import('./src/components/CompetitionAddDrawer.vue')['default']
     CompetitionDialog: typeof import('./src/components/CompetitionDialog.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']
+    ElBadge: typeof import('element-plus/es')['ElBadge']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElButtonGroup: typeof import('element-plus/es')['ElButtonGroup']
     ElCard: typeof import('element-plus/es')['ElCard']

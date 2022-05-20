@@ -51,7 +51,7 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       return this.axios.delete(apiRoute.admin.competitions.single(id), { ...addonConfig, ...config })
     },
     getCompetition(id: string, config?: KOJAxiosRequestConfig): Promise<ManageCompetition> {
-      return data(this.axios.get(apiRoute.admin.competitions.single(id), { ...addonConfig, ...config }))
+      return data(this.axios.get(apiRoute.competitions.single(id), { ...addonConfig, ...config }))
     },
     getCompetitionList(listCondition: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<SimpleCompetition>> {
       return page(
@@ -63,7 +63,11 @@ function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxi
       )
     },
     joinCompetition(id: string, pwd?: string, config?: KOJAxiosRequestConfig): Promise<void> {
-      return this.axios.post(apiRoute.competitions.join(id), { ...addonConfig, params: { password: pwd }, ...config })
+      return this.axios.post(apiRoute.competitions.join(id), null, {
+        ...addonConfig,
+        params: { password: pwd },
+        ...config,
+      })
     },
     updateCompetition(id: string, data: { name?: string; pwd?: string }, config?: KOJAxiosRequestConfig): Promise<void> {
       return this.axios.patch(apiRoute.admin.competitions.single(id), data, { ...addonConfig, ...config })
