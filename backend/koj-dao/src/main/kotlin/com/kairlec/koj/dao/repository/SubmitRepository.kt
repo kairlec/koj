@@ -29,6 +29,7 @@ class SubmitRepository(
         val count = dslAccess.with { create ->
             create.selectCount()
                 .from(SUBMIT)
+                .where(SUBMIT.BELONG_COMPETITION_ID.isNull)
                 .listCount(SUBMIT, listCondition)
                 .awaitOrNull(0)
         }
@@ -37,6 +38,7 @@ class SubmitRepository(
                 .from(SUBMIT)
                 .innerJoin(USER)
                 .on(USER.ID.eq(SUBMIT.BELONG_USER_ID))
+                .where(SUBMIT.BELONG_COMPETITION_ID.isNull)
                 .list(SUBMIT, listCondition)
                 .asFlow()
                 .map { submit ->
