@@ -156,8 +156,8 @@ export default defineComponent({
     const haveNext = ref(false);
     const tags = ref<({ selected?: boolean } & Tag)[]>([]);
     const showAdd = ref(false);
-    const instance = getCurrentInstance()!
-    const user = getGlobalUser(instance.appContext)
+    const instance = getCurrentInstance()!;
+    const user = getGlobalUser(instance.appContext);
 
     function tagOnChange(idx: number) {
       tags.value[idx].selected = !tags.value[idx].selected;
@@ -286,7 +286,7 @@ export default defineComponent({
         } else {
           problemList.value!.record.push(simpleProblem);
         }
-      }else{
+      } else {
         if (currentSortMode == 'Asc') {
           havePrev.value = true;
         } else {
@@ -295,12 +295,12 @@ export default defineComponent({
       }
     }
 
-    function deleteProblem(simpleProblem:SimpleProblem){
+    function deleteProblem(simpleProblem: SimpleProblem) {
       ElMessageBox.confirm('确定要删除该题目吗？', '警告', {
         confirmButtonText: '删除',
         confirmButtonClass: 'el-button--danger',
         cancelButtonText: '算了',
-        type: 'warning'
+        type: 'warning',
       }).then(() => {
         problemApi.deleteProblem(simpleProblem.id).then(() => {
           ElMessage.success('删除成功');

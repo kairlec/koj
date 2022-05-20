@@ -1,5 +1,5 @@
 import { AppConfig, reactive } from 'vue'
-import { UnwrapNestedRefs } from '@vue/reactivity'
+import { UnwrapNestedRefs } from 'vue'
 import { Moment } from 'moment'
 
 interface GlobalUser {

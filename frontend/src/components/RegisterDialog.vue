@@ -52,7 +52,7 @@ export default defineComponent({
     const form = reactive({
       username: '',
       email: '',
-      password: ''
+      password: '',
     });
 
     const checkRequest: {
@@ -67,12 +67,12 @@ export default defineComponent({
     } = {
       username: {
         timeout: undefined,
-        controller: new AbortController()
+        controller: new AbortController(),
       },
       email: {
         timeout: undefined,
-        controller: new AbortController()
-      }
+        controller: new AbortController(),
+      },
     };
 
     const validateUsername = (rule: any, value: any, callback: any) => {
@@ -140,7 +140,7 @@ export default defineComponent({
     const rules = reactive({
       username: [{ validator: validateUsername, trigger: 'blur' }],
       email: [{ validator: validateEmail, trigger: 'blur' }],
-      password: [{ validator: validatePassword, trigger: 'blur' }]
+      password: [{ validator: validatePassword, trigger: 'blur' }],
     });
 
 
@@ -177,9 +177,9 @@ export default defineComponent({
       form,
       submitForm,
       ruleFormRef,
-      cancel
+      cancel,
     };
-  }
+  },
 });
 </script>
 <style scoped>

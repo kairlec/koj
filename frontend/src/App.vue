@@ -5,9 +5,9 @@
     </el-header>
     <el-main style='padding: 0'>
       <el-container :style='bodyStyle'>
-        <router-view v-slot="{ Component }">
+        <router-view v-slot='{ Component }'>
           <keep-alive include='ProblemList'>
-            <component :is="Component" />
+            <component :is='Component' />
           </keep-alive>
         </router-view>
       </el-container>
@@ -51,10 +51,12 @@ useResize(() => {
 .login-dialog {
   --el-dialog-width: 450px;
 }
-.register-dialog{
+
+.register-dialog {
   --el-dialog-width: 480px;
 }
-.competition-dialog{
+
+.competition-dialog {
   --el-dialog-width: 600px;
 }
 </style>

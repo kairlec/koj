@@ -84,8 +84,8 @@ function handleDrawerClose(done: () => void) {
       }).catch(() => {
       done();
     });
-  }else{
-    done()
+  } else {
+    done();
   }
 }
 

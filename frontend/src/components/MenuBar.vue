@@ -59,11 +59,11 @@ import { routes } from '../router';
 export default defineComponent({
   name: 'MenuBar',
   components: { ArrowDown, RegisterDialog, LoginDialog },
-  props:{
+  props: {
     id: {
       type: String,
-      default: 'menu-bar'
-    }
+      default: 'menu-bar',
+    },
   },
   setup() {
     const showMenu = ref(true);
@@ -88,13 +88,13 @@ export default defineComponent({
     const userMenuRoutes = ref(userRoutes.map((item) => {
       return {
         path: item.path,
-        name: item.displayName
+        name: item.displayName,
       };
     }));
     const manageMenuRoutes = ref(manageRoutes.map((item) => {
       return {
         path: item.path,
-        name: item.displayName
+        name: item.displayName,
       };
     }));
     const routeWatcher = watch(() => route.fullPath,
@@ -118,22 +118,23 @@ export default defineComponent({
     const userWatcher = watch(() => user.user,
       (newUser) => {
         if (!newUser) {
-          checkManageNeedRouteBack()
+          checkManageNeedRouteBack();
         }
       });
     // 监听初始化事件（比如初始化失败）
     const initWatcher = watch(() => user.initing,
       (initing) => {
         if (!initing) {
-          checkManageNeedRouteBack()
+          checkManageNeedRouteBack();
         }
       });
-    onBeforeUnmount(()=>{
+    onBeforeUnmount(() => {
       routeWatcher();
       userWatcher();
       initWatcher();
-    })
-    function checkManageNeedRouteBack(){
+    });
+
+    function checkManageNeedRouteBack() {
       const rt = route.fullPath;
       for (let i = 0; i < manageRoutes.length; i++) {
         const current = manageRoutes[i];
@@ -143,6 +144,7 @@ export default defineComponent({
         }
       }
     }
+
     return {
       userMenuRoutes,
       manageMenuRoutes,
@@ -170,9 +172,9 @@ export default defineComponent({
         KOJStorage.identity(null);
         reload();
       },
-      logo: new URL('../assets/logo.svg', import.meta.url).href
+      logo: new URL('../assets/logo.svg', import.meta.url).href,
     };
-  }
+  },
 });
 </script>
 

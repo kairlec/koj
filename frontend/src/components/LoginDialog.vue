@@ -97,19 +97,19 @@ export default defineComponent({
       loading: false,
       disabled: false,
       duration: 60,
-      timer: null
+      timer: null,
     });
 
     const loginForm = reactive({
       usernameOrEmail: '',
-      password: ''
+      password: '',
     });
 
     const forgetForm = reactive({
       username: '',
       email: '',
       verifyCode: '',
-      newPassword: ''
+      newPassword: '',
     });
 
     const getVerifyCode = () => {
@@ -131,7 +131,7 @@ export default defineComponent({
         ElMessage({
           type: 'success',
           message: '如果输入用户名和邮箱匹配,请检查你的邮箱',
-          duration: 5000
+          duration: 5000,
         });
       }).catch(() => {
         getVerifyCodeBtn.loading = false;
@@ -196,14 +196,14 @@ export default defineComponent({
 
     const loginRules = reactive({
       usernameOrEmail: [{ validator: validateUsernameOrEmail, trigger: ['blur', 'change'] }],
-      password: [{ validator: validatePassword, trigger: ['blur', 'change'] }]
+      password: [{ validator: validatePassword, trigger: ['blur', 'change'] }],
     });
 
     const forgetRules = reactive({
       username: [{ validator: validateUsername, trigger: ['blur', 'change'] }],
       email: [{ validator: validateEmail, trigger: ['blur', 'change'] }],
       verifyCode: [{ validator: validateVerifyCode, trigger: ['blur', 'change'] }],
-      newPassword: [{ validator: validatePassword, trigger: ['blur', 'change'] }]
+      newPassword: [{ validator: validatePassword, trigger: ['blur', 'change'] }],
     });
 
 
@@ -243,7 +243,7 @@ export default defineComponent({
                 ElMessage({
                   type: 'success',
                   message: '重置密码成功，请重新登录',
-                  duration: 5000
+                  duration: 5000,
                 });
                 loginMode.value = true;
               }).finally(() => {
@@ -271,9 +271,9 @@ export default defineComponent({
       forgetForm,
       loginRuleFormRef,
       forgetRuleFormRef,
-      cancel
+      cancel,
     };
-  }
+  },
 });
 </script>
 <style scoped>

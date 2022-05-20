@@ -102,7 +102,7 @@
 </template>
 
 <script lang='ts' setup>
-import { computed, onBeforeMount, onBeforeUnmount, PropType, reactive, ref } from 'vue';
+import { computed, onBeforeUnmount, PropType, reactive, ref } from 'vue';
 import api from '~/api';
 import { ProblemContent, ProblemDetail, SimpleProblem, Tag } from '~/apiDeclaration';
 import { CirclePlus, Delete } from '@element-plus/icons-vue';

@@ -85,7 +85,7 @@
 <script lang='ts'>
 import { defineComponent, getCurrentInstance, onBeforeMount, onBeforeUnmount, Ref, ref, watch } from 'vue';
 import api from '~/api';
-import { CompetitionState, getCompetitionState, ManageCompetition, SimpleProblem, UserType } from '~/apiDeclaration';
+import { CompetitionState, getCompetitionState, ManageCompetition, SimpleProblem } from '~/apiDeclaration';
 import { Plus, RefreshRight } from '@element-plus/icons-vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getGlobalUser } from '~/hooks/globalUser';
@@ -169,7 +169,7 @@ export default defineComponent({
     }
 
     function fetchProblemList() {
-        fetchCompetitionState();
+      fetchCompetitionState();
       if (competitionId === '') {
         const id = route.params.id;
         if (typeof id === 'string') {
@@ -195,8 +195,8 @@ export default defineComponent({
         inputPattern: /^\d*$/,
         inputErrorMessage: '题目id必须为数字',
         showCancelButton: true,
-        cancelButtonText:'取消',
-        confirmButtonText:'确定',
+        cancelButtonText: '取消',
+        confirmButtonText: '确定',
         beforeClose: (action, instance, done) => {
           if (action === 'confirm') {
             instance.confirmButtonLoading = true;

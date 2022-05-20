@@ -221,9 +221,9 @@ export default defineComponent({
     const router = useRouter();
 
     function detailCompetition(row: SimpleCompetition) {
-      if(!user.user){
+      if (!user.user) {
         ElMessage.error('请先登录');
-        return
+        return;
       }
       if (!row.joined && user.user?.type !== UserType.ADMIN) {
         if (row.pwd !== undefined && row.pwd !== null) {
