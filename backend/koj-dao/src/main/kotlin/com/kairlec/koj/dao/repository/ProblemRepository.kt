@@ -133,26 +133,20 @@ class ProblemRepository(
         val record = try {
             dslAccess.with { create ->
                 create.select(
-                    *problemFields,
-                    DSL.field(PROBLEM_BELONG_COMPETITION.IDX.unqualifiedName),
-                    DSL.groupConcat(DSL.field("tag_name")).separator(",").`as`("tag_names")
-                ).from(
-                    create.select(
-                        *PROBLEM.fields(),
-                        PROBLEM_BELONG_COMPETITION.IDX,
-                        PROBLEM_TAG.NAME.`as`("tag_name")
-                    )
-                        .from(PROBLEM)
-                        .leftJoin(PROBLEM_BELONG_COMPETITION)
-                        .on(PROBLEM.ID.eq(PROBLEM_BELONG_COMPETITION.PROBLEM_ID))
-                        .leftJoin(TAG_BELONG_PROBLEM)
-                        .on(PROBLEM.ID.eq(TAG_BELONG_PROBLEM.PROBLEM_ID))
-                        .leftJoin(PROBLEM_TAG)
-                        .on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
-                        .where(PROBLEM.ID.eq(id))
-                        .orderBy(PROBLEM_BELONG_COMPETITION.CREATE_TIME)
-                )
-                    .groupBy(DSL.field(PROBLEM.ID.unqualifiedName))
+                    *PROBLEM.fields(),
+                    PROBLEM_BELONG_COMPETITION.IDX,
+                    DSL.field(
+                        "concat_ws(',',({0}))", String::class.java, create.select(
+                            PROBLEM_TAG.NAME
+                        ).from(TAG_BELONG_PROBLEM)
+                            .leftJoin(PROBLEM_TAG).on(TAG_BELONG_PROBLEM.TAG_ID.eq(PROBLEM_TAG.ID))
+                            .where(TAG_BELONG_PROBLEM.PROBLEM_ID.eq(PROBLEM.ID))
+                    ).`as`("tag_names")
+                ).from(PROBLEM)
+                    .leftJoin(PROBLEM_BELONG_COMPETITION)
+                    .on(PROBLEM.ID.eq(PROBLEM_BELONG_COMPETITION.PROBLEM_ID))
+                    .where(PROBLEM.ID.eq(id))
+                    .orderBy(PROBLEM_BELONG_COMPETITION.CREATE_TIME)
                     .awaitSingle()
             }
         } catch (e: NoSuchElementException) {
