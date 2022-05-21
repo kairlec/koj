@@ -37,6 +37,13 @@ class ProblemManagerController(
         return problemService.newTag(name).sureEffect()
     }
 
+    @DeleteMapping("/tags/{tagId}")
+    suspend fun removeTag(
+        @PathVariable tagId: Long
+    ) {
+        problemService.removeTag(tagId).sureEffect()
+    }
+
     @PatchMapping("/tags/{tagId}")
     suspend fun updateTag(
         @PathVariable tagId: Long,
