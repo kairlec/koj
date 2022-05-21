@@ -188,7 +188,7 @@ export default defineComponent({
       controller.abort();
     });
 
-    const pageLimit = 4;
+    const pageLimit = 13;
 
     function buildListCondition(fetchMode: FetchMode): ListCondition {
       if (fetchMode == 'Refresh' && lastFetchCondition) {

@@ -243,7 +243,7 @@ export default defineComponent({
     });
 
 
-    const pageLimit = 4;
+    const pageLimit = 13;
 
     function buildListCondition(fetchMode: FetchMode): ListCondition {
       if (fetchMode == 'Refresh' && lastFetchCondition) {
