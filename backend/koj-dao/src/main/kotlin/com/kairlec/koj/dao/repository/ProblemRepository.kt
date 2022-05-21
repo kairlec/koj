@@ -227,12 +227,12 @@ class ProblemRepository(
                 .awaitBool()
         }
         if (tags != null) {
-            val ok2 = dslAccess.with { create ->
+            dslAccess.with { create ->
                 create.deleteFrom(TAG_BELONG_PROBLEM)
                     .where(TAG_BELONG_PROBLEM.PROBLEM_ID.eq(id))
                     .awaitBool()
             }
-            if (ok2 && tags.isNotEmpty()) {
+            if (tags.isNotEmpty()) {
                 dslAccess.with { create ->
                     create.insertInto(TAG_BELONG_PROBLEM, TAG_BELONG_PROBLEM.PROBLEM_ID, TAG_BELONG_PROBLEM.TAG_ID)
                         .fold(tags) {
@@ -242,7 +242,6 @@ class ProblemRepository(
                         .awaitBool()
                 }
             }
-            return ok2 && ok1
         }
         return ok1
     }
