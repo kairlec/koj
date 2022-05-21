@@ -52,6 +52,8 @@ export interface ProblemApi {
     data: { name?: string; content?: string; spj?: boolean; tags?: string[] },
     config?: KOJAxiosRequestConfig,
   ): Promise<void>
+  addTag(tag: string, config?: KOJAxiosRequestConfig): Promise<string>
+  removeTag(tagId: string, config?: KOJAxiosRequestConfig): Promise<void>
   tags(listCondition?: ListCondition, config?: KOJAxiosRequestConfig): Promise<PageData<Tag>>
   addProblemTag(problemId: string, tagId: string, config?: KOJAxiosRequestConfig): Promise<void>
   deleteProblem(problemId: string, config?: KOJAxiosRequestConfig): Promise<void>

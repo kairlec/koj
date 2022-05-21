@@ -114,14 +114,48 @@
               <div class='card-header'>
                 <span>标签列表</span>
               </div>
+              <el-switch
+                v-if='user.user?.type===0'
+                v-model='tagEditMode'
+                size='large'
+                active-text='编辑模式'
+                inactive-text='筛选模式'
+                :loading='fetchingTagList'
+              />
             </template>
             <el-scrollbar>
-              <el-check-tag
-                v-for='(item,idx) in tags' :key='item.id' :checked='item.selected'
-                :style='item.selected? "border-color: var(--el-color-primary)" : ""'
-                @change='tagOnChange(idx)'>
-                {{ item.name }}
-              </el-check-tag>
+              <template v-if='tagEditMode'>
+                <el-tag
+                  v-for='item in tags' :key='item.id' :checked='item.selected'
+                  class='koj-tag'
+                  :style='item.selected? "border-color: var(--el-color-primary);height: 45px" : "height: 45px"'
+                  closable
+                  @close='tagOnClose(item)'>
+                  {{ item.name }}
+                </el-tag>
+                <el-input
+                  v-if='inputVisible'
+                  ref='InputRef'
+                  v-model='inputValue'
+                  class='ml-1 w-20'
+                  style='height: 45px'
+                  size='small'
+                  @keyup.enter='handleInputConfirm'
+                  @blur='handleInputConfirm'
+                />
+                <el-button v-else v-loading='inputLoading' class='button-new-tag ml-1 koj-tag' style='height: 45px' @click='showInput'>
+                  + 新增标签
+                </el-button>
+              </template>
+              <template v-else>
+                <el-check-tag
+                  v-for='item in tags' :key='item.id' :checked='item.selected'
+                  class='koj-tag'
+                  :style='item.selected? "border-color: var(--el-color-primary)" : ""'
+                  @change='tagOnChange(item)'>
+                  {{ item.name }}
+                </el-check-tag>
+              </template>
             </el-scrollbar>
           </el-card>
         </el-aside>
@@ -131,12 +165,13 @@
 </template>
 
 <script lang='ts'>
-import { defineComponent, getCurrentInstance, onBeforeMount, onBeforeUnmount, Ref, ref } from 'vue';
+import { defineComponent, getCurrentInstance, nextTick, onBeforeMount, onBeforeUnmount, Ref, ref } from 'vue';
 import api from '~/api';
 import { ListCondition, PageData, SimpleProblem, Tag } from '~/apiDeclaration';
 import { ArrowLeft, ArrowRight, Plus, RefreshRight, Search } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
 import { getGlobalUser } from '~/hooks/globalUser';
+import type { ElInput } from 'element-plus';
 
 export default defineComponent({
   name: 'ProblemList',
@@ -154,13 +189,47 @@ export default defineComponent({
     const fetchingTagList = ref(true);
     const havePrev = ref(false);
     const haveNext = ref(false);
+    const tagEditMode = ref(false);
     const tags = ref<({ selected?: boolean } & Tag)[]>([]);
     const showAdd = ref(false);
     const instance = getCurrentInstance()!;
     const user = getGlobalUser(instance.appContext);
+    const inputValue = ref('');
+    const inputVisible = ref(false);
+    const inputLoading = ref(false);
+    const InputRef = ref<InstanceType<typeof ElInput>>();
+    const tagOnClose = (tag: Tag) => {
+      problemApi.removeTag(tag.id).then(() => {
+        tags.value.splice(tags.value.findIndex(item => item.id === tag.id), 1);
+      });
+    };
+    const showInput = () => {
+      inputVisible.value = true;
+      nextTick(() => {
+        InputRef.value!.input!.focus();
+      });
+    };
 
-    function tagOnChange(idx: number) {
-      tags.value[idx].selected = !tags.value[idx].selected;
+    const handleInputConfirm = () => {
+      if (inputValue.value) {
+        const value = inputValue.value
+        inputLoading.value = true;
+        problemApi.addTag(value).then((id) => {
+          tags.value.push({
+            id,
+            name: value,
+            selected: false,
+          });
+        }).finally(() => {
+          inputLoading.value = false;
+        });
+      }
+      inputVisible.value = false;
+      inputValue.value = '';
+    };
+
+    function tagOnChange(tag: Tag & { selected?: boolean }) {
+      tag.selected = !tag.selected;
     }
 
     type SortMode = 'Asc' | 'Desc';
@@ -243,9 +312,9 @@ export default defineComponent({
       fetchingProblemListError.value = '';
       const condition = buildListCondition(fetchMode);
       problemApi.problems(tags.value.filter(it => it.selected).map((it) => it.name), condition).then((data) => {
+        problemList.value = data;
         if (data.record.length) {
           lastFetchCondition = condition;
-          problemList.value = data;
           if (data.record.length < pageLimit) {
             if (fetchMode === 'Next') {
               haveNext.value = false;
@@ -310,6 +379,14 @@ export default defineComponent({
     }
 
     return {
+      InputRef,
+      handleInputConfirm,
+      showInput,
+      inputValue,
+      tagOnClose,
+      inputVisible,
+      inputLoading,
+      tagEditMode,
       deleteProblem,
       user,
       addProblem,
@@ -375,12 +452,19 @@ export default defineComponent({
   align-items: center;
 }
 
-#tag-container .el-check-tag {
+#tag-container .koj-tag {
   margin: 5px;
   height: 17px;
   font-size: 18px;
   padding: 13px 19px;
   border: 1px solid black;
+  background-color: var(--el-color-info-light-9);
+  border-radius: var(--el-border-radius-base);
+  color: var(--el-color-info);
+  cursor: pointer;
+  line-height: var(--el-font-size-base);
+  transition: var(--el-transition-all);
+  font-weight: 700;
 }
 
 #tag-container .el-card {

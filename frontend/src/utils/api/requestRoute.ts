@@ -18,6 +18,15 @@ function wrapRecord<T extends Record<string, any>>(base: T, parent = ''): T {
 
 export const apiRoute = wrapRecord({
   admin: {
+    tags: {
+      _base: '',
+      base() {
+        return this._base
+      },
+      detail(tagId: string) {
+        return `${this._base}/${tagId}`
+      },
+    },
     users: {
       _base: '',
       list() {
@@ -61,15 +70,6 @@ export const apiRoute = wrapRecord({
       },
       withProblem(competitionId: string, problemId: string) {
         return `${this._base}/${competitionId}/problems/${problemId}`
-      },
-    },
-    tags: {
-      _base: '',
-      base() {
-        return this._base
-      },
-      detail(tagId: string) {
-        return `${this._base}/${tagId}`
       },
     },
   },

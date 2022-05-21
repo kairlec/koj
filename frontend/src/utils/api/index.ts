@@ -32,6 +32,12 @@ export class ProblemDetailError extends Error {
 
 function createAPIInstance(axiosInstance: KOJAxiosInstance, addonConfig?: KOJAxiosRequestConfig): IApi {
   return {
+    addTag(tag: string, config?: KOJAxiosRequestConfig): Promise<string> {
+      return data(this.axios.put(apiRoute.admin.tags.base(), null, { params: { name: tag }, ...addonConfig, ...config }))
+    },
+    removeTag(tagId: string, config?: KOJAxiosRequestConfig): Promise<void> {
+      return this.axios.delete(apiRoute.admin.tags.detail(tagId), { ...addonConfig, ...config })
+    },
     addCompetitionProblem(id: string, problemId: string, config?: KOJAxiosRequestConfig): Promise<KOJAxiosResponse> {
       return this.axios.put(apiRoute.admin.competitions.withProblem(id, problemId), null, { ...addonConfig, ...config })
     },
