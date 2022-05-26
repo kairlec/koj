@@ -5,6 +5,7 @@ import api from '~/api'
 import { setGlobalUser } from '~/hooks/globalUser'
 import moment from 'moment'
 import 'moment/dist/locale/zh-cn'
+import { KOJStorage } from '~/storage'
 
 const app = createApp(App)
 
@@ -25,6 +26,7 @@ api
     setGlobalUser(app, user, false)
   })
   .catch(() => {
+    KOJStorage.identity(null)
     setGlobalUser(app, null, false)
   })
 app.mount('#app')

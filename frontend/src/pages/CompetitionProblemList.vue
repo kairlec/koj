@@ -165,7 +165,7 @@ export default defineComponent({
     }
 
     function gotoSubmit() {
-      router.push({ name: 'SubmitList', query: { competitionId: competitionId } });
+      router.push({ name: 'CompetitionSubmitList', params: { id: competitionId } });
     }
 
     function fetchProblemList() {

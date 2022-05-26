@@ -6,6 +6,7 @@ import ProblemDetail from '../pages/ProblemDetail.vue'
 import UserList from '../pages/UserList.vue'
 import CompetitionList from '../pages/CompetitionList.vue'
 import CompetitionProblemList from '../pages/CompetitionProblemList.vue'
+import CompetitionSubmitList from '../pages/CompetitionSubmitList.vue'
 
 export const routes: Array<RouteRecordRaw & { displayName?: String; manage?: boolean }> = [
   { path: '/', redirect: '/home' },
@@ -30,6 +31,11 @@ export const routes: Array<RouteRecordRaw & { displayName?: String; manage?: boo
     path: '/competition/:id/problem',
     name: 'CompetitionProblemList',
     component: CompetitionProblemList,
+  },
+  {
+    path: '/competition/:id/submit',
+    name: 'CompetitionSubmitList',
+    component: CompetitionSubmitList,
   },
   {
     path: '/submit',
