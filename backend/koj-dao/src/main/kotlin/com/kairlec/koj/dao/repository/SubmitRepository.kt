@@ -69,6 +69,7 @@ class SubmitRepository(
                 .innerJoin(USER)
                 .on(USER.ID.eq(SUBMIT.BELONG_USER_ID))
                 .where(SUBMIT.BELONG_COMPETITION_ID.eq(competition))
+                .orderBy(SUBMIT.CREATE_TIME.desc())
                 .asFlow()
                 .map { submit ->
                     SimpleSubmit(
